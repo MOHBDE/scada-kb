@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SCADA·KB — Delad kunskapsbas</title>
+
+<!-- ===================================================================== -->
+<!--  STEG 1: Fyll i dina två Supabase-uppgifter (Project Settings → API)  -->
+<!-- ===================================================================== -->
+<script>
+  const SUPABASE_URL = "https://DITT-PROJEKT.supabase.co"; // <-- byt ut
+  const SUPABASE_KEY = "DIN-ANON-PUBLIC-KEY";              // <-- byt ut
+</script>
+<!-- ===================================================================== -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0a0e14;--panel:#11161f;--panel2:#0d121a;--code:#070a0f;--line:#1f2733;--line2:#1a212c;--txt:#e2e8f0;--muted:#94a3b8;--dim:#64748b;--accent:#f59e0b;--ok:#22c55e;--danger:#ef4444;--mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+  .grid-bg{position:fixed;inset:0;pointer-events:none;opacity:.04;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:32px 32px;}
+  .wrap{position:relative;max-width:768px;margin:0 auto;padding:0 16px 120px;}
+  header{padding:28px 0 16px;}
+  .head-row{display:flex;align-items:center;gap:12px;}
+  .logo{width:40px;height:40px;border-radius:6px;flex-shrink:0;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;}
+  h1{font-family:var(--mono);font-size:20px;font-weight:700;margin:0;letter-spacing:-.02em;line-height:1;}
+  .sub{font-size:12px;color:var(--dim);margin:5px 0 0;}
+  .hbtns{margin-left:auto;display:flex;gap:6px;}
+  .hbtn{width:36px;height:36px;border-radius:6px;background:var(--panel);border:1px solid var(--line);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .hbtn:hover{color:#fff;}
+  .meta{margin-top:12px;font-size:12px;color:var(--dim);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .dot{width:6px;height:6px;border-radius:50%;}
+  .search-box{position:relative;margin-bottom:12px;}
+  .search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim);}
+  input,select,textarea{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;color:var(--txt);font-family:var(--mono);font-size:16px;outline:none;padding:10px 12px;}
+  @media(min-width:640px){input,select,textarea{font-size:13px;}}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  .search-box input{padding-left:36px;}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{flex-shrink:0;padding:7px 12px;border-radius:6px;font-size:12px;font-family:var(--mono);font-weight:500;cursor:pointer;background:var(--panel);border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap;}
+  .chip .cdot{width:6px;height:6px;border-radius:50%;opacity:.5;}
+  .chip.active{background:var(--line2);color:#fff;}
+  .chip.active .cdot{opacity:1;}
+  .chip .cnt{color:var(--dim);}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px;}
+  .card-head{padding:14px 16px 8px;display:flex;align-items:flex-start;gap:12px;}
+  .card-dot{margin-top:6px;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .card-title{font-weight:600;font-size:14px;color:#f1f5f9;word-break:break-word;}
+  .badge{font-size:10px;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;font-family:var(--mono);}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .tag{font-size:11px;color:var(--muted);font-family:var(--mono);}
+  .card-actions{display:flex;gap:4px;flex-shrink:0;}
+  .ibtn{width:28px;height:28px;border-radius:4px;border:none;background:var(--line2);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .ibtn:hover{color:#fff;}
+  pre.code{margin:4px 16px 8px;padding:12px;border-radius:6px;background:var(--code);border:1px solid var(--line2);font-family:var(--mono);font-size:12px;color:#cbd5e1;overflow-x:auto;line-height:1.6;white-space:pre;}
+  p.note{padding:4px 16px 8px;font-size:14px;color:#cbd5e1;white-space:pre-wrap;line-height:1.6;margin:0;}
+  .more{margin:0 16px 14px;background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;}
+  .more:hover{color:#fff;}
+  .confirm{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;background:#1a0d0d;border-top:1px solid #3a1a1a;}
+  .confirm .msg{color:#fca5a5;display:flex;align-items:center;gap:6px;}
+  .confirm button{border:none;cursor:pointer;padding:4px 10px;border-radius:4px;font-size:12px;}
+  .btn-cancel{background:transparent;color:var(--muted);}
+  .btn-del{background:var(--danger);color:#fff;font-weight:500;}
+  .fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;border:none;background:var(--accent);color:var(--bg);cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;}
+  .fab:active{transform:scale(.95);}
+  .empty{text-align:center;padding:56px 24px;color:var(--muted);font-size:14px;}
+  .empty-icon{width:56px;height:56px;border-radius:12px;margin:0 auto 16px;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);}
+  .btn-amber{background:var(--accent);color:var(--bg);font-weight:600;border:none;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;font-size:14px;}
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;}
+  @media(min-width:640px){.overlay{align-items:center;padding:16px;}}
+  .modal{width:100%;max-width:512px;max-height:92vh;overflow-y:auto;background:var(--panel2);border:1px solid var(--line);border-radius:16px 16px 0 0;}
+  @media(min-width:640px){.modal{border-radius:16px;}}
+  .modal-head,.modal-foot{position:sticky;background:var(--panel2);padding:14px 20px;z-index:2;display:flex;align-items:center;}
+  .modal-head{top:0;justify-content:space-between;border-bottom:1px solid var(--line);}
+  .modal-head h2{font-family:var(--mono);font-size:14px;margin:0;}
+  .modal-foot{bottom:0;gap:12px;border-top:1px solid var(--line);}
+  .modal-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
+  .x{background:none;border:none;color:var(--dim);cursor:pointer;}
+  label.field{display:block;}
+  label.field .lbl{font-size:12px;color:var(--dim);margin-bottom:6px;display:block;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .toggle-row{display:flex;gap:8px;}
+  .toggle{flex:1;padding:8px;border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;background:var(--code);border:1px solid var(--line);color:var(--dim);display:flex;align-items:center;justify-content:center;gap:6px;}
+  .toggle.active{background:var(--line2);border-color:var(--accent);color:var(--accent);}
+  textarea{resize:vertical;}
+  .foot-btn{flex:1;padding:11px;border-radius:6px;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .foot-cancel{background:var(--line2);color:#cbd5e1;}
+  .foot-save{background:var(--accent);color:var(--bg);font-weight:600;}
+  .foot-save:disabled{opacity:.4;cursor:not-allowed;}
+  .banner{margin:16px 0;padding:14px 16px;border-radius:8px;font-size:13px;line-height:1.5;}
+  .banner.err{background:#1a0d0d;border:1px solid #3a1a1a;color:#fca5a5;}
+  .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);padding:8px 16px;border-radius:6px;font-size:13px;background:var(--line2);border:1px solid #2dd4bf;color:#5eead4;font-family:var(--mono);z-index:60;}
+  .spin{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  /* Login */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;}
+  .login-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:32px 28px;}
+  .login-logo{width:48px;height:48px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:20px;}
+  .login-card h1{font-size:22px;margin:0 0 4px;}
+  .login-card p{color:var(--dim);font-size:13px;margin:0 0 24px;}
+  .login-card label{display:block;margin-bottom:14px;}
+  .login-card .lbl{font-size:12px;color:var(--muted);margin-bottom:6px;display:block;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+const CATEGORIES=["Ignition","iFIX","Larm","UDT/Tags","Scripting","OPC","SQL","Övrigt"];
+const CAT_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8","Larm":"#ef4444","UDT/Tags":"#22c55e","Scripting":"#a78bfa","OPC":"#fb923c","SQL":"#2dd4bf","Övrigt":"#94a3b8"};
+
+/* ─── Exempelposter (laddas EN gång via knapp) ─── */
+const SEED=[
+{title:"Läsa UDT-parameter (ENGMAX/ENGMIN/UNIT)",category:"Scripting",tags:["udt","getConfiguration","perspective"],is_code:true,content:`# system.tag.browse returnerar INTE parametervärden – använd getConfiguration.
+# Parametrar nås med .value (dot-access), inte ["value"] eller .get("value").
+# tagPath MÅSTE ha provider-prefix: [Vatten05]HST/VVV/TOR/PLC1/NG1/NG1
+
+def transform(self, value, event):
+    import system
+    tagPath = value
+    if not tagPath: return None
+    isUdt = False
+    try:
+        parentPath = "/".join(tagPath.split("/")[:-1])
+        tagName    = tagPath.split("/")[-1]
+        for r in system.tag.browse(parentPath, {"tagType":"UdtInstance"}).getResults():
+            if str(r.get("name")) == tagName: isUdt = True; break
+    except: pass
+    try:
+        if isUdt:
+            params = system.tag.getConfiguration(tagPath, False)[0].get("parameters", {})
+            engmax = params.get("ENGMAX", None)
+            return engmax.value if engmax else None     # .value, inte .get!
+        qv = system.tag.readBlocking([tagPath + ".engHigh"])[0]
+        return qv.value if qv.quality.isGood() else None
+    except Exception as e:
+        system.perspective.print("[engHigh] " + str(e)); return None`},
+{title:"Trend-binding: skilj UDT-instans från lös tagg",category:"Scripting",tags:["udt","trend","G_HOG"],is_code:false,content:`• Avgör typ: browsa parent-path med {"tagType":"UdtInstance"} och matcha tagName.
+• UDT-instans:
+   – Larmgränser i  Installningar/G_HOG, G_LAG, G_HOGHOG, G_LAGLAG
+   – Eng.range (ENGMAX/ENGMIN/UNIT) läses som PARAMETER via getConfiguration
+   – Värde i  Status/Value  → path = tagPath + "/Status/Value"
+• Lös tagg:
+   – Larmgränser:  tagPath + "_G_HOG"  osv.
+   – Eng.range:    tagPath + ".engHigh"/".engLow"/".engUnit"
+   – Värde:        tagPath direkt`},
+{title:"Expression: läsa tag-property dynamiskt",category:"Scripting",tags:["expression","InvalidPathSyntax"],is_code:true,content:`# Strängkonkatenering i path-fältet ger Error_InvalidPathSyntax. Wrappa i tag():
+tag({view.params.tagPath} + ".engLow")
+# Funkar för lösa taggar. För UDT är .engLow en PARAMETER → använd transform + getConfiguration.`},
+{title:"Öppna trend på pump/ventil (dubblerat namn)",category:"Scripting",tags:["trend","pump","ventil"],is_code:true,content:`# Objekt har mönstret Station/Namn/Namn+suffix (t.ex. .../GVP01/GVP01_AMP).
+# Analoga: bara Station/Namn+suffix. Välj path via prefix.
+
+def __trend_open(ctxArgs):
+    tagPath = ctxArgs["tagPath"]
+    name    = tagPath.split('/')[-1]
+    tagPath = '/'.join(tagPath.split('/')[:-1])
+    PUMP_VENTIL_PREFIX = ("GVP","VVV","PMP")
+    if len(system.tag.browse(tagPath, {'tagType':'UdtInstance'})) > 0:
+        for suf in ("Value","I_AMP","AMP","FRQ","I_OPPEN","INTENSITET"):
+            p = "%s/%s/Status/%s" % (tagPath, name, suf)
+            if system.tag.exists(p): tagPath = p; break
+    else:
+        for suf in ("","_AMP","_FLODE","_I_OPPEN","_UTS","_FREKV","_FRQ"):
+            if name.startswith(PUMP_VENTIL_PREFIX):
+                p = "%s/%s/%s%s" % (tagPath, name, name, suf)   # dubblerat namn
+            else:
+                p = "%s/%s%s" % (tagPath, name, suf)
+            if system.tag.exists(p): tagPath = p; break`},
+{title:"Hyllade larm (shelved) filtrerat per provider",category:"Larm",tags:["shelved","getShelvedPaths"],is_code:true,content:`# getShelvedPaths() returnerar ALLA hyllade larm. Format: prov:Vatten05:/tag:.../alm:L_LAG
+# (inte [Vatten05]!). Filtrera på "prov:<namn>:" i strängen:
+
+providers = ["Vatten04","Vatten05","Vatten06"]      # eller Avlopp04-06
+shelved   = system.alarm.getShelvedPaths()
+rows_shelved = [p for p in shelved
+    if any(("prov:" + prov + ":") in str(p) for prov in providers)]
+
+# OBS: Alarm Status Table i popupen hämtar data SJÄLV och har egna
+# provider/source-properties i Designer – sätt samma filter där.`},
+{title:"Larmstatus i header (queryStatus)",category:"Larm",tags:["queryStatus","header"],is_code:true,content:`# states: 0=ClearUnack 1=ClearAck 2=ActiveUnack 3=ActiveAck → vi kör [0,2,3]
+states = [0,2,3]; prios = ["Critical","High","Medium"]
+rows = system.alarm.queryStatus(source=source, state=states, priority=prios)
+rows_active_unack = [r for r in rows
+    if getattr(r,'isActive',False) and getattr(r,'ackTime',None) is None]
+self.custom.eventid = str(senastRow.getId())
+prio_map = {"Critical":"[AA]","High":"[A]","Medium":"[B]","Low":"[C]"}`},
+{title:"Kvittera larm + pulsa PLC-taggar (runAction)",category:"Larm",tags:["acknowledge","LARM_M_KVITT"],is_code:true,content:`# source-format: prov:Vatten05:/tag:HST/.../inst_STATION/tagg:/alm:namn
+# Bygg tagPath i headern: split(":/tag:")[1].split(":/alm:")[0], spara på custom.
+
+def runAction(self, event):
+    import time
+    PULSE = ["LARM_M_KVITT","LARM_M_RESET","LARM_M_RST"]; DELAY = 3
+    eventId = self.view.params.eventId; tagPath = self.view.params.tagPath
+    if not eventId or not tagPath: return
+    user = self.session.props.auth.user.userName
+    system.alarm.acknowledge([eventId], "", user)
+    folder = '/'.join(tagPath.split('/')[:-1])
+    tags = [t for t in ["%s/%s"%(folder,s) for s in PULSE] if system.tag.exists(t)]
+    if tags:
+        system.tag.writeBlocking(tags, [True]*len(tags))
+        time.sleep(DELAY)
+        system.tag.writeBlocking(tags, [False]*len(tags))`},
+{title:"Rollstyrd redigeringsbehörighet (transform)",category:"Scripting",tags:["roller","getProjectName","chef"],is_code:true,content:`# Projektnamn varierar (VAT, VAT_INT, VATTEN). Matcha INTE exakt.
+# system.security.getUser() funkar ej i Script Console – använd getUsername().
+
+def transform(self, value, quality, timestamp):
+    project = system.project.getProjectName().upper()
+    if "VAT" in project:   allowed = ["CHEF","sso_ignition_Chefer","Drift_Vatten"]
+    elif "AVL" in project: allowed = ["CHEF","sso_ignition_Chefer","Drift_Avlopp"]
+    else:                  allowed = ["CHEF","sso_ignition_Chefer"]
+    return bool(set(allowed) & set(value['roles'])) and value['edit']`},
+{title:"securityWriteAccess på UDT-taggar (JSON)",category:"UDT/Tags",tags:["json","behörighet"],is_code:false,content:`Skrivskydd på G_HOG / G_LAG / G_LARMTID i Installningar:
+hierarki  Authenticated → Roles → CHEF / sso_ignition_Chefer.
+
+Tips: i en UdtInstance blir tillagda properties bara overrides på just den
+instansen. Vill du ha samma skydd överallt – lägg securityWriteAccess på UDT-
+DEFINITIONEN (Analog_Simple) istället, så slipper du underhålla per instans.`},
+{title:"objektdiagnostik_handler – logga till SQL",category:"SQL",tags:["jython","objekt_handelser","objekt_korningar"],is_code:false,content:`Message handler (Jython) som loggar drift till MS SQL Server.
+Taggsuffix:  Pump _I_D → START/STOPP   |   Ventil _I_OPPEN/_I_STANGD → ÖPPEN/STÄNGD
+
+VIKTIGT mot dubbletter: prenumerera BARA på _I_OPPEN (False loggas som STÄNGD).
+Annars triggas handlern två gånger per rörelse.
+
+Tabeller: objekt_handelser (logg), objekt_korningar (energi: I×590W×h/1000 = kWh).
+Kompakt typval: handelse_typ = handelse_map[objekt_typ][0 if varde else 1]
+Har handelse_typ-kolumnen CHECK CONSTRAINT – uppdatera den för ÖPPEN/STÄNGD.`},
+{title:"Map-marker: larmstatus → CSS-klass",category:"Larm",tags:["map","perspective","buggar"],is_code:false,content:`Script på map-komponent som frågar providrar (Vatten04–06, Avlopp04–06) och
+mappar prioritet/kvittering till style-klasser.
+
+Buggar hittade vid granskning:
+• Blockerande time.sleep(2) – fryser tråden, ta bort
+• Indenteringsfel
+• Scope-problem
+• Fel fallback-typ när inget larm finns`},
+{title:"Header: dynamisk station från URL",category:"Scripting",tags:["url","page.props.path"],is_code:true,content:`# Ersätt statisk self.custom.source med station ur URL:en.
+# /data/perspective/client/VAT_INT/Site/HST/VVV/BYA
+parts = self.page.props.path.split("/")
+station = parts[-1]   # t.ex. "BYA" → bygg source-filter till queryStatus`},
+{title:"Anteckningar-popup (__comments)",category:"Scripting",tags:["tooltip","readBlocking"],is_code:true,content:`# Läser Tooltip och bygger titel: StationName / tagName / tooltip / Anteckningar
+qv = system.tag.readBlocking([tagPath + ".Tooltip"])[0]
+tooltip = qv.value if qv.quality.isGood() else ""
+title = "%s / %s / %s / Anteckningar" % (stationName, tagName, tooltip)`},
+{title:"Bulk-generera tagg-JSON för pumpstationer",category:"UDT/Tags",tags:["spu","lah","opc","pm5072"],is_code:false,content:`Mall för massgenerering (LAH-namnkonvention):
+• Rotnamn per station (P4/P5/P6…)
+• OPC-server: LAH_SPU_P{n}_PLC1
+• Stationsnamn (adress) byts ut
+• PLC-modell i opcItemPath: PM5072-T-2ETH
+• UDT-parametrar substitueras per instans
+• Extra mappar: TM1 (temp), HU1 (fukt) enligt Analog_Simple-mönstret.`},
+{title:"Cross-gateway meddelanden",category:"Scripting",tags:["sendMessage","gateway"],is_code:true,content:`system.util.sendMessage(
+    project="...", messageHandler="objektdiagnostik_handler",
+    payload={...}, scope="G", remoteServers=["ignition-srvignition03"])`}
+];
+
+/* ─── Auth + REST helpers ─── */
+const authBase = SUPABASE_URL + "/auth/v1";
+const restBase = SUPABASE_URL + "/rest/v1/entries";
+async function signIn(email, password){
+  const r = await fetch(authBase + "/token?grant_type=password", {
+    method:"POST", headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
+    body: JSON.stringify({email, password})
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error_description || d.msg || "Inloggning misslyckades");
+  return d; // access_token, user...
+}
+function dataHeaders(token){
+  return { apikey: SUPABASE_KEY, Authorization: "Bearer " + token, "Content-Type":"application/json" };
+}
+async function apiGet(token){
+  const r = await fetch(restBase + "?select=*&order=updated_at.desc", {headers: dataHeaders(token)});
+  if (!r.ok) throw new Error("GET " + r.status); return r.json();
+}
+async function apiInsert(token, rows){
+  const r = await fetch(restBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(rows)});
+  if (!r.ok) throw new Error("INSERT " + r.status); return r.json();
+}
+async function apiUpdate(token, id, row){
+  const r = await fetch(restBase + "?id=eq." + id, {method:"PATCH", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(row)});
+  if (!r.ok) throw new Error("UPDATE " + r.status); return (await r.json())[0];
+}
+async function apiDelete(token, id){
+  const r = await fetch(restBase + "?id=eq." + id, {method:"DELETE", headers: dataHeaders(token)});
+  if (!r.ok) throw new Error("DELETE " + r.status);
+}
+
+/* ─── Ikoner ─── */
+const I=({d,size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>);
+const Ico={
+  db:<I d={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></>} />,
+  search:<I size={16} d={<><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>} />,
+  plus:<I size={26} d={<><path d="M5 12h14"/><path d="M12 5v14"/></>} />,
+  copy:<I size={15} d={<><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>} />,
+  check:<I size={15} d={<path d="M20 6 9 17l-5-5"/>} />,
+  edit:<I size={15} d={<><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></>} />,
+  trash:<I size={15} d={<><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
+  x:<I size={20} d={<><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>} />,
+  save:<I size={16} d={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></>} />,
+  code:<I size={14} d={<><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></>} />,
+  file:<I size={14} d={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></>} />,
+  down:<I size={16} d={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></>} />,
+  up:<I size={16} d={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></>} />,
+  out:<I size={16} d={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></>} />,
+  chevD:<I size={13} d={<path d="m6 9 6 6 6-6"/>} />,
+  chevU:<I size={13} d={<path d="m18 15-6-6-6 6"/>} />,
+  alert:<I size={14} d={<><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></>} />,
+};
+
+function App(){
+  const configured = !SUPABASE_URL.includes("DITT-PROJEKT") && !SUPABASE_KEY.includes("DIN-ANON");
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState("");
+
+  if (!configured) return (<div className="wrap"><div className="banner err" style={{marginTop:40}}>Inte konfigurerad. Öppna filen i en texteditor och fyll i <b>SUPABASE_URL</b> och <b>SUPABASE_KEY</b> högst upp (rad ~12).</div></div>);
+  if (!token) return <Login onLogin={(t,u)=>{setToken(t); setUser(u);}} />;
+  return <KB token={token} user={user} onLogout={()=>{setToken(null); setUser("");}} />;
+}
+
+function Login({onLogin}){
+  const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
+  const [err,setErr]=useState(""); const [busy,setBusy]=useState(false);
+  async function submit(){
+    if(!email||!pw) return;
+    setBusy(true); setErr("");
+    try{ const d = await signIn(email.trim(), pw); onLogin(d.access_token, (d.user&&d.user.email)||email); }
+    catch(e){ setErr(e.message); }
+    setBusy(false);
+  }
+  return (
+    <div className="login-wrap">
+      <div className="login-card">
+        <div className="login-logo">{Ico.db}</div>
+        <h1 style={{fontFamily:"var(--mono)"}}>SCADA·KB</h1>
+        <p>Logga in för att nå teamets kunskapsbas.</p>
+        {err && <div className="banner err" style={{marginTop:0}}>{err}</div>}
+        <label><span className="lbl">E-post</span>
+          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="namn@kommun.se" onKeyDown={e=>e.key==='Enter'&&submit()} /></label>
+        <label><span className="lbl">Lösenord</span>
+          <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} /></label>
+        <button className="btn-amber" style={{width:"100%",marginTop:8,padding:"11px"}} disabled={busy||!email||!pw} onClick={submit}>
+          {busy?"Loggar in…":"Logga in"}
+        </button>
+        <p style={{marginTop:16,marginBottom:0,fontSize:12}}>Konton skapas av admin i Supabase → Authentication → Users.</p>
+      </div>
+    </div>
+  );
+}
+
+function KB({token, user, onLogout}){
+  const [entries,setEntries]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const [search,setSearch]=useState("");
+  const [activeCat,setActiveCat]=useState("Alla");
+  const [editing,setEditing]=useState(null);
+  const [copiedId,setCopiedId]=useState(null);
+  const [toast,setToast]=useState("");
+  const fileRef=useRef(null);
+
+  useEffect(()=>{ load(); },[]);
+  function flash(m){ setToast(m); setTimeout(()=>setToast(""),2400); }
+
+  async function load(){
+    setLoading(true); setError(null);
+    try{ setEntries(await apiGet(token)); }
+    catch(e){ setError("Kunde inte hämta data. Sessionen kan ha gått ut – logga in igen."); }
+    setLoading(false);
+  }
+  async function saveEntry(data){
+    setBusy(true);
+    const row={title:data.title,category:data.category,tags:data.tags,content:data.content,is_code:data.isCode,updated_at:new Date().toISOString()};
+    try{
+      if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
+      else{ const n=await apiInsert(token,[row]); setEntries([...n, ...entries]); }
+      setEditing(null);
+    }catch(e){ alert("Kunde inte spara: "+e.message); }
+    setBusy(false);
+  }
+  async function deleteEntry(id){
+    try{ await apiDelete(token,id); setEntries(entries.filter(e=>e.id!==id)); }
+    catch(e){ alert("Kunde inte ta bort: "+e.message); }
+  }
+  async function loadExamples(){
+    setBusy(true);
+    try{
+      const rows=SEED.map(s=>({...s, updated_at:new Date().toISOString()}));
+      const inserted=await apiInsert(token,rows);
+      setEntries([...inserted, ...entries]);
+      flash("Laddade "+inserted.length+" exempelposter");
+    }catch(e){ alert("Kunde inte ladda exempel: "+e.message); }
+    setBusy(false);
+  }
+  function copyContent(e){ navigator.clipboard&&navigator.clipboard.writeText(e.content); setCopiedId(e.id); setTimeout(()=>setCopiedId(null),1500); }
+  function exportData(){
+    const blob=new Blob([JSON.stringify(entries,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob); const a=document.createElement("a");
+    a.href=url; a.download="scada-kb-backup.json"; a.click(); URL.revokeObjectURL(url);
+    flash("Exporterade "+entries.length+" poster");
+  }
+  function importData(ev){
+    const file=ev.target.files&&ev.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=async(e)=>{
+      try{
+        const data=JSON.parse(e.target.result);
+        if(!Array.isArray(data)) throw new Error();
+        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,updated_at:new Date().toISOString()}));
+        setBusy(true);
+        const inserted=await apiInsert(token,rows);
+        setEntries([...inserted, ...entries]);
+        flash("Importerade "+inserted.length+" poster");
+      }catch(err){ flash("Kunde inte läsa filen"); }
+      setBusy(false);
+    };
+    reader.readAsText(file); ev.target.value="";
+  }
+
+  const filtered=useMemo(()=>{
+    const q=search.trim().toLowerCase();
+    return entries.filter(e=>{
+      if(activeCat!=="Alla"&&e.category!==activeCat) return false;
+      if(!q) return true;
+      return (e.title+" "+e.content+" "+(e.tags||[]).join(" ")).toLowerCase().includes(q);
+    });
+  },[entries,search,activeCat]);
+  const counts=useMemo(()=>{const c={}; entries.forEach(e=>c[e.category]=(c[e.category]||0)+1); return c;},[entries]);
+
+  return (
+    <div className="wrap">
+      <header>
+        <div className="head-row">
+          <div className="logo" style={{color:"var(--accent)"}}>{Ico.db}</div>
+          <div style={{minWidth:0}}>
+            <h1>SCADA<span style={{color:"var(--accent)"}}>·</span>KB</h1>
+            <p className="sub">Delad kunskapsbas — PLC &amp; SCADA</p>
+          </div>
+          <div className="hbtns">
+            <button className="hbtn" title="Exportera (backup)" onClick={exportData}>{Ico.down}</button>
+            <button className="hbtn" title="Importera" onClick={()=>fileRef.current.click()}>{Ico.up}</button>
+            <button className="hbtn" title="Logga ut" onClick={onLogout}>{Ico.out}</button>
+            <input ref={fileRef} type="file" accept="application/json" onChange={importData} style={{display:"none"}} />
+          </div>
+        </div>
+        <div className="meta">
+          {busy ? <span style={{color:"var(--ok)"}}>arbetar…</span>
+                : <span style={{display:"flex",alignItems:"center",gap:6}}><span className="dot" style={{background:error?"var(--danger)":"var(--ok)"}}></span>{entries.length} poster</span>}
+          <span>· inloggad: {user}</span>
+        </div>
+      </header>
+
+      {error && <div className="banner err">{error}</div>}
+
+      <div className="search-box">{Ico.search}
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök i titel, kod, taggar…" /></div>
+
+      <div className="chips">
+        <Chip label="Alla" active={activeCat==="Alla"} color="#f59e0b" count={entries.length} onClick={()=>setActiveCat("Alla")} />
+        {CATEGORIES.map(c=><Chip key={c} label={c} active={activeCat===c} color={CAT_COLOR[c]} count={counts[c]||0} onClick={()=>setActiveCat(c)} />)}
+      </div>
+
+      {loading ? (
+        <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>
+      ) : filtered.length===0 ? (
+        <div className="empty">
+          <div className="empty-icon">{Ico.file}</div>
+          <div>{entries.length>0?"Inga träffar för din sökning.":"Tom kunskapsbas. Ladda in exemplen vi gått igenom, eller skapa en egen post."}</div>
+          {entries.length===0 && <div style={{marginTop:16,display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+            <button className="btn-amber" onClick={loadExamples}>{Ico.down} Ladda exempelposter</button>
+            <button className="btn-amber" style={{background:"var(--line2)",color:"#cbd5e1"}} onClick={()=>setEditing({})}>{Ico.plus} Ny post</button>
+          </div>}
+        </div>
+      ) : (
+        filtered.map(e=><EntryCard key={e.id} entry={e} copied={copiedId===e.id} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} />)
+      )}
+
+      <button className="fab" onClick={()=>setEditing({})}>{Ico.plus}</button>
+      {toast && <div className="toast">{toast}</div>}
+      {editing!==null && <EntryForm initial={editing} busy={busy} onSave={saveEntry} onClose={()=>setEditing(null)} />}
+    </div>
+  );
+}
+
+function Chip({label,active,color,count,onClick}){
+  return (<button className={"chip"+(active?" active":"")} style={{borderColor:active?color:"var(--line)"}} onClick={onClick}>
+    <span className="cdot" style={{background:color}}></span>{label}{count>0&&<span className="cnt">{count}</span>}</button>);
+}
+
+function EntryCard({entry,copied,onCopy,onEdit,onDelete}){
+  const [confirm,setConfirm]=useState(false);
+  const [exp,setExp]=useState(false);
+  const color=CAT_COLOR[entry.category]||"#94a3b8";
+  const tags=entry.tags||[];
+  const lines=(entry.content||"").split("\n");
+  const long=lines.length>16;
+  const shown=exp||!long?entry.content:lines.slice(0,16).join("\n");
+  return (
+    <div className="card">
+      <div className="card-head">
+        <span className="card-dot" style={{background:color}}></span>
+        <div style={{minWidth:0,flex:1}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <span className="card-title">{entry.title}</span>
+            <span className="badge" style={{background:color+"22",color}}>{entry.category}</span>
+          </div>
+          {tags.length>0&&<div className="tags">{tags.map(t=><span key={t} className="tag">#{t}</span>)}</div>}
+        </div>
+        <div className="card-actions">
+          <button className="ibtn" onClick={onCopy} title="Kopiera">{copied?<span style={{color:"var(--ok)"}}>{Ico.check}</span>:Ico.copy}</button>
+          <button className="ibtn" onClick={onEdit} title="Redigera">{Ico.edit}</button>
+          <button className="ibtn" onClick={()=>setConfirm(true)} title="Ta bort">{Ico.trash}</button>
+        </div>
+      </div>
+      {entry.is_code ? <pre className="code">{shown}{!exp&&long?"\n…":""}</pre> : <p className="note">{shown}{!exp&&long?" …":""}</p>}
+      {long && <button className="more" onClick={()=>setExp(!exp)}>{exp?<>{Ico.chevU} Visa mindre</>:<>{Ico.chevD} Visa mer</>}</button>}
+      {confirm && (<div className="confirm"><span className="msg">{Ico.alert} Ta bort permanent?</span>
+        <div style={{display:"flex",gap:8}}><button className="btn-cancel" onClick={()=>setConfirm(false)}>Avbryt</button>
+        <button className="btn-del" onClick={onDelete}>Ta bort</button></div></div>)}
+    </div>
+  );
+}
+
+function EntryForm({initial,busy,onSave,onClose}){
+  const [title,setTitle]=useState(initial.title||"");
+  const [category,setCategory]=useState(initial.category||"Ignition");
+  const [tags,setTags]=useState((initial.tags||[]).join(", "));
+  const [content,setContent]=useState(initial.content||"");
+  const [isCode,setIsCode]=useState(initial.is_code!==undefined?initial.is_code:true);
+  const valid=title.trim()&&content.trim();
+  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content,isCode}); }
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-head"><h2>{initial.id?"Redigera post":"Ny post"}</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
+        <div className="modal-body">
+          <label className="field"><span className="lbl">Titel</span>
+            <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="t.ex. Läsa UDT-parameter med getConfiguration" /></label>
+          <div className="row2">
+            <label className="field"><span className="lbl">Kategori</span>
+              <select value={category} onChange={e=>setCategory(e.target.value)}>{CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
+            <label className="field"><span className="lbl">Taggar (komma)</span>
+              <input value={tags} onChange={e=>setTags(e.target.value)} placeholder="udt, perspective" /></label>
+          </div>
+          <div className="toggle-row">
+            <button className={"toggle"+(isCode?" active":"")} onClick={()=>setIsCode(true)}>{Ico.code} Kod</button>
+            <button className={"toggle"+(!isCode?" active":"")} onClick={()=>setIsCode(false)}>{Ico.file} Anteckning</button>
+          </div>
+          <label className="field"><span className="lbl">{isCode?"Kod / script":"Text"}</span>
+            <textarea value={content} onChange={e=>setContent(e.target.value)} rows={isCode?10:6} placeholder={isCode?"Klistra in din kod här…":"Skriv din anteckning här…"} style={{fontFamily:isCode?"var(--mono)":"var(--sans)"}} /></label>
+        </div>
+        <div className="modal-foot">
+          <button className="foot-btn foot-cancel" onClick={onClose}>Avbryt</button>
+          <button className="foot-btn foot-save" disabled={!valid||busy} onClick={handleSave}>{Ico.save} {busy?"Sparar…":"Spara"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
