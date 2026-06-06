@@ -2,8 +2,19 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>SCADA·KB — Delad kunskapsbas</title>
+
+<!-- PWA: installerbar med egen ikon + helskärm -->
+<meta name="theme-color" content="#080b10" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="SCADA·KB" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%23080b10'/%3E%3Cg fill='none' stroke='%23f5a524' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='90' cy='52' rx='46' ry='16'/%3E%3Cpath d='M44 52v76a46 16 0 0 0 92 0V52'/%3E%3Cpath d='M44 90a46 16 0 0 0 92 0'/%3E%3C/g%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='14' fill='%23080b10'/%3E%3Cg fill='none' stroke='%23f5a524' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='32' cy='19' rx='16' ry='6'/%3E%3Cpath d='M16 19v26a16 6 0 0 0 32 0V19'/%3E%3Cpath d='M16 32a16 6 0 0 0 32 0'/%3E%3C/g%3E%3C/svg%3E" />
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22SCADA%C2%B7KB%22%2C%22short_name%22%3A%22SCADA%C2%B7KB%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23080b10%22%2C%22theme_color%22%3A%22%23080b10%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520width%253D%2527192%2527%2520height%253D%2527192%2527%253E%253Crect%2520width%253D%2527192%2527%2520height%253D%2527192%2527%2520rx%253D%252742%2527%2520fill%253D%2527%2523080b10%2527%252F%253E%253Cg%2520fill%253D%2527none%2527%2520stroke%253D%2527%2523f5a524%2527%2520stroke-width%253D%252710%2527%2520stroke-linecap%253D%2527round%2527%2520stroke-linejoin%253D%2527round%2527%253E%253Cellipse%2520cx%253D%252796%2527%2520cy%253D%252756%2527%2520rx%253D%252749%2527%2520ry%253D%252717%2527%252F%253E%253Cpath%2520d%253D%2527M47%252056v80a49%252017%25200%25200%25200%252098%25200V56%2527%252F%253E%253Cpath%2520d%253D%2527M47%252096a49%252017%25200%25200%25200%252098%25200%2527%252F%253E%253C%252Fg%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
 
 <!-- ===================================================================== -->
 <!--  STEG 1: Fyll i dina två Supabase-uppgifter (Project Settings → API)  -->
@@ -221,12 +232,59 @@
   .typechip.is-code{color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.1);}
   .typechip.is-note{color:#60a5fa;border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.1);}
   .typechip svg{width:11px;height:11px;}
+  /* Top action bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+  .topbar-user{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;min-width:0;}
+  .topbar-user svg{color:var(--accent);flex-shrink:0;}
+  .topbar-email{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55vw;}
+  .topbar-actions{display:flex;gap:8px;flex-shrink:0;}
+  @media(min-width:861px){.topbar-user{display:none;}}
+  /* Code highlighting */
+  pre.code .hljs,pre.code code.hljs{background:transparent;padding:0;color:#cbd5e1;}
+  .code-copy{margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--dim);font-family:var(--mono);font-size:10.5px;cursor:pointer;transition:color .15s;}
+  .code-copy:hover{color:var(--accent);}
+  .code-copy svg{width:12px;height:12px;}
+  /* Card title button + foot */
+  button.card-title{background:none;border:none;padding:0;text-align:left;cursor:pointer;font-weight:600;font-size:14.5px;color:#f1f5f9;line-height:1.35;font-family:var(--sans);transition:color .15s;}
+  button.card-title:hover{color:var(--accent);}
+  .card-foot{display:flex;align-items:center;gap:6px;padding:0 16px 12px 18px;color:var(--dim);font-size:11px;font-family:var(--mono);}
+  .card-foot svg{width:12px;height:12px;}
+  /* Detail modal */
+  .modal.detail{max-width:620px;}
+  .crumbs{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--dim);}
+  .detail-title{font-size:19px;margin:0;font-weight:600;line-height:1.3;}
+  .detail-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:-2px 0 2px;}
+  .detail-date{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);font-family:var(--mono);}
+  .detail-date svg{width:12px;height:12px;}
+  .related{border-top:1px solid var(--line);padding-top:14px;margin-top:6px;}
+  .related-h{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .related-h svg{color:var(--dim);width:14px;height:14px;}
+  .detail .code-wrap{margin:0;}
+  /* Dashboard welcome + quick add */
+  .welcome{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+  .quickadd{display:flex;gap:8px;}
+  .qbtn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(180deg,#11161f,#0d121a);color:#e6edf3;font-size:13px;font-family:var(--sans);cursor:pointer;transition:transform .15s,border-color .15s;}
+  .qbtn:hover{transform:translateY(-1px);border-color:var(--line-strong);}
+  .qbtn svg{width:16px;height:16px;}
+  /* Tag cloud */
+  .tagcloud{display:flex;flex-wrap:wrap;gap:7px;}
+  .cloudtag{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:9px;border:1px solid var(--line);background:var(--code);color:var(--muted);font-family:var(--mono);font-size:12px;cursor:pointer;transition:all .15s;}
+  .cloudtag:hover{color:var(--accent);border-color:rgba(245,165,36,.4);}
+  .cloudcnt{font-size:10px;color:var(--dim);background:rgba(255,255,255,.05);padding:0 6px;border-radius:7px;}
+  .nav-item.active{box-shadow:0 0 18px -10px var(--accent);}
+  .actchart{display:flex;align-items:flex-end;gap:3px;height:70px;}
+  .actbar{flex:1;display:flex;align-items:flex-end;height:100%;}
+  .actbar-fill{width:100%;background:linear-gradient(180deg,var(--accent),rgba(245,165,36,.35));border-radius:3px;min-height:3px;}
+  .actcnt{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim);}
+  .actaxis{display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--dim);font-family:var(--mono);}
+  @media(max-width:560px){.quickadd{width:100%;}.qbtn{flex:1;justify-content:center;}}
 </style>
 </head>
 <body>
 <div class="grid-bg"></div>
 <div id="root"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
@@ -479,6 +537,14 @@ async function createUserViaFunction(token, email, password){
   if (!r.ok) throw new Error(d.error || d.msg || d.message || ("Fel "+r.status));
   return d;
 }
+async function updateMyName(token, fullName){
+  const r = await fetch(authBase + "/user", {
+    method:"PUT", headers: dataHeaders(token), body: JSON.stringify({ data:{ full_name: fullName } })
+  });
+  let d={}; try{ d=await r.json(); }catch(e){}
+  if (!r.ok) throw new Error(d.msg || d.error_description || d.error || ("Fel "+r.status));
+  return d;
+}
 
 /* ─── Ikoner ─── */
 const I=({d,size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>);
@@ -517,6 +583,9 @@ const Ico={
   pin:<I size={15} d={<path d="M12 2l3 6.3 6.9 1-5 4.8 1.2 6.9L12 17.8 5.9 21l1.2-6.9-5-4.8 6.9-1z"/>} />,
   layers:<I size={15} d={<><path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/></>} />,
   add:<I size={16} d={<><path d="M5 12h14"/><path d="M12 5v14"/></>} />,
+  clock:<I size={13} d={<><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>} />,
+  chevR:<I size={13} d={<path d="m9 18 6-6-6-6"/>} />,
+  link:<I size={15} d={<><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></>} />,
 };
 const TOPIC_ICON={"Scripting":Ico=>Ico.terminal,"Larm":Ico=>Ico.bell,"UDT/Tags":Ico=>Ico.box,"Trend":Ico=>Ico.chart,"Rapport":Ico=>Ico.report,"OPC":Ico=>Ico.plug,"SQL":Ico=>Ico.db,"Behörighet":Ico=>Ico.shield,"Övrigt":Ico=>Ico.dots};
 function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
@@ -525,10 +594,15 @@ function App(){
   const configured = !SUPABASE_URL.includes("DITT-PROJEKT") && !SUPABASE_KEY.includes("DIN-ANON");
   const [token, setToken] = useState(null);
   const [user, setUser] = useState("");
+  const [name, setName] = useState("");
 
   if (!configured) return (<div className="wrap"><div className="banner err" style={{marginTop:40}}>Inte konfigurerad. Öppna filen i en texteditor och fyll i <b>SUPABASE_URL</b> och <b>SUPABASE_KEY</b> högst upp (rad ~12).</div></div>);
-  if (!token) return <Login onLogin={(t,u)=>{setToken(t); setUser(u);}} />;
-  return <KB token={token} user={user} onLogout={()=>{setToken(null); setUser("");}} />;
+  if (!token) return <Login onLogin={(t,u,n)=>{setToken(t); setUser(u); setName(n||"");}} />;
+  return <KB token={token} user={user} name={name} onName={setName} onLogout={()=>{setToken(null); setUser(""); setName("");}} />;
+}
+
+function metaName(d){
+  try{ const m=d.user.user_metadata||{}; return m.full_name||m.name||m.display_name||""; }catch(e){ return ""; }
 }
 
 function Login({onLogin}){
@@ -537,7 +611,7 @@ function Login({onLogin}){
   async function submit(){
     if(!email||!pw) return;
     setBusy(true); setErr("");
-    try{ const d = await signIn(email.trim(), pw); onLogin(d.access_token, (d.user&&d.user.email)||email); }
+    try{ const d = await signIn(email.trim(), pw); onLogin(d.access_token, (d.user&&d.user.email)||email, metaName(d)); }
     catch(e){ setErr(e.message); }
     setBusy(false);
   }
@@ -561,7 +635,8 @@ function Login({onLogin}){
   );
 }
 
-function KB({token, user, onLogout}){
+function KB({token, user, name, onName, onLogout}){
+  const display = (name && name.trim()) ? name.trim() : (user||"").split("@")[0];
   const [entries,setEntries]=useState([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(null);
@@ -574,6 +649,7 @@ function KB({token, user, onLogout}){
   const [showUsers,setShowUsers]=useState(false);
   const [editing,setEditing]=useState(null);
   const [copiedId,setCopiedId]=useState(null);
+  const [detail,setDetail]=useState(null);
   const [toast,setToast]=useState("");
   const fileRef=useRef(null);
 
@@ -668,17 +744,27 @@ function KB({token, user, onLogout}){
     <div className="app">
       <Nav active={activeView} onNav={v=>setActiveView(v)} onUsers={()=>setShowUsers(true)}
         counts={{bibliotek:entries.length,kod:codeCount,anteckningar:noteCount}}
-        user={user} onLogout={onLogout} onExport={exportData} onImport={()=>fileRef.current.click()} busy={busy} />
+        user={display} onLogout={onLogout} onExport={exportData} onImport={()=>fileRef.current.click()} busy={busy} />
       <input ref={fileRef} type="file" accept="application/json" onChange={importData} style={{display:"none"}} />
 
       <main className="main">
+        <div className="topbar">
+          <div className="topbar-user">{Ico.users}<span className="topbar-email">{display}</span></div>
+          <div className="topbar-actions">
+            <button className="hbtn" title="Exportera (backup)" onClick={exportData}>{Ico.down}</button>
+            <button className="hbtn" title="Importera" onClick={()=>fileRef.current.click()}>{Ico.up}</button>
+            <button className="hbtn" title="Logga ut" onClick={onLogout}>{Ico.out}</button>
+          </div>
+        </div>
         {error && <div className="banner err">{error}</div>}
 
         {activeView==="oversikt" ? (
           <Dashboard entries={entries} sysCounts={sysCounts} topicCounts={topicCounts}
-            codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading}
+            codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading} user={display}
             onOpenLibrary={cat=>{setActiveCat(cat||"Alla");setActiveSystem("Alla");setSearch("");setActiveView("bibliotek");}}
-            onAdd={()=>setEditing({})} loadExamples={loadExamples} />
+            onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
+            onTag={t=>{setSearch(t);setActiveView("bibliotek");}}
+            onOpen={e=>setDetail(e)} loadExamples={loadExamples} />
         ) : (
           <>
             <div className="page-head">
@@ -730,17 +816,17 @@ function KB({token, user, onLogout}){
               </div>
             ) : (
               <div className="cards">
-                {viewList.map(e=><EntryCard key={e.id} entry={e} copied={copiedId===e.id} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} onPin={()=>togglePin(e)} onTag={t=>{setSearch(t);}} />)}
+                {viewList.map(e=><EntryCard key={e.id} entry={e} copied={copiedId===e.id} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} onPin={()=>togglePin(e)} onTag={t=>{setSearch(t);}} onOpen={()=>setDetail(e)} />)}
               </div>
             )}
           </>
         )}
       </main>
 
-      <button className="fab" onClick={()=>setEditing({})}>{Ico.plus}</button>
       {toast && <div className="toast">{toast}</div>}
       {editing!==null && <EntryForm initial={editing} busy={busy} onSave={saveEntry} onClose={()=>setEditing(null)} />}
-      {showUsers && <UserModal token={token} user={user} onClose={()=>setShowUsers(false)} />}
+      {detail && <DetailModal entry={detail} entries={entries} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);setSearch(t);setActiveView("bibliotek");}} />}
+      {showUsers && <UserModal token={token} user={user} name={name} onName={onName} onClose={()=>setShowUsers(false)} />}
     </div>
   );
 }
@@ -763,11 +849,6 @@ function Nav({active,onNav,onUsers,counts,user,onLogout,onExport,onImport,busy})
       </div>
       <div className="nav-foot">
         <div className="nav-user"><span className="nav-ic" style={{color:"var(--accent)"}}>{Ico.users}</span><span className="nav-email" title={user}>{user}</span></div>
-        <div className="nav-footbtns">
-          <button className="hbtn" title="Exportera" onClick={onExport}>{Ico.down}</button>
-          <button className="hbtn" title="Importera" onClick={onImport}>{Ico.up}</button>
-          <button className="hbtn" title="Logga ut" onClick={onLogout}>{Ico.out}</button>
-        </div>
       </div>
     </nav>
   );
@@ -786,7 +867,31 @@ function MiniRow({entry,onClick}){
     {entry.pinned&&<span className="mini-pin" style={{color:"var(--accent)"}}>{Ico.pin}</span>}
     <span className="mini-badge" style={{color,background:color+"22"}}>{entry.category}</span></button>;
 }
-function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCount,loading,onOpenLibrary,onAdd,loadExamples}){
+function ActivityChart({entries}){
+  const days=30;
+  const today=new Date(); today.setHours(23,59,59,999);
+  const buckets=new Array(days).fill(0);
+  entries.forEach(e=>{
+    if(!e.updated_at) return;
+    const d=new Date(e.updated_at);
+    if(isNaN(d)) return;
+    const diff=Math.floor((today-d)/86400000);
+    if(diff>=0 && diff<days) buckets[days-1-diff]++;
+  });
+  const max=Math.max(1,...buckets);
+  const total=buckets.reduce((a,b)=>a+b,0);
+  return (
+    <div className="panel">
+      <div className="panel-h">{Ico.chart} Aktivitet senaste 30 dagarna<span className="actcnt">{total} ändringar</span></div>
+      <div className="actchart">
+        {buckets.map((v,i)=><div key={i} className="actbar" title={v+" ändringar"}><div className="actbar-fill" style={{height:Math.max(3,Math.round(v/max*100))+"%",opacity:v?1:.22}}></div></div>)}
+      </div>
+      <div className="actaxis"><span>30 dgr sedan</span><span>idag</span></div>
+    </div>
+  );
+}
+
+function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCount,loading,user,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
   if(loading) return <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>;
   if(entries.length===0) return (
     <div className="empty">
@@ -801,11 +906,19 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
   const total=entries.length||1;
   const recent=entries.slice().sort((a,b)=>(b.updated_at||"").localeCompare(a.updated_at||"")).slice(0,5);
   const pinned=entries.filter(e=>e.pinned).slice(0,5);
+  const tagFreq={}; entries.forEach(e=>(e.tags||[]).forEach(t=>tagFreq[t]=(tagFreq[t]||0)+1));
+  const popTags=Object.keys(tagFreq).sort((a,b)=>tagFreq[b]-tagFreq[a]).slice(0,12);
+  const namn=(user||"").split("@")[0];
+  const h=new Date().getHours();
+  const halsning=h<10?"God morgon":h<17?"Hej":"God kväll";
   return (
     <div>
-      <div className="page-head">
-        <div><h2 className="page-title">Översikt</h2><p className="page-sub">Status och genvägar</p></div>
-        <button className="btn-amber addbtn" onClick={onAdd}>{Ico.add} Ny post</button>
+      <div className="welcome">
+        <div><h2 className="page-title">{halsning}{namn?", "+namn:""} 👋</h2><p className="page-sub">Din kunskapsbas för PLC &amp; SCADA</p></div>
+        <div className="quickadd">
+          <button className="qbtn" onClick={()=>onQuickAdd(true)}><span style={{color:"#a78bfa"}}>{Ico.terminal}</span> Ny kod</button>
+          <button className="qbtn" onClick={()=>onQuickAdd(false)}><span style={{color:"#60a5fa"}}>{Ico.note}</span> Ny anteckning</button>
+        </div>
       </div>
       <div className="tiles">
         <Tile icon={Ico.book} label="Totalt" value={entries.length} color="#f5a524" onClick={()=>onOpenLibrary()} />
@@ -813,6 +926,7 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
         <Tile icon={Ico.note} label="Anteckningar" value={noteCount} color="#60a5fa" onClick={()=>onOpenLibrary()} />
         <Tile icon={Ico.pin} label="Favoriter" value={pinnedCount} color="#34d399" onClick={()=>onOpenLibrary()} />
       </div>
+      <ActivityChart entries={entries} />
       <div className="dash-grid">
         <div className="panel">
           <div className="panel-h">{Ico.layers} System</div>
@@ -837,8 +951,59 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
           </div>
         </div>
       </div>
-      {pinned.length>0 && <div className="panel"><div className="panel-h">{Ico.pin} Favoriter</div>{pinned.map(e=><MiniRow key={e.id} entry={e} onClick={()=>onOpenLibrary(e.category)} />)}</div>}
-      <div className="panel"><div className="panel-h">{Ico.report} Senaste</div>{recent.map(e=><MiniRow key={e.id} entry={e} onClick={()=>onOpenLibrary(e.category)} />)}</div>
+      {popTags.length>0 && <div className="panel"><div className="panel-h">{Ico.layers} Populäraste taggar</div>
+        <div className="tagcloud">{popTags.map(t=><button key={t} className="cloudtag" onClick={()=>onTag(t)}>#{t}<span className="cloudcnt">{tagFreq[t]}</span></button>)}</div></div>}
+      {pinned.length>0 && <div className="panel"><div className="panel-h">{Ico.pin} Favoriter</div>{pinned.map(e=><MiniRow key={e.id} entry={e} onClick={()=>onOpen(e)} />)}</div>}
+      <div className="panel"><div className="panel-h">{Ico.clock} Senast redigerade</div>{recent.map(e=><MiniRow key={e.id} entry={e} onClick={()=>onOpen(e)} />)}</div>
+    </div>
+  );
+}
+
+function DetailModal({entry,entries,onClose,onOpen,onEdit,onTag}){
+  const color=CAT_COLOR[entry.category]||"#94a3b8";
+  const sys=entry.system||"Ignition";
+  const sysColor=SYS_COLOR[sys]||"#94a3b8";
+  const tags=entry.tags||[];
+  const [copied,setCopied]=useState(false);
+  function copy(){ navigator.clipboard&&navigator.clipboard.writeText(entry.content); setCopied(true); setTimeout(()=>setCopied(false),1500); }
+  const related=entries.filter(e=>e.id!==entry.id).map(e=>{
+    let score=0;
+    if(e.category===entry.category) score+=2;
+    if((e.system||"Ignition")===sys) score+=1;
+    score+=(e.tags||[]).filter(t=>tags.indexOf(t)>=0).length*2;
+    return {e,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.e);
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal detail" onClick={e=>e.stopPropagation()}>
+        <div className="modal-head">
+          <div className="crumbs"><span style={{color:sysColor}}>{sys}</span>{Ico.chevR}<span style={{color}}>{entry.category}</span></div>
+          <button className="x" onClick={onClose}>{Ico.x}</button>
+        </div>
+        <div className="modal-body">
+          <h2 className="detail-title">{entry.title}</h2>
+          <div className="detail-meta">
+            <span className={"typechip "+(entry.is_code?"is-code":"is-note")}>{entry.is_code?Ico.code:Ico.note}{entry.is_code?"kod":"text"}</span>
+            <span className="detail-date">{Ico.clock} uppdaterad {fmtDate(entry.updated_at)}</span>
+          </div>
+          {tags.length>0&&<div className="tags">{tags.map(t=><button key={t} className="tag" onClick={()=>onTag&&onTag(t)}>#{t}</button>)}</div>}
+          {entry.is_code ? (
+            <div className="code-wrap">
+              <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span>
+                <button className="code-copy" onClick={copy}>{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
+              <CodeBlock code={entry.content} />
+            </div>
+          ) : <p className="note" style={{padding:"6px 0"}}>{entry.content}</p>}
+          {related.length>0 && <div className="related">
+            <div className="related-h">{Ico.link} Relaterade poster</div>
+            {related.map(r=><MiniRow key={r.id} entry={r} onClick={()=>onOpen(r)} />)}
+          </div>}
+        </div>
+        <div className="modal-foot">
+          <button className="foot-btn foot-cancel" onClick={onClose}>Stäng</button>
+          <button className="foot-btn foot-save" onClick={()=>onEdit(entry)}>{Ico.edit} Redigera</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -848,7 +1013,15 @@ function Chip({label,active,color,count,onClick}){
     <span className="cdot" style={{background:color}}></span>{label}{count>0&&<span className="cnt">{count}</span>}</button>);
 }
 
-function EntryCard({entry,copied,onCopy,onEdit,onDelete,onPin,onTag}){
+function fmtDate(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleDateString("sv-SE",{year:"numeric",month:"short",day:"numeric"}); }catch(e){ return ""; } }
+function CodeBlock({code}){
+  let html=null;
+  try{ if(window.hljs) html=window.hljs.highlightAuto(code,["python","sql","json","javascript","bash","xml"]).value; }catch(e){}
+  if(html!=null) return <pre className="code"><code className="hljs" dangerouslySetInnerHTML={{__html:html}} /></pre>;
+  return <pre className="code">{code}</pre>;
+}
+
+function EntryCard({entry,copied,onCopy,onEdit,onDelete,onPin,onTag,onOpen}){
   const [confirm,setConfirm]=useState(false);
   const [exp,setExp]=useState(false);
   const color=CAT_COLOR[entry.category]||"#94a3b8";
@@ -858,13 +1031,14 @@ function EntryCard({entry,copied,onCopy,onEdit,onDelete,onPin,onTag}){
   const lines=(entry.content||"").split("\n");
   const long=lines.length>16;
   const shown=exp||!long?entry.content:lines.slice(0,16).join("\n");
+  const codeText=shown+(!exp&&long?"\n…":"");
   return (
     <div className={"card"+(entry.pinned?" pinned":"")} style={{"--cat":color}}>
       <div className="card-head">
         <span className="card-dot" style={{background:color}}></span>
         <div style={{minWidth:0,flex:1}}>
           <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <span className="card-title">{entry.title}</span>
+            <button className="card-title" onClick={()=>onOpen&&onOpen(entry)}>{entry.title}</button>
             <span className="systag" style={{color:sysColor,borderColor:sysColor+"55"}}>{sys}</span>
             <span className="badge" style={{background:color+"22",color}}>{entry.category}</span>
             <span className={"typechip "+(entry.is_code?"is-code":"is-note")}>{entry.is_code?Ico.code:Ico.note}{entry.is_code?"kod":"text"}</span>
@@ -880,11 +1054,13 @@ function EntryCard({entry,copied,onCopy,onEdit,onDelete,onPin,onTag}){
       </div>
       {entry.is_code ? (
         <div className="code-wrap">
-          <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span></div>
-          <pre className="code">{shown}{!exp&&long?"\n…":""}</pre>
+          <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span>
+            <button className="code-copy" onClick={onCopy} title="Kopiera kod">{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
+          <CodeBlock code={codeText} />
         </div>
       ) : <p className="note">{shown}{!exp&&long?" …":""}</p>}
       {long && <button className="more" onClick={()=>setExp(!exp)}>{exp?<>{Ico.chevU} Visa mindre</>:<>{Ico.chevD} Visa mer</>}</button>}
+      <div className="card-foot">{Ico.clock}<span>uppdaterad {fmtDate(entry.updated_at)}</span></div>
       {confirm && (<div className="confirm"><span className="msg">{Ico.alert} Ta bort permanent?</span>
         <div style={{display:"flex",gap:8}}><button className="btn-cancel" onClick={()=>setConfirm(false)}>Avbryt</button>
         <button className="btn-del" onClick={onDelete}>Ta bort</button></div></div>)}
@@ -932,9 +1108,17 @@ function EntryForm({initial,busy,onSave,onClose}){
   );
 }
 
-function UserModal({token,user,onClose}){
+function UserModal({token,user,name,onName,onClose}){
   const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
   const [busy,setBusy]=useState(false); const [msg,setMsg]=useState(null); const [need,setNeed]=useState(false);
+  const [myName,setMyName]=useState(name||""); const [nameBusy,setNameBusy]=useState(false); const [nameMsg,setNameMsg]=useState("");
+  async function saveName(){
+    setNameBusy(true); setNameMsg("");
+    try{ await updateMyName(token, myName.trim()); onName&&onName(myName.trim()); setNameMsg("Sparat ✓"); }
+    catch(e){ setNameMsg("Kunde inte spara: "+e.message); }
+    setNameBusy(false);
+    setTimeout(()=>setNameMsg(""),2500);
+  }
   async function create(){
     if(!email||!pw) return;
     setBusy(true); setMsg(null); setNeed(false);
@@ -951,9 +1135,15 @@ function UserModal({token,user,onClose}){
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e=>e.stopPropagation()}>
-        <div className="modal-head"><h2>Användare</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
+        <div className="modal-head"><h2>Konto &amp; användare</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
         <div className="modal-body">
-          <div className="useryou">{Ico.users}<div><div style={{color:"#e6edf3",fontSize:13}}>{user}</div><div style={{color:"var(--dim)",fontSize:11}}>inloggad just nu</div></div></div>
+          <div className="useryou">{Ico.users}<div><div style={{color:"#e6edf3",fontSize:13}}>{(name&&name.trim())||user}</div><div style={{color:"var(--dim)",fontSize:11}}>{user}</div></div></div>
+          <label className="field"><span className="lbl">Ditt namn (visas i appen)</span>
+            <div style={{display:"flex",gap:8}}>
+              <input value={myName} onChange={e=>setMyName(e.target.value)} placeholder="t.ex. Mohamad" />
+              <button className="btn-amber" style={{flexShrink:0,padding:"0 16px"}} disabled={nameBusy||!myName.trim()} onClick={saveName}>{nameBusy?"…":"Spara"}</button>
+            </div></label>
+          {nameMsg && <div style={{color:nameMsg.indexOf("Kunde")===0?"#fca5a5":"#6ee7b7",fontSize:12,marginTop:-8}}>{nameMsg}</div>}
           <div className="udivider">Bjud in en kollega</div>
           {msg && <div className={"banner"+(msg.ok?"":" err")} style={{margin:0,background:msg.ok?"rgba(52,211,153,.1)":undefined,border:msg.ok?"1px solid rgba(52,211,153,.3)":undefined,color:msg.ok?"#6ee7b7":undefined}}>{msg.text}</div>}
           {need && <div className="banner err" style={{margin:0}}>Funktionen för att skapa användare är inte aktiverad än. Det kräver en liten serverfunktion (av säkerhetsskäl kan inte appen skapa konton själv). Se guiden "Aktivera anvandarpanel" — tills dess skapar du konton i Supabase → Authentication → Users.</div>}
