@@ -28,7 +28,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--bg:#080b10;--panel:#10151d;--panel2:#0c1118;--code:#0a0f16;--line:rgba(255,255,255,.07);--line-strong:rgba(255,255,255,.13);--line2:#161c26;--txt:#e6edf3;--muted:#9aa7b5;--dim:#64717f;--accent:#f5a524;--accent-soft:rgba(245,165,36,.13);--ok:#34d399;--danger:#f87171;--mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;}
+  :root{--bg:#080b10;--panel:#10151d;--panel2:#0c1118;--code:#0a0f16;--line:rgba(255,255,255,.07);--line-strong:rgba(255,255,255,.13);--line2:#161c26;--txt:#e6edf3;--txt2:#cbd5e1;--muted:#9aa7b5;--dim:#64717f;--accent:#f5a524;--accent-soft:rgba(245,165,36,.13);--ok:#34d399;--danger:#f87171;--mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;--surface:linear-gradient(180deg,#11161f,#0d121a);--surface2:linear-gradient(180deg,#0c1118,#080b10);--glass:rgba(16,21,29,.66);--glow:rgba(245,165,36,.07);}
+  body.light{--bg:#eef1f6;--panel:#ffffff;--panel2:#ffffff;--line:rgba(15,23,42,.10);--line-strong:rgba(15,23,42,.17);--line2:#eef1f5;--txt:#0f172a;--txt2:#33415a;--muted:#52617a;--dim:#8492a6;--accent-soft:rgba(245,165,36,.16);--surface:linear-gradient(180deg,#ffffff,#f6f8fc);--surface2:linear-gradient(180deg,#ffffff,#f1f4f9);--glass:rgba(255,255,255,.72);--glow:rgba(245,165,36,.10);}
   *{box-sizing:border-box;}
   body{margin:0;color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased;background:radial-gradient(1100px 480px at 50% -8%,rgba(245,165,36,.07),transparent 62%),radial-gradient(900px 600px at 100% 0%,rgba(34,211,238,.04),transparent 60%),var(--bg);background-attachment:fixed;}
   .grid-bg{position:fixed;inset:0;pointer-events:none;opacity:.035;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:34px 34px;-webkit-mask-image:radial-gradient(circle at 50% 0%,#000,transparent 75%);mask-image:radial-gradient(circle at 50% 0%,#000,transparent 75%);}
@@ -52,17 +53,17 @@
   .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:14px;}
   .chips::-webkit-scrollbar{display:none;}
   .chip{flex-shrink:0;padding:8px 13px;border-radius:10px;font-size:12px;font-family:var(--mono);font-weight:500;cursor:pointer;background:var(--panel);border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;gap:7px;white-space:nowrap;transition:all .15s;}
-  .chip:hover{border-color:var(--line-strong);color:#cbd5e1;}
+  .chip:hover{border-color:var(--line-strong);color:var(--txt2);}
   .chip .cdot{width:7px;height:7px;border-radius:50%;opacity:.55;}
   .chip.active{background:var(--accent-soft);color:#fff;border-color:rgba(245,165,36,.5);}
   .chip.active .cdot{opacity:1;box-shadow:0 0 7px currentColor;}
   .chip .cnt{color:var(--dim);}
-  .card{position:relative;background:linear-gradient(180deg,#11161f,#0d121a);border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-bottom:14px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;animation:fadeUp .45s ease both;}
+  .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-bottom:14px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;animation:fadeUp .45s ease both;}
   .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cat,#94a3b8);box-shadow:0 0 12px -2px var(--cat,#94a3b8);}
   .card:hover{transform:translateY(-2px);border-color:var(--line-strong);box-shadow:0 18px 38px -18px rgba(0,0,0,.7);}
   .card-head{padding:15px 16px 9px 18px;display:flex;align-items:flex-start;gap:12px;}
   .card-dot{margin-top:6px;width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor;}
-  .card-title{font-weight:600;font-size:14.5px;color:#f1f5f9;word-break:break-word;line-height:1.35;}
+  .card-title{font-weight:600;font-size:14.5px;color:var(--txt);word-break:break-word;line-height:1.35;}
   .badge{font-size:9.5px;padding:3px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em;font-family:var(--mono);font-weight:600;}
   .tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px;}
   .tag{font-size:11px;color:var(--muted);font-family:var(--mono);opacity:.85;}
@@ -78,7 +79,7 @@
   pre.code{margin:0;padding:14px;background:transparent;border:none;font-family:var(--mono);font-size:12px;color:#cbd5e1;overflow-x:auto;line-height:1.65;white-space:pre;}
   pre.code::-webkit-scrollbar{height:8px;}
   pre.code::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px;}
-  p.note{padding:5px 18px 10px;font-size:14px;color:#c8d2dc;white-space:pre-wrap;line-height:1.65;margin:0;}
+  p.note{padding:5px 18px 10px;font-size:14px;color:var(--txt2);white-space:pre-wrap;line-height:1.65;margin:0;}
   .more{margin:0 18px 15px;background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:color .15s;}
   .more:hover{color:#fff;}
   .confirm{padding:11px 16px 11px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;background:rgba(248,113,113,.07);border-top:1px solid rgba(248,113,113,.2);}
@@ -95,9 +96,9 @@
   .btn-amber:hover{transform:translateY(-1px);}
   .overlay{position:fixed;inset:0;z-index:50;background:rgba(4,7,11,.72);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);display:flex;align-items:flex-end;justify-content:center;animation:fadeUp .2s ease both;}
   @media(min-width:640px){.overlay{align-items:center;padding:16px;}}
-  .modal{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:linear-gradient(180deg,#11161f,#0c1118);border:1px solid var(--line-strong);border-radius:22px 22px 0 0;box-shadow:0 -24px 60px rgba(0,0,0,.55);animation:popIn .3s ease both;}
+  .modal{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--line-strong);border-radius:22px 22px 0 0;box-shadow:0 -24px 60px rgba(0,0,0,.55);animation:popIn .3s ease both;}
   @media(min-width:640px){.modal{border-radius:22px;}}
-  .modal-head,.modal-foot{position:sticky;background:rgba(17,22,31,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:15px 20px;z-index:2;display:flex;align-items:center;}
+  .modal-head,.modal-foot{position:sticky;background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:15px 20px;z-index:2;display:flex;align-items:center;}
   .modal-head{top:0;justify-content:space-between;border-bottom:1px solid var(--line);}
   .modal-head h2{font-family:var(--mono);font-size:14px;margin:0;}
   .modal-foot{bottom:0;gap:12px;border-top:1px solid var(--line);}
@@ -113,7 +114,7 @@
   textarea{resize:vertical;}
   .foot-btn{flex:1;padding:12px;border-radius:11px;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s;}
   .foot-btn:active{transform:scale(.98);}
-  .foot-cancel{background:var(--line2);color:#cbd5e1;}
+  .foot-cancel{background:var(--line2);color:var(--txt2);}
   .foot-save{background:linear-gradient(180deg,#f7b73a,#f59e0b);color:#1a1206;font-weight:600;}
   .foot-save:disabled{opacity:.4;cursor:not-allowed;}
   .banner{margin:16px 0;padding:14px 16px;border-radius:12px;font-size:13px;line-height:1.5;}
@@ -125,7 +126,7 @@
   @keyframes popIn{from{opacity:0;transform:translateY(10px) scale(.985);}to{opacity:1;transform:none;}}
   /* Login */
   .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;}
-  .login-card{position:relative;width:100%;max-width:392px;background:linear-gradient(180deg,#11161f,#0c1118);border:1px solid var(--line-strong);border-radius:22px;padding:36px 30px;box-shadow:0 40px 90px -40px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.02);overflow:hidden;animation:popIn .4s ease both;}
+  .login-card{position:relative;width:100%;max-width:392px;background:var(--surface);border:1px solid var(--line-strong);border-radius:22px;padding:36px 30px;box-shadow:0 40px 90px -40px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.02);overflow:hidden;animation:popIn .4s ease both;}
   .login-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.8;}
   .login-card::after{content:"";position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:280px;height:280px;background:radial-gradient(circle,rgba(245,165,36,.12),transparent 65%);pointer-events:none;}
   .login-logo{position:relative;width:52px;height:52px;border-radius:14px;background:linear-gradient(140deg,#1b2330,#10151d);border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:22px;box-shadow:0 12px 28px -10px rgba(245,165,36,.45);}
@@ -137,7 +138,7 @@
   .systabs{display:flex;gap:7px;overflow-x:auto;margin:2px 0 14px;padding-bottom:2px;}
   .systabs::-webkit-scrollbar{display:none;}
   .systab{flex-shrink:0;display:flex;align-items:center;gap:7px;padding:9px 15px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-family:var(--mono);font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .15s;}
-  .systab:hover{border-color:var(--line-strong);color:#cbd5e1;}
+  .systab:hover{border-color:var(--line-strong);color:var(--txt2);}
   .systab.active{color:#fff;border-color:var(--sys,var(--accent));background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);box-shadow:0 0 0 1px var(--sys,var(--accent)),0 8px 22px -12px var(--sys,var(--accent));}
   .sysdot{width:8px;height:8px;border-radius:50%;box-shadow:0 0 8px currentColor;}
   .syscnt{font-size:10px;padding:1px 7px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--muted);}
@@ -162,13 +163,13 @@
   /* App shell */
   .app{display:flex;min-height:100vh;}
   .main{flex:1;min-width:0;max-width:1000px;margin:0 auto;padding:26px 26px 120px;width:100%;}
-  .nav{position:fixed;top:0;left:0;bottom:0;width:248px;background:linear-gradient(180deg,#0c1118,#080b10);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;z-index:30;}
+  .nav{position:fixed;top:0;left:0;bottom:0;width:248px;background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;z-index:30;}
   .nav-brand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px;}
   .nav-brandtxt .nav-title{font-family:var(--mono);font-size:17px;font-weight:600;}
   .nav-brandtxt .nav-sub{font-size:11px;color:var(--dim);}
   .nav-items{display:flex;flex-direction:column;gap:4px;}
   .nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:11px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer;font-size:13.5px;font-family:var(--sans);text-align:left;transition:all .15s;}
-  .nav-item:hover{background:var(--panel);color:#e6edf3;}
+  .nav-item:hover{background:var(--panel);color:var(--txt);}
   .nav-item.active{background:var(--accent-soft);color:#fff;border-color:rgba(245,165,36,.3);}
   .nav-ic{display:flex;color:var(--dim);}
   .nav-item.active .nav-ic,.nav-item:hover .nav-ic{color:inherit;}
@@ -181,7 +182,7 @@
   .nav-footbtns{display:flex;gap:6px;margin-top:8px;}
   @media(min-width:861px){.main{margin-left:248px;}.fab{display:none;}}
   @media(max-width:860px){
-    .nav{top:auto;width:100%;height:66px;flex-direction:row;border-right:none;border-top:1px solid var(--line);padding:0;background:rgba(12,17,24,.96);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+    .nav{top:auto;width:100%;height:66px;flex-direction:row;border-right:none;border-top:1px solid var(--line);padding:0;background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
     .nav-brand,.nav-foot{display:none;}
     .nav-items{flex-direction:row;flex:1;gap:0;}
     .nav-item{flex:1;flex-direction:column;gap:3px;padding:9px 2px;border-radius:0;font-size:10px;justify-content:center;border:none;}
@@ -197,7 +198,7 @@
   .addbtn{flex-shrink:0;}
   .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
   @media(max-width:640px){.tiles{grid-template-columns:repeat(2,1fr);}}
-  .tile{position:relative;text-align:left;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:15px;border:1px solid var(--line);background:linear-gradient(180deg,#11161f,#0d121a);cursor:pointer;overflow:hidden;transition:transform .15s,border-color .15s;}
+  .tile{position:relative;text-align:left;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:15px;border:1px solid var(--line);background:var(--surface);cursor:pointer;overflow:hidden;transition:transform .15s,border-color .15s;}
   .tile::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:var(--c);opacity:.6;}
   .tile:hover{transform:translateY(-2px);border-color:var(--line-strong);}
   .tile-ic{display:flex;}
@@ -205,12 +206,12 @@
   .tile-lbl{font-size:12px;color:var(--dim);}
   .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0;}
   @media(max-width:760px){.dash-grid{grid-template-columns:1fr;}}
-  .panel{background:linear-gradient(180deg,#11161f,#0d121a);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:14px;}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:14px;}
   .panel-h{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
   .panel-h svg{color:var(--dim);}
   .bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;}
   .bar-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor;}
-  .bar-label{width:64px;font-size:13px;color:#cbd5e1;}
+  .bar-label{width:64px;font-size:13px;color:var(--txt2);}
   .bar-track{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.05);overflow:hidden;}
   .bar-fill{height:100%;border-radius:5px;transition:width .5s ease;}
   .bar-num{font-family:var(--mono);font-size:13px;color:var(--muted);width:28px;text-align:right;}
@@ -218,13 +219,13 @@
   .topic-card{display:flex;align-items:center;gap:9px;padding:11px;border-radius:11px;border:1px solid var(--line);background:var(--code);cursor:pointer;transition:all .15s;}
   .topic-card:hover{border-color:var(--cat);transform:translateY(-1px);}
   .topic-ic{display:flex;}
-  .topic-name{flex:1;font-size:13px;color:#cbd5e1;}
+  .topic-name{flex:1;font-size:13px;color:var(--txt2);}
   .topic-cnt{font-family:var(--mono);font-size:12px;color:var(--dim);}
   .minirow{display:flex;align-items:center;gap:11px;width:100%;padding:9px 6px;border:none;border-bottom:1px solid var(--line);background:none;cursor:pointer;text-align:left;}
   .minirow:last-child{border-bottom:none;}
   .minirow:hover .mini-title{color:#fff;}
   .mini-ic{display:flex;flex-shrink:0;}
-  .mini-title{flex:1;font-size:13px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mini-title{flex:1;font-size:13px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .mini-pin{display:flex;}
   .mini-badge{font-size:9.5px;padding:2px 7px;border-radius:6px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;}
   .cards{display:flex;flex-direction:column;}
@@ -245,7 +246,7 @@
   .code-copy:hover{color:var(--accent);}
   .code-copy svg{width:12px;height:12px;}
   /* Card title button + foot */
-  button.card-title{background:none;border:none;padding:0;text-align:left;cursor:pointer;font-weight:600;font-size:14.5px;color:#f1f5f9;line-height:1.35;font-family:var(--sans);transition:color .15s;}
+  button.card-title{background:none;border:none;padding:0;text-align:left;cursor:pointer;font-weight:600;font-size:14.5px;color:var(--txt);line-height:1.35;font-family:var(--sans);transition:color .15s;}
   button.card-title:hover{color:var(--accent);}
   .card-foot{display:flex;align-items:center;gap:6px;padding:0 16px 12px 18px;color:var(--dim);font-size:11px;font-family:var(--mono);}
   .card-foot svg{width:12px;height:12px;}
@@ -263,7 +264,7 @@
   /* Dashboard welcome + quick add */
   .welcome{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
   .quickadd{display:flex;gap:8px;}
-  .qbtn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(180deg,#11161f,#0d121a);color:#e6edf3;font-size:13px;font-family:var(--sans);cursor:pointer;transition:transform .15s,border-color .15s;}
+  .qbtn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--txt);font-size:13px;font-family:var(--sans);cursor:pointer;transition:transform .15s,border-color .15s;}
   .qbtn:hover{transform:translateY(-1px);border-color:var(--line-strong);}
   .qbtn svg{width:16px;height:16px;}
   /* Tag cloud */
@@ -278,6 +279,25 @@
   .actcnt{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim);}
   .actaxis{display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--dim);font-family:var(--mono);}
   @media(max-width:560px){.quickadd{width:100%;}.qbtn{flex:1;justify-content:center;}}
+  /* Theme toggle on login */
+  .login-theme{position:absolute;top:18px;right:18px;}
+  /* Split code + description */
+  .splitfields{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:680px){.splitfields{grid-template-columns:1fr;}}
+  .lbl-opt{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;}
+  .lbl svg{width:13px;height:13px;vertical-align:-2px;margin-right:4px;opacity:.7;}
+  /* Description above code */
+  .note.desc{margin:2px 16px 10px 18px;padding:1px 0 1px 12px;border-left:2px solid var(--accent);color:var(--muted);font-size:13px;line-height:1.6;}
+  /* Breadcrumbs */
+  .page-crumbs{margin-bottom:9px;}
+  /* Bigger icons + depth */
+  .nav-ic svg{width:19px;height:19px;}
+  .tile-ic svg{width:20px;height:20px;}
+  .panel-h svg{width:15px;height:15px;}
+  .card{box-shadow:0 2px 10px rgba(0,0,0,.16);}
+  body.light .card,body.light .tile,body.light .panel{box-shadow:0 2px 14px rgba(15,23,42,.06);}
+  body.light .login-card{box-shadow:0 30px 70px -30px rgba(15,23,42,.25);}
+  body.light .grid-bg{opacity:.04;background-image:linear-gradient(rgba(15,23,42,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.6) 1px,transparent 1px);}
 </style>
 </head>
 <body>
@@ -586,6 +606,8 @@ const Ico={
   clock:<I size={13} d={<><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>} />,
   chevR:<I size={13} d={<path d="m9 18 6-6-6-6"/>} />,
   link:<I size={15} d={<><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></>} />,
+  sun:<I size={16} d={<><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></>} />,
+  moon:<I size={16} d={<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>} />,
 };
 const TOPIC_ICON={"Scripting":Ico=>Ico.terminal,"Larm":Ico=>Ico.bell,"UDT/Tags":Ico=>Ico.box,"Trend":Ico=>Ico.chart,"Rapport":Ico=>Ico.report,"OPC":Ico=>Ico.plug,"SQL":Ico=>Ico.db,"Behörighet":Ico=>Ico.shield,"Övrigt":Ico=>Ico.dots};
 function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
@@ -595,17 +617,24 @@ function App(){
   const [token, setToken] = useState(null);
   const [user, setUser] = useState("");
   const [name, setName] = useState("");
+  const [theme, setTheme] = useState(()=>{ try{ return localStorage.getItem("scada-theme")||"dark"; }catch(e){ return "dark"; } });
+  useEffect(()=>{
+    document.body.classList.toggle("light", theme==="light");
+    try{ localStorage.setItem("scada-theme", theme); }catch(e){}
+    const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content", theme==="light"?"#eef1f6":"#080b10");
+  },[theme]);
+  const toggleTheme=()=>setTheme(t=>t==="light"?"dark":"light");
 
   if (!configured) return (<div className="wrap"><div className="banner err" style={{marginTop:40}}>Inte konfigurerad. Öppna filen i en texteditor och fyll i <b>SUPABASE_URL</b> och <b>SUPABASE_KEY</b> högst upp (rad ~12).</div></div>);
-  if (!token) return <Login onLogin={(t,u,n)=>{setToken(t); setUser(u); setName(n||"");}} />;
-  return <KB token={token} user={user} name={name} onName={setName} onLogout={()=>{setToken(null); setUser(""); setName("");}} />;
+  if (!token) return <Login onLogin={(t,u,n)=>{setToken(t); setUser(u); setName(n||"");}} theme={theme} onToggleTheme={toggleTheme} />;
+  return <KB token={token} user={user} name={name} onName={setName} theme={theme} onToggleTheme={toggleTheme} onLogout={()=>{setToken(null); setUser(""); setName("");}} />;
 }
 
 function metaName(d){
   try{ const m=d.user.user_metadata||{}; return m.full_name||m.name||m.display_name||""; }catch(e){ return ""; }
 }
 
-function Login({onLogin}){
+function Login({onLogin,theme,onToggleTheme}){
   const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
   const [err,setErr]=useState(""); const [busy,setBusy]=useState(false);
   async function submit(){
@@ -617,6 +646,7 @@ function Login({onLogin}){
   }
   return (
     <div className="login-wrap">
+      <button className="hbtn login-theme" onClick={onToggleTheme} title="Mörkt/ljust läge">{theme==="light"?Ico.moon:Ico.sun}</button>
       <div className="login-card">
         <div className="login-logo">{Ico.db}</div>
         <h1 style={{fontFamily:"var(--mono)"}}>SCADA·KB</h1>
@@ -635,7 +665,7 @@ function Login({onLogin}){
   );
 }
 
-function KB({token, user, name, onName, onLogout}){
+function KB({token, user, name, onName, theme, onToggleTheme, onLogout}){
   const display = (name && name.trim()) ? name.trim() : (user||"").split("@")[0];
   const [entries,setEntries]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -664,7 +694,7 @@ function KB({token, user, name, onName, onLogout}){
   }
   async function saveEntry(data){
     setBusy(true);
-    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,is_code:data.isCode,updated_at:new Date().toISOString()};
+    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,updated_at:new Date().toISOString()};
     try{
       if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
       else{ const n=await apiInsert(token,[{...row,pinned:false}]); setEntries([...n, ...entries]); }
@@ -683,7 +713,7 @@ function KB({token, user, name, onName, onLogout}){
   async function loadExamples(){
     setBusy(true);
     try{
-      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", pinned:false, updated_at:new Date().toISOString()}));
+      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", pinned:false, updated_at:new Date().toISOString()}));
       const inserted=await apiInsert(token,rows);
       setEntries([...inserted, ...entries]);
       flash("Laddade "+inserted.length+" exempelposter");
@@ -704,7 +734,7 @@ function KB({token, user, name, onName, onLogout}){
       try{
         const data=JSON.parse(e.target.result);
         if(!Array.isArray(data)) throw new Error();
-        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,pinned:!!d.pinned,updated_at:new Date().toISOString()}));
+        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,pinned:!!d.pinned,updated_at:new Date().toISOString()}));
         setBusy(true);
         const inserted=await apiInsert(token,rows);
         setEntries([...inserted, ...entries]);
@@ -751,6 +781,7 @@ function KB({token, user, name, onName, onLogout}){
         <div className="topbar">
           <div className="topbar-user">{Ico.users}<span className="topbar-email">{display}</span></div>
           <div className="topbar-actions">
+            <button className="hbtn" title="Mörkt/ljust läge" onClick={onToggleTheme}>{theme==="light"?Ico.moon:Ico.sun}</button>
             <button className="hbtn" title="Exportera (backup)" onClick={exportData}>{Ico.down}</button>
             <button className="hbtn" title="Importera" onClick={()=>fileRef.current.click()}>{Ico.up}</button>
             <button className="hbtn" title="Logga ut" onClick={onLogout}>{Ico.out}</button>
@@ -769,6 +800,7 @@ function KB({token, user, name, onName, onLogout}){
           <>
             <div className="page-head">
               <div>
+                <div className="crumbs page-crumbs"><span>SCADA·KB</span>{Ico.chevR}<span style={{color:"var(--txt)"}}>{activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek"}</span>{activeSystem!=="Alla"&&<>{Ico.chevR}<span style={{color:SYS_COLOR[activeSystem]}}>{activeSystem}</span></>}{activeCat!=="Alla"&&<>{Ico.chevR}<span style={{color:CAT_COLOR[activeCat]}}>{activeCat}</span></>}</div>
                 <h2 className="page-title">{activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek"}</h2>
                 <p className="page-sub">{activeView==="kod"?"Kodsnuttar och script":activeView==="anteckningar"?"Anteckningar och rutiner":"Alla poster i kunskapsbasen"}</p>
               </div>
@@ -811,7 +843,7 @@ function KB({token, user, name, onName, onLogout}){
                 <div>{entries.length>0?"Inga träffar här.":"Tom kunskapsbas. Ladda in exemplen, eller skapa en egen post."}</div>
                 {entries.length===0 && <div style={{marginTop:16,display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
                   <button className="btn-amber" onClick={loadExamples}>{Ico.down} Ladda exempelposter</button>
-                  <button className="btn-amber" style={{background:"var(--line2)",color:"#cbd5e1"}} onClick={()=>setEditing({})}>{Ico.add} Ny post</button>
+                  <button className="btn-amber" style={{background:"var(--line2)",color:"var(--txt2)"}} onClick={()=>setEditing({})}>{Ico.add} Ny post</button>
                 </div>}
               </div>
             ) : (
@@ -899,7 +931,7 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
       <div>Tom kunskapsbas. Ladda in exemplen vi gått igenom, eller skapa en egen post.</div>
       <div style={{marginTop:16,display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
         <button className="btn-amber" onClick={loadExamples}>{Ico.down} Ladda exempelposter</button>
-        <button className="btn-amber" style={{background:"var(--line2)",color:"#cbd5e1"}} onClick={onAdd}>{Ico.add} Ny post</button>
+        <button className="btn-amber" style={{background:"var(--line2)",color:"var(--txt2)"}} onClick={onAdd}>{Ico.add} Ny post</button>
       </div>
     </div>
   );
@@ -988,11 +1020,14 @@ function DetailModal({entry,entries,onClose,onOpen,onEdit,onTag}){
           </div>
           {tags.length>0&&<div className="tags">{tags.map(t=><button key={t} className="tag" onClick={()=>onTag&&onTag(t)}>#{t}</button>)}</div>}
           {entry.is_code ? (
-            <div className="code-wrap">
-              <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span>
-                <button className="code-copy" onClick={copy}>{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
-              <CodeBlock code={entry.content} />
-            </div>
+            <>
+              {entry.notes && entry.notes.trim() && <p className="note desc" style={{padding:"2px 0"}}>{entry.notes}</p>}
+              <div className="code-wrap">
+                <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span>
+                  <button className="code-copy" onClick={copy}>{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
+                <CodeBlock code={entry.content} />
+              </div>
+            </>
           ) : <p className="note" style={{padding:"6px 0"}}>{entry.content}</p>}
           {related.length>0 && <div className="related">
             <div className="related-h">{Ico.link} Relaterade poster</div>
@@ -1053,11 +1088,14 @@ function EntryCard({entry,copied,onCopy,onEdit,onDelete,onPin,onTag,onOpen}){
         </div>
       </div>
       {entry.is_code ? (
-        <div className="code-wrap">
-          <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span>
-            <button className="code-copy" onClick={onCopy} title="Kopiera kod">{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
-          <CodeBlock code={codeText} />
-        </div>
+        <>
+          {entry.notes && entry.notes.trim() && <p className="note desc">{entry.notes}</p>}
+          <div className="code-wrap">
+            <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span>
+              <button className="code-copy" onClick={onCopy} title="Kopiera kod">{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
+            <CodeBlock code={codeText} />
+          </div>
+        </>
       ) : <p className="note">{shown}{!exp&&long?" …":""}</p>}
       {long && <button className="more" onClick={()=>setExp(!exp)}>{exp?<>{Ico.chevU} Visa mindre</>:<>{Ico.chevD} Visa mer</>}</button>}
       <div className="card-foot">{Ico.clock}<span>uppdaterad {fmtDate(entry.updated_at)}</span></div>
@@ -1074,9 +1112,10 @@ function EntryForm({initial,busy,onSave,onClose}){
   const [category,setCategory]=useState(initial.category||"Scripting");
   const [tags,setTags]=useState((initial.tags||[]).join(", "));
   const [content,setContent]=useState(initial.content||"");
+  const [notes,setNotes]=useState(initial.notes||"");
   const [isCode,setIsCode]=useState(initial.is_code!==undefined?initial.is_code:true);
   const valid=title.trim()&&content.trim();
-  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content,isCode}); }
+  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content,notes:isCode?notes:"",isCode}); }
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e=>e.stopPropagation()}>
@@ -1094,10 +1133,19 @@ function EntryForm({initial,busy,onSave,onClose}){
             <input value={tags} onChange={e=>setTags(e.target.value)} placeholder="udt, perspective" /></label>
           <div className="toggle-row">
             <button className={"toggle"+(isCode?" active":"")} onClick={()=>setIsCode(true)}>{Ico.code} Kod</button>
-            <button className={"toggle"+(!isCode?" active":"")} onClick={()=>setIsCode(false)}>{Ico.file} Anteckning</button>
+            <button className={"toggle"+(!isCode?" active":"")} onClick={()=>setIsCode(false)}>{Ico.note} Anteckning</button>
           </div>
-          <label className="field"><span className="lbl">{isCode?"Kod / script":"Text"}</span>
-            <textarea value={content} onChange={e=>setContent(e.target.value)} rows={isCode?10:6} placeholder={isCode?"Klistra in din kod här…":"Skriv din anteckning här…"} style={{fontFamily:isCode?"var(--mono)":"var(--sans)"}} /></label>
+          {isCode ? (
+            <div className="splitfields">
+              <label className="field"><span className="lbl">{Ico.code} Kod / script</span>
+                <textarea value={content} onChange={e=>setContent(e.target.value)} rows={10} placeholder="Klistra in din kod här…" style={{fontFamily:"var(--mono)"}} /></label>
+              <label className="field"><span className="lbl">{Ico.note} Beskrivning / anteckning <span className="lbl-opt">valfritt</span></span>
+                <textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={10} placeholder="Beskriv vad koden gör, fallgropar, var den används…" style={{fontFamily:"var(--sans)"}} /></label>
+            </div>
+          ) : (
+            <label className="field"><span className="lbl">{Ico.note} Text</span>
+              <textarea value={content} onChange={e=>setContent(e.target.value)} rows={8} placeholder="Skriv din anteckning här…" style={{fontFamily:"var(--sans)"}} /></label>
+          )}
         </div>
         <div className="modal-foot">
           <button className="foot-btn foot-cancel" onClick={onClose}>Avbryt</button>
@@ -1137,7 +1185,7 @@ function UserModal({token,user,name,onName,onClose}){
       <div className="modal" onClick={e=>e.stopPropagation()}>
         <div className="modal-head"><h2>Konto &amp; användare</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
         <div className="modal-body">
-          <div className="useryou">{Ico.users}<div><div style={{color:"#e6edf3",fontSize:13}}>{(name&&name.trim())||user}</div><div style={{color:"var(--dim)",fontSize:11}}>{user}</div></div></div>
+          <div className="useryou">{Ico.users}<div><div style={{color:"var(--txt)",fontSize:13}}>{(name&&name.trim())||user}</div><div style={{color:"var(--dim)",fontSize:11}}>{user}</div></div></div>
           <label className="field"><span className="lbl">Ditt namn (visas i appen)</span>
             <div style={{display:"flex",gap:8}}>
               <input value={myName} onChange={e=>setMyName(e.target.value)} placeholder="t.ex. Mohamad" />
