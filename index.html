@@ -646,15 +646,27 @@ async function listVersions(token, entryId){
   if(!r.ok) throw new Error("Kunde inte hämta historik ("+r.status+")");
   return r.json();
 }
-function stripOptional(x){ const f=o=>{const c={...o}; OPTIONAL_COLS.forEach(k=>delete c[k]); return c;}; return Array.isArray(x)?x.map(f):f(x); }
+function dropCols(x, cols){ const f=o=>{const c={...o}; cols.forEach(k=>delete c[k]); return c;}; return Array.isArray(x)?x.map(f):f(x); }
+async function saveWithFallback(url, method, payload, token){
+  let body = payload, dropped = [];
+  for(let i=0; i<OPTIONAL_COLS.length+1; i++){
+    const r = await fetch(url, {method, headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(body)});
+    if(r.status!==400) return r;
+    let msg=""; try{ const d=await r.clone().json(); msg=((d.message||"")+" "+(d.details||"")+" "+(d.hint||"")).toLowerCase(); }catch(e){}
+    const col = OPTIONAL_COLS.find(c=>dropped.indexOf(c)<0 && msg.indexOf("'"+c+"'")>=0);
+    if(col){ dropped.push(col); body = dropCols(body, [col]); continue; }       // drop just the missing column
+    const rest = OPTIONAL_COLS.filter(c=>dropped.indexOf(c)<0);
+    if(rest.length){ dropped = dropped.concat(rest); body = dropCols(body, rest); continue; } // unknown cause: drop remaining once
+    return r;
+  }
+  return fetch(url, {method, headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(body)});
+}
 async function apiInsert(token, rows){
-  let r = await fetch(restBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(rows)});
-  if (r.status===400){ r = await fetch(restBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(stripOptional(rows))}); }
+  const r = await saveWithFallback(restBase, "POST", rows, token);
   if (!r.ok) throw new Error("INSERT " + r.status); return r.json();
 }
 async function apiUpdate(token, id, row){
-  let r = await fetch(restBase + "?id=eq." + id, {method:"PATCH", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(row)});
-  if (r.status===400){ r = await fetch(restBase + "?id=eq." + id, {method:"PATCH", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(stripOptional(row))}); }
+  const r = await saveWithFallback(restBase + "?id=eq." + id, "PATCH", row, token);
   if (!r.ok) throw new Error("UPDATE " + r.status); return (await r.json())[0];
 }
 async function apiDelete(token, id){
