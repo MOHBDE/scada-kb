@@ -298,6 +298,18 @@
   body.light .card,body.light .tile,body.light .panel{box-shadow:0 2px 14px rgba(15,23,42,.06);}
   body.light .login-card{box-shadow:0 30px 70px -30px rgba(15,23,42,.25);}
   body.light .grid-bg{opacity:.04;background-image:linear-gradient(rgba(15,23,42,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.6) 1px,transparent 1px);}
+  /* Signup link + approval list */
+  .link-btn{display:block;width:100%;margin-top:14px;background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;font-family:var(--sans);}
+  .link-btn:hover{text-decoration:underline;}
+  .urow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .urow-mail{font-size:13px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:7px;}
+  .urow-status{font-size:11px;font-family:var(--mono);margin-top:2px;}
+  .urow-status.ok{color:var(--ok);}
+  .urow-status.wait{color:var(--accent);}
+  .utag.admin{font-size:9px;text-transform:uppercase;letter-spacing:.05em;padding:1px 6px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-family:var(--mono);}
+  .ubtn-approve{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:#1a1205;border:none;border-radius:9px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);}
+  .ubtn-approve svg{width:13px;height:13px;}
+  .ubtn-revoke{flex-shrink:0;background:none;border:1px solid var(--line-strong);color:var(--muted);border-radius:9px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:var(--sans);}
 </style>
 </head>
 <body>
@@ -557,6 +569,35 @@ async function createUserViaFunction(token, email, password){
   if (!r.ok) throw new Error(d.error || d.msg || d.message || ("Fel "+r.status));
   return d;
 }
+const profBase = SUPABASE_URL + "/rest/v1/profiles";
+async function signUp(email, password){
+  const r = await fetch(authBase + "/signup", {
+    method:"POST", headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
+    body: JSON.stringify({email, password})
+  });
+  let d={}; try{ d=await r.json(); }catch(e){}
+  if (!r.ok) throw new Error(d.error_description || d.msg || d.message || d.error || ("Fel "+r.status));
+  return d;
+}
+async function getMyProfile(token, uid, email){
+  const r = await fetch(profBase + "?id=eq."+uid+"&select=id,email,approved,is_admin", {headers:dataHeaders(token)});
+  if(!r.ok) throw new Error("PROFILES "+r.status);
+  const arr = await r.json();
+  if(arr.length) return arr[0];
+  try{
+    const r2 = await fetch(profBase, {method:"POST", headers:{...dataHeaders(token),Prefer:"return=representation"}, body:JSON.stringify([{id:uid,email:email||"",approved:false}])});
+    if(r2.ok){ const a=await r2.json(); return a[0]||{id:uid,approved:false,is_admin:false}; }
+  }catch(e){}
+  return {id:uid,approved:false,is_admin:false};
+}
+async function listProfiles(token){
+  const r = await fetch(profBase + "?select=id,email,approved,is_admin&order=approved.asc,email.asc", {headers:dataHeaders(token)});
+  if(!r.ok) throw new Error("LIST "+r.status); return r.json();
+}
+async function setApproved(token, id, val){
+  const r = await fetch(profBase + "?id=eq."+id, {method:"PATCH", headers:{...dataHeaders(token),Prefer:"return=representation"}, body:JSON.stringify({approved:val})});
+  if(!r.ok) throw new Error("APPROVE "+r.status); return r.json();
+}
 async function updateMyName(token, fullName){
   const r = await fetch(authBase + "/user", {
     method:"PUT", headers: dataHeaders(token), body: JSON.stringify({ data:{ full_name: fullName } })
@@ -617,6 +658,8 @@ function App(){
   const [token, setToken] = useState(null);
   const [user, setUser] = useState("");
   const [name, setName] = useState("");
+  const [uid, setUid] = useState("");
+  const [profile, setProfile] = useState(undefined); // undefined=laddar, objekt annars
   const [theme, setTheme] = useState(()=>{ try{ return localStorage.getItem("scada-theme")||"dark"; }catch(e){ return "dark"; } });
   useEffect(()=>{
     document.body.classList.toggle("light", theme==="light");
@@ -625,9 +668,33 @@ function App(){
   },[theme]);
   const toggleTheme=()=>setTheme(t=>t==="light"?"dark":"light");
 
-  if (!configured) return (<div className="wrap"><div className="banner err" style={{marginTop:40}}>Inte konfigurerad. Öppna filen i en texteditor och fyll i <b>SUPABASE_URL</b> och <b>SUPABASE_KEY</b> högst upp (rad ~12).</div></div>);
-  if (!token) return <Login onLogin={(t,u,n)=>{setToken(t); setUser(u); setName(n||"");}} theme={theme} onToggleTheme={toggleTheme} />;
-  return <KB token={token} user={user} name={name} onName={setName} theme={theme} onToggleTheme={toggleTheme} onLogout={()=>{setToken(null); setUser(""); setName("");}} />;
+  async function afterLogin(d){
+    const id=(d.user&&d.user.id)||""; const email=(d.user&&d.user.email)||"";
+    setToken(d.access_token); setUser(email); setName(metaName(d)); setUid(id); setProfile(undefined);
+    try{ setProfile(await getMyProfile(d.access_token, id, email)); }
+    catch(e){ setProfile({approved:true,is_admin:false,_legacy:true}); } // profiles ej uppsatt → spärra inte
+  }
+  function logout(){ setToken(null); setUser(""); setName(""); setUid(""); setProfile(undefined); }
+
+  if (!configured) return (<div className="wrap"><div className="banner err" style={{marginTop:40}}>Inte konfigurerad. Fyll i <b>SUPABASE_URL</b> och <b>SUPABASE_KEY</b>.</div></div>);
+  if (!token) return <Login onLogin={afterLogin} theme={theme} onToggleTheme={toggleTheme} />;
+  if (profile===undefined) return (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
+  if (profile && !profile.approved && !profile._legacy) return <Pending email={user} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />;
+  return <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&profile.is_admin)} onName={setName} theme={theme} onToggleTheme={toggleTheme} onLogout={logout} />;
+}
+
+function Pending({email,onLogout,theme,onToggleTheme}){
+  return (
+    <div className="login-wrap">
+      <button className="hbtn login-theme" onClick={onToggleTheme} title="Mörkt/ljust läge">{theme==="light"?Ico.moon:Ico.sun}</button>
+      <div className="login-card" style={{textAlign:"center"}}>
+        <div className="login-logo">{Ico.shield}</div>
+        <h1 style={{fontFamily:"var(--mono)",fontSize:20}}>Väntar på godkännande</h1>
+        <p>Kontot <b>{email}</b> har skapats men måste godkännas av en administratör innan du kommer in. Logga in igen när du blivit godkänd.</p>
+        <button className="btn-amber" style={{width:"100%",marginTop:8,padding:"11px"}} onClick={onLogout}>Logga ut</button>
+      </div>
+    </div>
+  );
 }
 
 function metaName(d){
@@ -635,13 +702,22 @@ function metaName(d){
 }
 
 function Login({onLogin,theme,onToggleTheme}){
+  const [mode,setMode]=useState("login"); // login | signup
   const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
-  const [err,setErr]=useState(""); const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState(""); const [info,setInfo]=useState(""); const [busy,setBusy]=useState(false);
+  const signup = mode==="signup";
   async function submit(){
     if(!email||!pw) return;
-    setBusy(true); setErr("");
-    try{ const d = await signIn(email.trim(), pw); onLogin(d.access_token, (d.user&&d.user.email)||email, metaName(d)); }
-    catch(e){ setErr(e.message); }
+    setBusy(true); setErr(""); setInfo("");
+    try{
+      if(signup){
+        const d = await signUp(email.trim(), pw);
+        if(d.access_token){ onLogin(d); }            // ingen mailbekräftelse → in i väntläge
+        else { setInfo("Konto skapat! Det måste godkännas av en administratör innan du kan logga in."); setMode("login"); }
+      }else{
+        const d = await signIn(email.trim(), pw); onLogin(d);
+      }
+    }catch(e){ setErr(e.message); }
     setBusy(false);
   }
   return (
@@ -650,22 +726,25 @@ function Login({onLogin,theme,onToggleTheme}){
       <div className="login-card">
         <div className="login-logo">{Ico.db}</div>
         <h1 style={{fontFamily:"var(--mono)"}}>SCADA·KB</h1>
-        <p>Logga in för att nå teamets kunskapsbas.</p>
+        <p>{signup?"Skapa ett konto. En administratör godkänner dig innan du kommer in.":"Logga in för att nå din kunskapsbas."}</p>
         {err && <div className="banner err" style={{marginTop:0}}>{err}</div>}
+        {info && <div className="banner" style={{marginTop:0,background:"rgba(52,211,153,.1)",border:"1px solid rgba(52,211,153,.3)",color:"#6ee7b7"}}>{info}</div>}
         <label><span className="lbl">E-post</span>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="namn@kommun.se" onKeyDown={e=>e.key==='Enter'&&submit()} /></label>
         <label><span className="lbl">Lösenord</span>
           <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} /></label>
         <button className="btn-amber" style={{width:"100%",marginTop:8,padding:"11px"}} disabled={busy||!email||!pw} onClick={submit}>
-          {busy?"Loggar in…":"Logga in"}
+          {busy?(signup?"Skapar…":"Loggar in…"):(signup?"Skapa konto":"Logga in")}
         </button>
-        <p style={{marginTop:16,marginBottom:0,fontSize:12}}>Konton skapas av admin i Supabase → Authentication → Users.</p>
+        <button className="link-btn" onClick={()=>{setMode(signup?"login":"signup");setErr("");setInfo("");}}>
+          {signup?"Har du redan konto? Logga in":"Inget konto? Skapa ett"}
+        </button>
       </div>
     </div>
   );
 }
 
-function KB({token, user, name, onName, theme, onToggleTheme, onLogout}){
+function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLogout}){
   const display = (name && name.trim()) ? name.trim() : (user||"").split("@")[0];
   const [entries,setEntries]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -858,7 +937,7 @@ function KB({token, user, name, onName, theme, onToggleTheme, onLogout}){
       {toast && <div className="toast">{toast}</div>}
       {editing!==null && <EntryForm initial={editing} busy={busy} onSave={saveEntry} onClose={()=>setEditing(null)} />}
       {detail && <DetailModal entry={detail} entries={entries} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);setSearch(t);setActiveView("bibliotek");}} />}
-      {showUsers && <UserModal token={token} user={user} name={name} onName={onName} onClose={()=>setShowUsers(false)} />}
+      {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
     </div>
   );
 }
@@ -1111,11 +1190,14 @@ function EntryForm({initial,busy,onSave,onClose}){
   const [system,setSystem]=useState(initial.system||"Ignition");
   const [category,setCategory]=useState(initial.category||"Scripting");
   const [tags,setTags]=useState((initial.tags||[]).join(", "));
-  const [content,setContent]=useState(initial.content||"");
-  const [notes,setNotes]=useState(initial.notes||"");
-  const [isCode,setIsCode]=useState(initial.is_code!==undefined?initial.is_code:true);
-  const valid=title.trim()&&content.trim();
-  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content,notes:isCode?notes:"",isCode}); }
+  const startCode=initial.is_code!==undefined?initial.is_code:true;
+  const [isCode,setIsCode]=useState(startCode);
+  const [code,setCode]=useState(startCode?(initial.content||""):"");
+  const [text,setText]=useState(!startCode?(initial.content||""):"");
+  const [desc,setDesc]=useState(initial.notes||"");
+  const body=isCode?code:text;
+  const valid=title.trim()&&body.trim();
+  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:isCode?code:text,notes:isCode?desc:"",isCode}); }
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e=>e.stopPropagation()}>
@@ -1138,13 +1220,13 @@ function EntryForm({initial,busy,onSave,onClose}){
           {isCode ? (
             <div className="splitfields">
               <label className="field"><span className="lbl">{Ico.code} Kod / script</span>
-                <textarea value={content} onChange={e=>setContent(e.target.value)} rows={10} placeholder="Klistra in din kod här…" style={{fontFamily:"var(--mono)"}} /></label>
+                <textarea value={code} onChange={e=>setCode(e.target.value)} rows={10} placeholder="Klistra in din kod här…" style={{fontFamily:"var(--mono)"}} /></label>
               <label className="field"><span className="lbl">{Ico.note} Beskrivning / anteckning <span className="lbl-opt">valfritt</span></span>
-                <textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={10} placeholder="Beskriv vad koden gör, fallgropar, var den används…" style={{fontFamily:"var(--sans)"}} /></label>
+                <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={10} placeholder="Beskriv vad koden gör, fallgropar, var den används…" style={{fontFamily:"var(--sans)"}} /></label>
             </div>
           ) : (
             <label className="field"><span className="lbl">{Ico.note} Text</span>
-              <textarea value={content} onChange={e=>setContent(e.target.value)} rows={8} placeholder="Skriv din anteckning här…" style={{fontFamily:"var(--sans)"}} /></label>
+              <textarea value={text} onChange={e=>setText(e.target.value)} rows={8} placeholder="Skriv din anteckning här…" style={{fontFamily:"var(--sans)"}} /></label>
           )}
         </div>
         <div className="modal-foot">
@@ -1156,10 +1238,14 @@ function EntryForm({initial,busy,onSave,onClose}){
   );
 }
 
-function UserModal({token,user,name,onName,onClose}){
+function UserModal({token,user,name,isAdmin,onName,onClose}){
   const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
   const [busy,setBusy]=useState(false); const [msg,setMsg]=useState(null); const [need,setNeed]=useState(false);
   const [myName,setMyName]=useState(name||""); const [nameBusy,setNameBusy]=useState(false); const [nameMsg,setNameMsg]=useState("");
+  const [profiles,setProfiles]=useState(null); const [pBusy,setPBusy]=useState(false);
+  useEffect(()=>{ if(isAdmin) loadProfiles(); },[]);
+  async function loadProfiles(){ setPBusy(true); try{ setProfiles(await listProfiles(token)); }catch(e){ setProfiles([]); } setPBusy(false); }
+  async function approve(id,val){ try{ await setApproved(token,id,val); setProfiles(ps=>(ps||[]).map(p=>p.id===id?{...p,approved:val}:p)); }catch(e){} }
   async function saveName(){
     setNameBusy(true); setNameMsg("");
     try{ await updateMyName(token, myName.trim()); onName&&onName(myName.trim()); setNameMsg("Sparat ✓"); }
@@ -1192,15 +1278,27 @@ function UserModal({token,user,name,onName,onClose}){
               <button className="btn-amber" style={{flexShrink:0,padding:"0 16px"}} disabled={nameBusy||!myName.trim()} onClick={saveName}>{nameBusy?"…":"Spara"}</button>
             </div></label>
           {nameMsg && <div style={{color:nameMsg.indexOf("Kunde")===0?"#fca5a5":"#6ee7b7",fontSize:12,marginTop:-8}}>{nameMsg}</div>}
-          <div className="udivider">Bjud in en kollega</div>
-          {msg && <div className={"banner"+(msg.ok?"":" err")} style={{margin:0,background:msg.ok?"rgba(52,211,153,.1)":undefined,border:msg.ok?"1px solid rgba(52,211,153,.3)":undefined,color:msg.ok?"#6ee7b7":undefined}}>{msg.text}</div>}
-          {need && <div className="banner err" style={{margin:0}}>Funktionen för att skapa användare är inte aktiverad än. Det kräver en liten serverfunktion (av säkerhetsskäl kan inte appen skapa konton själv). Se guiden "Aktivera anvandarpanel" — tills dess skapar du konton i Supabase → Authentication → Users.</div>}
-          <label className="field"><span className="lbl">E-post</span>
-            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="kollega@kommun.se" /></label>
-          <label className="field"><span className="lbl">Tillfälligt lösenord</span>
-            <input type="text" value={pw} onChange={e=>setPw(e.target.value)} placeholder="t.ex. Scada1234" /></label>
-          <button className="btn-amber" style={{width:"100%"}} disabled={busy||!email||!pw} onClick={create}>{busy?"Skapar…":"Skapa användare"}</button>
-          <p style={{color:"var(--dim)",fontSize:11,margin:0,lineHeight:1.5}}>Kollegan loggar in med e-post + lösenordet du anger och kan ändra det senare.</p>
+          {isAdmin ? (
+            <>
+              <div className="udivider">Användare &amp; godkännande</div>
+              {pBusy && <div style={{color:"var(--dim)",fontSize:12}}>Laddar…</div>}
+              {profiles && profiles.length===0 && !pBusy && <div style={{color:"var(--dim)",fontSize:12}}>Inga användare än.</div>}
+              {profiles && profiles.map(p=>(
+                <div key={p.id} className="urow">
+                  <div style={{minWidth:0,flex:1}}>
+                    <div className="urow-mail">{p.email||p.id}{p.is_admin&&<span className="utag admin">admin</span>}</div>
+                    <div className={"urow-status "+(p.approved?"ok":"wait")}>{p.approved?"godkänd":"väntar"}</div>
+                  </div>
+                  {!p.is_admin && (p.approved
+                    ? <button className="ubtn-revoke" onClick={()=>approve(p.id,false)}>Återkalla</button>
+                    : <button className="ubtn-approve" onClick={()=>approve(p.id,true)}>{Ico.check} Godkänn</button>)}
+                </div>
+              ))}
+              <p style={{color:"var(--dim)",fontSize:11,margin:0,lineHeight:1.5}}>Nya kollegor registrerar sig själva på inloggningssidan. De kommer in först när du godkänt dem här. Varje användare ser bara sina egna poster.</p>
+            </>
+          ) : (
+            <p style={{color:"var(--dim)",fontSize:12,margin:0,lineHeight:1.5}}>Dina poster är privata. Nya kollegor kan registrera sig själva på inloggningssidan — en administratör godkänner dem.</p>
+          )}
         </div>
       </div>
     </div>
