@@ -570,10 +570,12 @@ async function createUserViaFunction(token, email, password){
   return d;
 }
 const profBase = SUPABASE_URL + "/rest/v1/profiles";
-async function signUp(email, password){
+async function signUp(email, password, fullName){
+  const body = {email, password};
+  if(fullName) body.data = {full_name: fullName};
   const r = await fetch(authBase + "/signup", {
     method:"POST", headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
-    body: JSON.stringify({email, password})
+    body: JSON.stringify(body)
   });
   let d={}; try{ d=await r.json(); }catch(e){}
   if (!r.ok) throw new Error(d.error_description || d.msg || d.message || d.error || ("Fel "+r.status));
@@ -703,15 +705,15 @@ function metaName(d){
 
 function Login({onLogin,theme,onToggleTheme}){
   const [mode,setMode]=useState("login"); // login | signup
-  const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
+  const [email,setEmail]=useState(""); const [pw,setPw]=useState(""); const [namn,setNamn]=useState("");
   const [err,setErr]=useState(""); const [info,setInfo]=useState(""); const [busy,setBusy]=useState(false);
   const signup = mode==="signup";
   async function submit(){
-    if(!email||!pw) return;
+    if(!email||!pw||(signup&&!namn.trim())) return;
     setBusy(true); setErr(""); setInfo("");
     try{
       if(signup){
-        const d = await signUp(email.trim(), pw);
+        const d = await signUp(email.trim(), pw, namn.trim());
         if(d.access_token){ onLogin(d); }            // ingen mailbekräftelse → in i väntläge
         else { setInfo("Konto skapat! Det måste godkännas av en administratör innan du kan logga in."); setMode("login"); }
       }else{
@@ -729,11 +731,13 @@ function Login({onLogin,theme,onToggleTheme}){
         <p>{signup?"Skapa ett konto. En administratör godkänner dig innan du kommer in.":"Logga in för att nå din kunskapsbas."}</p>
         {err && <div className="banner err" style={{marginTop:0}}>{err}</div>}
         {info && <div className="banner" style={{marginTop:0,background:"rgba(52,211,153,.1)",border:"1px solid rgba(52,211,153,.3)",color:"#6ee7b7"}}>{info}</div>}
+        {signup && <label><span className="lbl">Namn</span>
+          <input value={namn} onChange={e=>setNamn(e.target.value)} placeholder="Förnamn Efternamn" onKeyDown={e=>e.key==='Enter'&&submit()} /></label>}
         <label><span className="lbl">E-post</span>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="namn@kommun.se" onKeyDown={e=>e.key==='Enter'&&submit()} /></label>
         <label><span className="lbl">Lösenord</span>
           <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} /></label>
-        <button className="btn-amber" style={{width:"100%",marginTop:8,padding:"11px"}} disabled={busy||!email||!pw} onClick={submit}>
+        <button className="btn-amber" style={{width:"100%",marginTop:8,padding:"11px"}} disabled={busy||!email||!pw||(signup&&!namn.trim())} onClick={submit}>
           {busy?(signup?"Skapar…":"Loggar in…"):(signup?"Skapa konto":"Logga in")}
         </button>
         <button className="link-btn" onClick={()=>{setMode(signup?"login":"signup");setErr("");setInfo("");}}>
@@ -1241,18 +1245,10 @@ function EntryForm({initial,busy,onSave,onClose}){
 function UserModal({token,user,name,isAdmin,onName,onClose}){
   const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
   const [busy,setBusy]=useState(false); const [msg,setMsg]=useState(null); const [need,setNeed]=useState(false);
-  const [myName,setMyName]=useState(name||""); const [nameBusy,setNameBusy]=useState(false); const [nameMsg,setNameMsg]=useState("");
   const [profiles,setProfiles]=useState(null); const [pBusy,setPBusy]=useState(false);
   useEffect(()=>{ if(isAdmin) loadProfiles(); },[]);
   async function loadProfiles(){ setPBusy(true); try{ setProfiles(await listProfiles(token)); }catch(e){ setProfiles([]); } setPBusy(false); }
   async function approve(id,val){ try{ await setApproved(token,id,val); setProfiles(ps=>(ps||[]).map(p=>p.id===id?{...p,approved:val}:p)); }catch(e){} }
-  async function saveName(){
-    setNameBusy(true); setNameMsg("");
-    try{ await updateMyName(token, myName.trim()); onName&&onName(myName.trim()); setNameMsg("Sparat ✓"); }
-    catch(e){ setNameMsg("Kunde inte spara: "+e.message); }
-    setNameBusy(false);
-    setTimeout(()=>setNameMsg(""),2500);
-  }
   async function create(){
     if(!email||!pw) return;
     setBusy(true); setMsg(null); setNeed(false);
@@ -1272,12 +1268,6 @@ function UserModal({token,user,name,isAdmin,onName,onClose}){
         <div className="modal-head"><h2>Konto &amp; användare</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
         <div className="modal-body">
           <div className="useryou">{Ico.users}<div><div style={{color:"var(--txt)",fontSize:13}}>{(name&&name.trim())||user}</div><div style={{color:"var(--dim)",fontSize:11}}>{user}</div></div></div>
-          <label className="field"><span className="lbl">Ditt namn (visas i appen)</span>
-            <div style={{display:"flex",gap:8}}>
-              <input value={myName} onChange={e=>setMyName(e.target.value)} placeholder="t.ex. Mohamad" />
-              <button className="btn-amber" style={{flexShrink:0,padding:"0 16px"}} disabled={nameBusy||!myName.trim()} onClick={saveName}>{nameBusy?"…":"Spara"}</button>
-            </div></label>
-          {nameMsg && <div style={{color:nameMsg.indexOf("Kunde")===0?"#fca5a5":"#6ee7b7",fontSize:12,marginTop:-8}}>{nameMsg}</div>}
           {isAdmin ? (
             <>
               <div className="udivider">Användare &amp; godkännande</div>
