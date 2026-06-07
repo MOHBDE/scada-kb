@@ -310,6 +310,23 @@
   .ubtn-approve{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:#1a1205;border:none;border-radius:9px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);}
   .ubtn-approve svg{width:13px;height:13px;}
   .ubtn-revoke{flex-shrink:0;background:none;border:1px solid var(--line-strong);color:var(--muted);border-radius:9px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:var(--sans);}
+  /* Images */
+  .imgsection{margin-top:6px;}
+  .imggrid{display:flex;flex-wrap:wrap;gap:8px;}
+  .imgitem{position:relative;width:84px;height:84px;border-radius:10px;overflow:hidden;border:1px solid var(--line);}
+  .imgitem img{width:100%;height:100%;object-fit:cover;display:block;}
+  .imgdel{position:absolute;top:3px;right:3px;width:22px;height:22px;border:none;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .imgdel svg{width:13px;height:13px;}
+  .imgadd{width:84px;height:84px;border-radius:10px;border:1px dashed var(--line-strong);background:var(--code);color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:11px;font-family:var(--sans);}
+  .imgadd:hover{border-color:var(--accent);color:var(--accent);}
+  .imgadd svg{width:18px;height:18px;}
+  .imgadd:disabled{opacity:.6;cursor:default;}
+  .imgstrip{display:flex;gap:8px;padding:10px 16px 0 18px;flex-wrap:wrap;}
+  .imgthumb{position:relative;width:64px;height:64px;border-radius:9px;overflow:hidden;border:1px solid var(--line);display:block;}
+  .imgthumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .imgmore{position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;}
+  .detail-imgs{display:flex;flex-direction:column;gap:10px;margin:6px 0;}
+  .detail-imgs img{width:100%;border-radius:12px;border:1px solid var(--line);display:block;}
 </style>
 </head>
 <body>
@@ -546,7 +563,19 @@ async function apiGet(token){
   const r = await fetch(restBase + "?select=*&order=updated_at.desc", {headers: dataHeaders(token)});
   if (!r.ok) throw new Error("GET " + r.status); return r.json();
 }
-const OPTIONAL_COLS = ["shared","author","notes"];
+const OPTIONAL_COLS = ["shared","author","notes","images"];
+const IMG_BUCKET = "kb-images";
+async function uploadImage(token, uid, file){
+  let ext = (file.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
+  const path = (uid?uid+"/":"") + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "." + ext;
+  const r = await fetch(SUPABASE_URL + "/storage/v1/object/" + IMG_BUCKET + "/" + path, {
+    method:"POST",
+    headers:{ apikey:SUPABASE_KEY, Authorization:"Bearer "+token, "Content-Type": file.type||"application/octet-stream", "x-upsert":"true" },
+    body: file
+  });
+  if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || d.error || ("Uppladdning misslyckades ("+r.status+")")); }
+  return SUPABASE_URL + "/storage/v1/object/public/" + IMG_BUCKET + "/" + path;
+}
 function stripOptional(x){ const f=o=>{const c={...o}; OPTIONAL_COLS.forEach(k=>delete c[k]); return c;}; return Array.isArray(x)?x.map(f):f(x); }
 async function apiInsert(token, rows){
   let r = await fetch(restBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify(rows)});
@@ -656,6 +685,7 @@ const Ico={
   sun:<I size={16} d={<><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></>} />,
   moon:<I size={16} d={<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>} />,
   lock:<I size={13} d={<><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
+  image:<I size={15} d={<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></>} />,
 };
 const TOPIC_ICON={"Scripting":Ico=>Ico.terminal,"Larm":Ico=>Ico.bell,"UDT/Tags":Ico=>Ico.box,"Trend":Ico=>Ico.chart,"Rapport":Ico=>Ico.report,"OPC":Ico=>Ico.plug,"SQL":Ico=>Ico.db,"Behörighet":Ico=>Ico.shield,"Övrigt":Ico=>Ico.dots};
 function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
@@ -783,7 +813,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   }
   async function saveEntry(data){
     setBusy(true);
-    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,updated_at:new Date().toISOString()};
+    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],updated_at:new Date().toISOString()};
     try{
       if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
       else{ const n=await apiInsert(token,[{...row,pinned:false}]); setEntries([...n, ...entries]); }
@@ -802,7 +832,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   async function loadExamples(){
     setBusy(true);
     try{
-      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, pinned:false, updated_at:new Date().toISOString()}));
+      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], pinned:false, updated_at:new Date().toISOString()}));
       const inserted=await apiInsert(token,rows);
       setEntries([...inserted, ...entries]);
       flash("Laddade "+inserted.length+" exempelposter");
@@ -823,7 +853,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       try{
         const data=JSON.parse(e.target.result);
         if(!Array.isArray(data)) throw new Error();
-        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,pinned:!!d.pinned,updated_at:new Date().toISOString()}));
+        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],pinned:!!d.pinned,updated_at:new Date().toISOString()}));
         setBusy(true);
         const inserted=await apiInsert(token,rows);
         setEntries([...inserted, ...entries]);
@@ -957,7 +987,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       </main>
 
       {toast && <div className="toast">{toast}</div>}
-      {editing!==null && <EntryForm initial={editing} busy={busy} onSave={saveEntry} onClose={()=>setEditing(null)} />}
+      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} onSave={saveEntry} onClose={()=>setEditing(null)} />}
       {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);setSearch(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
     </div>
@@ -1133,6 +1163,13 @@ function DetailModal({entry,entries,mine=true,onClose,onOpen,onEdit,onTag}){
               </div>
             </>
           ) : <p className="note" style={{padding:"6px 0"}}>{entry.content}</p>}
+          {entry.images && entry.images.length>0 && (
+            <div className="detail-imgs">
+              {entry.images.map(url=>(
+                <a key={url} href={url} target="_blank" rel="noopener noreferrer"><img src={url} alt="" loading="lazy" /></a>
+              ))}
+            </div>
+          )}
           {related.length>0 && <div className="related">
             <div className="related-h">{Ico.link} Relaterade poster</div>
             {related.map(r=><MiniRow key={r.id} entry={r} onClick={()=>onOpen(r)} />)}
@@ -1204,6 +1241,16 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
           </div>
         </>
       ) : <p className="note">{shown}{!exp&&long?" …":""}</p>}
+      {entry.images && entry.images.length>0 && (
+        <div className="imgstrip">
+          {entry.images.slice(0,4).map((url,i)=>(
+            <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="imgthumb" onClick={e=>e.stopPropagation()}>
+              <img src={url} alt="" loading="lazy" />
+              {i===3 && entry.images.length>4 && <span className="imgmore">+{entry.images.length-4}</span>}
+            </a>
+          ))}
+        </div>
+      )}
       {long && <button className="more" onClick={()=>setExp(!exp)}>{exp?<>{Ico.chevU} Visa mindre</>:<>{Ico.chevD} Visa mer</>}</button>}
       <div className="card-foot">{Ico.clock}<span>uppdaterad {fmtDate(entry.updated_at)}</span></div>
       {confirm && (<div className="confirm"><span className="msg">{Ico.alert} Ta bort permanent?</span>
@@ -1213,7 +1260,7 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
   );
 }
 
-function EntryForm({initial,busy,onSave,onClose}){
+function EntryForm({initial,busy,token,uid,onSave,onClose}){
   const [title,setTitle]=useState(initial.title||"");
   const [system,setSystem]=useState(initial.system||"Ignition");
   const [category,setCategory]=useState(initial.category||"Scripting");
@@ -1224,9 +1271,21 @@ function EntryForm({initial,busy,onSave,onClose}){
   const [text,setText]=useState(!startCode?(initial.content||""):"");
   const [desc,setDesc]=useState(initial.notes||"");
   const [shared,setShared]=useState(!!initial.shared);
+  const [images,setImages]=useState(initial.images||[]);
+  const [upBusy,setUpBusy]=useState(false); const [upErr,setUpErr]=useState("");
+  const fileRef=useRef(null);
   const body=isCode?code:text;
   const valid=title.trim()&&body.trim();
-  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:isCode?code:text,notes:isCode?desc:"",isCode,shared}); }
+  async function addImages(e){
+    const files=Array.prototype.slice.call(e.target.files||[]); e.target.value="";
+    if(!files.length) return;
+    setUpBusy(true); setUpErr("");
+    try{ for(const f of files){ const url=await uploadImage(token, uid, f); setImages(im=>[...im, url]); } }
+    catch(err){ setUpErr(err.message||"Kunde inte ladda upp"); }
+    setUpBusy(false);
+  }
+  function removeImage(url){ setImages(im=>im.filter(u=>u!==url)); }
+  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:isCode?code:text,notes:isCode?desc:"",isCode,shared,images}); }
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e=>e.stopPropagation()}>
@@ -1262,6 +1321,23 @@ function EntryForm({initial,busy,onSave,onClose}){
             <label className="field"><span className="lbl">{Ico.note} Text</span>
               <textarea value={text} onChange={e=>setText(e.target.value)} rows={8} placeholder="Skriv din anteckning här…" style={{fontFamily:"var(--sans)"}} /></label>
           )}
+          <div className="imgsection">
+            <div className="lbl" style={{marginBottom:8}}>{Ico.image} Bilder / skärmdumpar <span className="lbl-opt">valfritt</span></div>
+            <div className="imggrid">
+              {images.map(url=>(
+                <div key={url} className="imgitem">
+                  <img src={url} alt="" />
+                  <button className="imgdel" onClick={()=>removeImage(url)} title="Ta bort">{Ico.x}</button>
+                </div>
+              ))}
+              <button className="imgadd" onClick={()=>fileRef.current&&fileRef.current.click()} disabled={upBusy}>
+                {upBusy?<span className="spin" style={{display:"inline-block"}}>{Ico.image}</span>:Ico.add}
+                <span>{upBusy?"Laddar upp…":"Lägg till"}</span>
+              </button>
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" multiple onChange={addImages} style={{display:"none"}} />
+            {upErr && <div style={{color:"#fca5a5",fontSize:12,marginTop:6}}>{upErr}</div>}
+          </div>
         </div>
         <div className="modal-foot">
           <button className="foot-btn foot-cancel" onClick={onClose}>Avbryt</button>
