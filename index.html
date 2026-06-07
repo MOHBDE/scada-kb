@@ -391,6 +391,27 @@
   @keyframes modalpop{from{opacity:0;transform:translateY(12px) scale(.985);}to{opacity:1;transform:none;}}
   .modal{animation:modalpop .24s cubic-bezier(.2,.7,.3,1) both;}
   @media (prefers-reduced-motion: reduce){.cards .card,.compactrow,.overlay,.modal,.skel{animation:none;}}
+  /* Chat */
+  .chat-people{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line);}
+  .person{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;padding:7px 12px 7px 7px;border-radius:11px;border:1px solid var(--line);background:var(--surface);color:var(--txt2);font-size:13px;cursor:pointer;font-family:var(--sans);white-space:nowrap;}
+  .person.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+  .person-ic{display:flex;margin-left:5px;}
+  .person-av{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;}
+  .chat-hint{color:var(--dim);font-size:13px;padding:8px;}
+  .chat-msgs{display:flex;flex-direction:column;gap:8px;min-height:280px;max-height:56vh;overflow-y:auto;padding:6px 2px;}
+  .chat-empty{margin:auto;text-align:center;color:var(--dim);font-size:13px;padding:20px;}
+  .bubble-row{display:flex;}
+  .bubble-row.me{justify-content:flex-end;}
+  .bubble{max-width:80%;padding:9px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--line);}
+  .bubble.me{background:var(--accent-soft);border-color:rgba(245,165,36,.35);}
+  .bubble-name{font-size:11px;color:var(--accent);font-weight:600;margin-bottom:3px;}
+  .bubble-body{font-size:14px;color:var(--txt);white-space:pre-wrap;word-break:break-word;line-height:1.45;}
+  .bubble-time{font-size:10px;color:var(--dim);font-family:var(--mono);margin-top:4px;text-align:right;}
+  .chat-input{display:flex;gap:8px;align-items:flex-end;margin-top:12px;border-top:1px solid var(--line);padding-top:12px;}
+  .chat-input textarea{flex:1;resize:none;min-height:44px;max-height:120px;background:var(--code);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:11px 13px;font-family:var(--sans);font-size:14px;}
+  .chat-input textarea:focus{outline:none;border-color:var(--accent);}
+  .chat-send{flex-shrink:0;width:44px;height:44px;border-radius:12px;border:none;background:var(--accent);color:#1a1206;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .chat-send:disabled{opacity:.5;cursor:default;}
 </style>
 </head>
 <body>
@@ -641,6 +662,25 @@ async function uploadImage(token, uid, file){
   return SUPABASE_URL + "/storage/v1/object/public/" + IMG_BUCKET + "/" + path;
 }
 const verBase = SUPABASE_URL + "/rest/v1/entry_versions";
+const msgBase = SUPABASE_URL + "/rest/v1/messages";
+async function listMembers(token){
+  const r = await fetch(profBase + "?select=id,email,approved&approved=eq.true&order=email.asc", {headers: dataHeaders(token)});
+  if(!r.ok) return [];
+  try{ return await r.json(); }catch(e){ return []; }
+}
+async function fetchMessages(token, me, conv){
+  let q;
+  if(conv==="team"){ q="recipient_id=is.null"; }
+  else{ q="or=(and(sender_id.eq."+me+",recipient_id.eq."+conv+"),and(sender_id.eq."+conv+",recipient_id.eq."+me+"))"; }
+  const r = await fetch(msgBase + "?" + q + "&select=*&order=created_at.asc&limit=300", {headers: dataHeaders(token)});
+  if(!r.ok) throw new Error("Kunde inte hämta meddelanden ("+r.status+")");
+  return r.json();
+}
+async function sendMessageRow(token, row){
+  const r = await fetch(msgBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify([row])});
+  if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte skicka ("+r.status+")")); }
+  return (await r.json())[0];
+}
 async function listVersions(token, entryId){
   const r = await fetch(verBase + "?entry_id=eq." + entryId + "&select=*&order=created_at.desc", {headers: dataHeaders(token)});
   if(!r.ok) throw new Error("Kunde inte hämta historik ("+r.status+")");
@@ -770,6 +810,8 @@ const Ico={
   image:<I size={15} d={<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></>} />,
   undo:<I size={14} d={<><path d="M3 7v6h6"/><path d="M3.5 13a9 9 0 1 0 2.3-9.2L3 7"/></>} />,
   rows:<I d={<><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>} />,
+  chat:<I d={<path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 0 1-.9-3.8 8.38 8.38 0 0 1 8.5-8.5 8.38 8.38 0 0 1 8.5 8.5z"/>} />,
+  send:<I size={16} d={<><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></>} />,
 };
 const TOPIC_ICON={"Scripting":Ico=>Ico.terminal,"Larm":Ico=>Ico.bell,"UDT/Tags":Ico=>Ico.box,"Trend":Ico=>Ico.chart,"Rapport":Ico=>Ico.report,"OPC":Ico=>Ico.plug,"SQL":Ico=>Ico.db,"Behörighet":Ico=>Ico.shield,"Övrigt":Ico=>Ico.dots};
 function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
@@ -1033,6 +1075,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
             onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
             onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
             onOpen={e=>setDetail(e)} loadExamples={loadExamples} />
+        ) : activeView==="chatt" ? (
+          <ChatView token={token} uid={uid} name={name} user={user} display={display} />
         ) : (
           <>
             <div className="page-head">
@@ -1118,7 +1162,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
 }
 
 function Nav({active,onNav,onUsers,counts,user,onLogout,onExport,onImport,busy}){
-  const items=[["oversikt","Översikt",Ico.grid,null],["bibliotek","Bibliotek",Ico.book,counts.bibliotek],["kod","Kod",Ico.terminal,counts.kod],["anteckningar","Anteckningar",Ico.note,counts.anteckningar]];
+  const items=[["oversikt","Översikt",Ico.grid,null],["bibliotek","Bibliotek",Ico.book,counts.bibliotek],["kod","Kod",Ico.terminal,counts.kod],["anteckningar","Anteckningar",Ico.note,counts.anteckningar],["chatt","Chatt",Ico.chat,null]];
   return (
     <nav className="nav">
       <div className="nav-brand">
@@ -1375,6 +1419,68 @@ function CompactRow({entry,mine=true,onOpen,onPin}){
     </div>
   );
 }
+function ChatView({token, uid, name, user, display}){
+  const [members,setMembers]=useState([]);
+  const [conv,setConv]=useState("team");
+  const [msgs,setMsgs]=useState([]);
+  const [text,setText]=useState("");
+  const [loading,setLoading]=useState(true);
+  const [sending,setSending]=useState(false);
+  const endRef=useRef(null);
+  useEffect(()=>{ listMembers(token).then(ms=>setMembers((ms||[]).filter(m=>m.id!==uid))); },[]);
+  useEffect(()=>{
+    let stop=false; setLoading(true);
+    async function tick(){ try{ const m=await fetchMessages(token, uid, conv); if(!stop) setMsgs(m); }catch(e){} if(!stop) setLoading(false); }
+    tick();
+    const iv=setInterval(tick, 4000);
+    return ()=>{ stop=true; clearInterval(iv); };
+  },[conv, token, uid]);
+  useEffect(()=>{ if(endRef.current) endRef.current.scrollIntoView(); },[msgs.length]);
+  function memberLabel(m){ return ((m&&m.email)||"").split("@")[0] || "medlem"; }
+  const convLabel = conv==="team" ? "Teamet" : (function(){ const m=members.find(x=>x.id===conv); return m?memberLabel(m):"medlem"; })();
+  async function send(){
+    const b=text.trim(); if(!b||sending) return;
+    setSending(true);
+    const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:b };
+    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); }catch(e){ alert(e.message); }
+    setSending(false);
+  }
+  return (
+    <div className="chat">
+      <div className="page-head"><div><h2 className="page-title">Chatt</h2><p className="page-sub">{conv==="team"?"Hela teamet":"Privat med "+convLabel}</p></div></div>
+      <div className="chat-people">
+        <button className={"person"+(conv==="team"?" active":"")} onClick={()=>setConv("team")}><span className="person-ic">{Ico.users}</span>Teamet</button>
+        {members.map(m=>(
+          <button key={m.id} className={"person"+(conv===m.id?" active":"")} onClick={()=>setConv(m.id)}>
+            <span className="person-av">{memberLabel(m).slice(0,2).toUpperCase()}</span>{memberLabel(m)}
+          </button>
+        ))}
+        {members.length===0 && <span className="chat-hint">Inga andra medlemmar än</span>}
+      </div>
+      <div className="chat-msgs">
+        {loading && msgs.length===0 ? <div className="chat-empty">Laddar…</div>
+         : msgs.length===0 ? <div className="chat-empty">{conv==="team"?"Inga meddelanden i teamet än – skriv det första!":"Inga meddelanden än – säg hej!"}</div>
+         : msgs.map(m=>{
+            const mine=m.sender_id===uid;
+            return <div key={m.id} className={"bubble-row"+(mine?" me":"")}>
+              <div className={"bubble"+(mine?" me":"")}>
+                {!mine && <div className="bubble-name">{m.sender_name||"medlem"}</div>}
+                <div className="bubble-body">{m.body}</div>
+                <div className="bubble-time">{fmtTime(m.created_at)}</div>
+              </div>
+            </div>;
+           })}
+        <div ref={endRef}></div>
+      </div>
+      <div className="chat-input">
+        <textarea value={text} onChange={e=>setText(e.target.value)} rows={1} placeholder={"Skriv till "+convLabel+"…"}
+          onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); } }} />
+        <button className="chat-send" disabled={sending||!text.trim()} onClick={send} title="Skicka">{Ico.send}</button>
+      </div>
+    </div>
+  );
+}
+
 function Chip({label,active,color,count,onClick}){
   return (<button className={"chip"+(active?" active":"")} style={{borderColor:active?color:"var(--line)"}} onClick={onClick}>
     <span className="cdot" style={{background:color}}></span>{label}{count>0&&<span className="cnt">{count}</span>}</button>);
@@ -1382,6 +1488,7 @@ function Chip({label,active,color,count,onClick}){
 
 function fmtDate(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleDateString("sv-SE",{year:"numeric",month:"short",day:"numeric"}); }catch(e){ return ""; } }
 function fmtDateTime(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleString("sv-SE",{dateStyle:"medium",timeStyle:"short"}); }catch(e){ return ""; } }
+function fmtTime(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
 function CodeBlock({code,lang}){
   let html=null;
   try{
