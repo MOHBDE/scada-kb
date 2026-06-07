@@ -327,6 +327,70 @@
   .imgmore{position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;}
   .detail-imgs{display:flex;flex-direction:column;gap:10px;margin:6px 0;}
   .detail-imgs img{width:100%;border-radius:12px;border:1px solid var(--line);display:block;}
+  /* Version history */
+  .histbox{border-top:1px solid var(--line);padding-top:14px;margin-top:6px;}
+  .hist-empty{color:var(--dim);font-size:13px;line-height:1.5;}
+  .histrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .histrow:last-child{border-bottom:none;}
+  .hist-when{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:12px;color:var(--txt2);}
+  .hist-when svg{width:12px;height:12px;color:var(--dim);}
+  .hist-snip{font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
+  .hist-restore{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:9px;border:1px solid var(--line-strong);background:var(--code);color:var(--txt2);font-size:12px;font-family:var(--sans);cursor:pointer;}
+  .hist-restore:hover{border-color:var(--accent);color:var(--accent);}
+  .hist-restore:disabled{opacity:.5;cursor:default;}
+  .foot-ghost{background:var(--code);border:1px solid var(--line-strong);color:var(--txt2);}
+  .foot-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  /* Offline badge */
+  .offline-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:9px;font-size:11px;font-family:var(--mono);background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:#fca5a5;}
+  .offline-dot{width:7px;height:7px;border-radius:50%;background:#f87171;}
+  /* Active tag filters */
+  .activetags{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+  .activetags-lbl{font-size:12px;color:var(--dim);font-family:var(--mono);}
+  .atag{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:9px;border:1px solid rgba(245,165,36,.4);background:var(--accent-soft);color:var(--accent);font-family:var(--mono);font-size:12px;cursor:pointer;}
+  .atag svg{width:12px;height:12px;}
+  .atag-clear{padding:5px 10px;border-radius:9px;border:1px solid var(--line-strong);background:none;color:var(--muted);font-size:12px;cursor:pointer;}
+  .atag-clear:hover{color:var(--accent);border-color:var(--accent);}
+  /* Language selector */
+  .langsel{margin-left:auto;background:var(--code);border:1px solid var(--line);color:var(--txt2);border-radius:7px;padding:3px 8px;font-family:var(--mono);font-size:11px;text-transform:none;letter-spacing:0;}
+  /* Code line numbers */
+  pre.code{display:flex;gap:12px;}
+  pre.code .gutter{flex:none;text-align:right;color:#5a6673;user-select:none;white-space:pre;border-right:1px solid rgba(255,255,255,.07);padding-right:11px;}
+  pre.code .codebody{flex:1 1 auto;min-width:0;white-space:pre;overflow-x:auto;display:block;}
+  /* Density toggle */
+  .density{display:flex;gap:2px;background:var(--code);border:1px solid var(--line);border-radius:9px;padding:2px;}
+  .denbtn{display:flex;align-items:center;justify-content:center;width:30px;height:26px;border:none;background:none;color:var(--dim);border-radius:7px;cursor:pointer;}
+  .denbtn svg{width:16px;height:16px;}
+  .denbtn.active{background:var(--accent-soft);color:var(--accent);}
+  /* Compact list */
+  .compactlist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--surface);}
+  .compactrow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s;}
+  .compactrow:last-child{border-bottom:none;}
+  .compactrow:hover{background:var(--accent-soft);}
+  .cr-type{display:flex;flex-shrink:0;}
+  .cr-type svg{width:16px;height:16px;}
+  .cr-title{flex:1;min-width:0;font-size:13.5px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cr-ico{display:flex;flex-shrink:0;}
+  .cr-ico svg{width:14px;height:14px;}
+  .cr-sys{flex-shrink:0;font-family:var(--mono);font-size:10px;}
+  .cr-badge{flex-shrink:0;font-size:9.5px;padding:2px 7px;border-radius:6px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;}
+  .cr-date{flex-shrink:0;font-family:var(--mono);font-size:10.5px;color:var(--dim);}
+  @media(max-width:620px){.cr-sys,.cr-date{display:none;}}
+  /* Empty state */
+  .empty-art{color:var(--dim);opacity:.85;margin-bottom:8px;}
+  .empty-title{font-size:16px;font-weight:600;color:var(--txt);}
+  .empty-sub{font-size:13px;color:var(--dim);margin:6px auto 0;max-width:360px;line-height:1.5;}
+  /* Skeleton */
+  @keyframes shimmer{0%{background-position:-450px 0;}100%{background-position:450px 0;}}
+  .skel{background:linear-gradient(90deg,var(--line2) 25%,rgba(148,163,184,.18) 37%,var(--line2) 63%);background-size:900px 100%;animation:shimmer 1.4s infinite linear;border-radius:7px;}
+  .skelcard{pointer-events:none;}
+  /* Entrance animations */
+  @keyframes cardin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .cards .card,.compactrow{animation:cardin .26s ease both;}
+  @keyframes overlayin{from{opacity:0;}to{opacity:1;}}
+  .overlay{animation:overlayin .18s ease;}
+  @keyframes modalpop{from{opacity:0;transform:translateY(12px) scale(.985);}to{opacity:1;transform:none;}}
+  .modal{animation:modalpop .24s cubic-bezier(.2,.7,.3,1) both;}
+  @media (prefers-reduced-motion: reduce){.cards .card,.compactrow,.overlay,.modal,.skel{animation:none;}}
 </style>
 </head>
 <body>
@@ -563,7 +627,7 @@ async function apiGet(token){
   const r = await fetch(restBase + "?select=*&order=updated_at.desc", {headers: dataHeaders(token)});
   if (!r.ok) throw new Error("GET " + r.status); return r.json();
 }
-const OPTIONAL_COLS = ["shared","author","notes","images"];
+const OPTIONAL_COLS = ["shared","author","notes","images","lang"];
 const IMG_BUCKET = "kb-images";
 async function uploadImage(token, uid, file){
   let ext = (file.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
@@ -575,6 +639,12 @@ async function uploadImage(token, uid, file){
   });
   if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || d.error || ("Uppladdning misslyckades ("+r.status+")")); }
   return SUPABASE_URL + "/storage/v1/object/public/" + IMG_BUCKET + "/" + path;
+}
+const verBase = SUPABASE_URL + "/rest/v1/entry_versions";
+async function listVersions(token, entryId){
+  const r = await fetch(verBase + "?entry_id=eq." + entryId + "&select=*&order=created_at.desc", {headers: dataHeaders(token)});
+  if(!r.ok) throw new Error("Kunde inte hämta historik ("+r.status+")");
+  return r.json();
 }
 function stripOptional(x){ const f=o=>{const c={...o}; OPTIONAL_COLS.forEach(k=>delete c[k]); return c;}; return Array.isArray(x)?x.map(f):f(x); }
 async function apiInsert(token, rows){
@@ -686,6 +756,8 @@ const Ico={
   moon:<I size={16} d={<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>} />,
   lock:<I size={13} d={<><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
   image:<I size={15} d={<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></>} />,
+  undo:<I size={14} d={<><path d="M3 7v6h6"/><path d="M3.5 13a9 9 0 1 0 2.3-9.2L3 7"/></>} />,
+  rows:<I d={<><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>} />,
 };
 const TOPIC_ICON={"Scripting":Ico=>Ico.terminal,"Larm":Ico=>Ico.bell,"UDT/Tags":Ico=>Ico.box,"Trend":Ico=>Ico.chart,"Rapport":Ico=>Ico.report,"OPC":Ico=>Ico.plug,"SQL":Ico=>Ico.db,"Behörighet":Ico=>Ico.shield,"Övrigt":Ico=>Ico.dots};
 function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
@@ -794,32 +866,58 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   const [scope,setScope]=useState("alla");
   const [activeSystem,setActiveSystem]=useState("Alla");
   const [activeCat,setActiveCat]=useState("Alla");
+  const [activeTags,setActiveTags]=useState([]);
+  const [density,setDensity]=useState("kort");
+  function toggleTag(t){ setActiveTags(a=>a.indexOf(t)>=0?a.filter(x=>x!==t):[...a,t]); }
   const [sortBy,setSortBy]=useState("senaste");
   const [showUsers,setShowUsers]=useState(false);
   const [editing,setEditing]=useState(null);
   const [copiedId,setCopiedId]=useState(null);
   const [detail,setDetail]=useState(null);
   const [toast,setToast]=useState("");
+  const [online,setOnline]=useState(typeof navigator==="undefined"?true:navigator.onLine!==false);
   const fileRef=useRef(null);
+  const cacheKey="scada-cache-"+(uid||user||"x");
 
   useEffect(()=>{ load(); },[]);
+  useEffect(()=>{
+    const on=()=>setOnline(true), off=()=>setOnline(false);
+    window.addEventListener("online",on); window.addEventListener("offline",off);
+    return ()=>{ window.removeEventListener("online",on); window.removeEventListener("offline",off); };
+  },[]);
   function flash(m){ setToast(m); setTimeout(()=>setToast(""),2400); }
 
   async function load(){
     setLoading(true); setError(null);
-    try{ setEntries(await apiGet(token)); }
-    catch(e){ setError("Kunde inte hämta data. Sessionen kan ha gått ut – logga in igen."); }
+    try{
+      const data=await apiGet(token);
+      setEntries(data);
+      try{ localStorage.setItem(cacheKey, JSON.stringify(data)); }catch(e){}
+    }catch(e){
+      let cached=null;
+      try{ const raw=localStorage.getItem(cacheKey); if(raw) cached=JSON.parse(raw); }catch(e2){}
+      if(cached){ setEntries(cached); setError("Offline – visar din senast sparade kopia. Ändringar kan inte sparas förrän du är online igen."); }
+      else setError("Kunde inte hämta data. Sessionen kan ha gått ut – logga in igen.");
+    }
     setLoading(false);
   }
   async function saveEntry(data){
+    if(typeof navigator!=="undefined" && navigator.onLine===false){ alert("Du är offline – ändringar kan inte sparas just nu. Försök igen när du har täckning."); return; }
     setBusy(true);
-    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],updated_at:new Date().toISOString()};
+    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",updated_at:new Date().toISOString()};
     try{
       if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
       else{ const n=await apiInsert(token,[{...row,pinned:false}]); setEntries([...n, ...entries]); }
       setEditing(null);
     }catch(e){ alert("Kunde inte spara: "+e.message); }
     setBusy(false);
+  }
+  async function restoreVersion(entryId, snap){
+    const row={title:snap.title,system:snap.system,category:snap.category,tags:snap.tags||[],content:snap.content,notes:snap.notes||"",is_code:snap.is_code,shared:!!snap.shared,images:snap.images||[],lang:snap.lang||"auto",author:snap.author||(name||user),updated_at:new Date().toISOString()};
+    const u=await apiUpdate(token,entryId,row);
+    setEntries(entries.map(e=>e.id===entryId?u:e));
+    setDetail(u);
+    flash("Återställde en tidigare version");
   }
   async function togglePin(entry){
     try{ const u=await apiUpdate(token,entry.id,{pinned:!entry.pinned}); setEntries(entries.map(e=>e.id===entry.id?u:e)); }
@@ -832,7 +930,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   async function loadExamples(){
     setBusy(true);
     try{
-      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], pinned:false, updated_at:new Date().toISOString()}));
+      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], lang:s.lang||"auto", pinned:false, updated_at:new Date().toISOString()}));
       const inserted=await apiInsert(token,rows);
       setEntries([...inserted, ...entries]);
       flash("Laddade "+inserted.length+" exempelposter");
@@ -853,7 +951,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       try{
         const data=JSON.parse(e.target.result);
         if(!Array.isArray(data)) throw new Error();
-        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],pinned:!!d.pinned,updated_at:new Date().toISOString()}));
+        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],lang:d.lang||"auto",pinned:!!d.pinned,updated_at:new Date().toISOString()}));
         setBusy(true);
         const inserted=await apiInsert(token,rows);
         setEntries([...inserted, ...entries]);
@@ -869,8 +967,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
     let list=entries.filter(e=>{
       if(activeSystem!=="Alla"&&(e.system||"Ignition")!==activeSystem) return false;
       if(activeCat!=="Alla"&&e.category!==activeCat) return false;
+      if(activeTags.length){ const et=(e.tags||[]).map(t=>(t||"").toLowerCase()); if(!activeTags.every(t=>et.indexOf(t.toLowerCase())>=0)) return false; }
       if(!q) return true;
-      return (e.title+" "+e.content+" "+(e.tags||[]).join(" ")).toLowerCase().includes(q);
+      return (e.title+" "+e.content+" "+(e.notes||"")+" "+(e.author||"")+" "+(e.tags||[]).join(" ")).toLowerCase().includes(q);
     });
     list=list.slice().sort((a,b)=>{
       if(!!b.pinned!==!!a.pinned) return (b.pinned?1:0)-(a.pinned?1:0);
@@ -879,7 +978,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       return (b.updated_at||"").localeCompare(a.updated_at||"");
     });
     return list;
-  },[entries,search,activeSystem,activeCat,sortBy]);
+  },[entries,search,activeSystem,activeCat,sortBy,activeTags]);
   const sysScope=useMemo(()=>activeSystem==="Alla"?entries:entries.filter(e=>(e.system||"Ignition")===activeSystem),[entries,activeSystem]);
   const counts=useMemo(()=>{const c={}; sysScope.forEach(e=>c[e.category]=(c[e.category]||0)+1); return c;},[sysScope]);
   const sysCounts=useMemo(()=>{const c={}; entries.forEach(e=>{const s=e.system||"Ignition"; c[s]=(c[s]||0)+1;}); return c;},[entries]);
@@ -906,6 +1005,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
         <div className="topbar">
           <div className="topbar-user">{Ico.users}<span className="topbar-email">{display}</span></div>
           <div className="topbar-actions">
+            {!online&&<span className="offline-badge"><span className="offline-dot"></span>Offline</span>}
             <button className="hbtn" title="Mörkt/ljust läge" onClick={onToggleTheme}>{theme==="light"?Ico.moon:Ico.sun}</button>
             <button className="hbtn" title="Exportera (backup)" onClick={exportData}>{Ico.down}</button>
             <button className="hbtn" title="Importera" onClick={()=>fileRef.current.click()}>{Ico.up}</button>
@@ -919,7 +1019,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
             codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading} user={display}
             onOpenLibrary={cat=>{setActiveCat(cat||"Alla");setActiveSystem("Alla");setSearch("");setActiveView("bibliotek");}}
             onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
-            onTag={t=>{setSearch(t);setActiveView("bibliotek");}}
+            onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
             onOpen={e=>setDetail(e)} loadExamples={loadExamples} />
         ) : (
           <>
@@ -942,7 +1042,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
             </div>
 
             <div className="search-box">{Ico.search}
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök i titel, kod, taggar…" /></div>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök i titel, kod, beskrivning, taggar…" /></div>
 
             <div className="chips">
               <Chip label="Alla ämnen" active={activeCat==="Alla"} color="#f5a524" count={sysScope.length} onClick={()=>setActiveCat("Alla")} />
@@ -955,31 +1055,42 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
               <button className={"scopebtn"+(scope==="delade"?" active":"")} onClick={()=>setScope("delade")}>{Ico.users} Delade</button>
             </div>
 
+            {activeTags.length>0 && (
+              <div className="activetags">
+                <span className="activetags-lbl">Taggar:</span>
+                {activeTags.map(t=><button key={t} className="atag" onClick={()=>toggleTag(t)}>#{t}{Ico.x}</button>)}
+                <button className="atag-clear" onClick={()=>setActiveTags([])}>Rensa</button>
+              </div>
+            )}
+
             <div className="subbar">
               <span className="resultcnt">{viewList.length} {viewList.length===1?"post":"poster"}{pinnedCount>0?" · "+pinnedCount+" ★":""}</span>
-              <div className="sortwrap">{Ico.sort}
-                <select className="sortsel" value={sortBy} onChange={e=>setSortBy(e.target.value)}>
-                  <option value="senaste">Senaste</option>
-                  <option value="titel">A–Ö</option>
-                  <option value="kategori">Ämne</option>
-                </select>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div className="density">
+                  <button className={"denbtn"+(density==="kort"?" active":"")} onClick={()=>setDensity("kort")} title="Kortvy">{Ico.grid}</button>
+                  <button className={"denbtn"+(density==="kompakt"?" active":"")} onClick={()=>setDensity("kompakt")} title="Kompakt vy">{Ico.rows}</button>
+                </div>
+                <div className="sortwrap">{Ico.sort}
+                  <select className="sortsel" value={sortBy} onChange={e=>setSortBy(e.target.value)}>
+                    <option value="senaste">Senaste</option>
+                    <option value="titel">A–Ö</option>
+                    <option value="kategori">Ämne</option>
+                  </select>
+                </div>
               </div>
             </div>
 
             {loading ? (
-              <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>
+              <SkeletonCards />
             ) : viewList.length===0 ? (
-              <div className="empty">
-                <div className="empty-icon">{activeView==="kod"?Ico.terminal:activeView==="anteckningar"?Ico.note:Ico.file}</div>
-                <div>{entries.length>0?"Inga träffar här.":"Tom kunskapsbas. Ladda in exemplen, eller skapa en egen post."}</div>
-                {entries.length===0 && <div style={{marginTop:16,display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
-                  <button className="btn-amber" onClick={loadExamples}>{Ico.down} Ladda exempelposter</button>
-                  <button className="btn-amber" style={{background:"var(--line2)",color:"var(--txt2)"}} onClick={()=>setEditing({})}>{Ico.add} Ny post</button>
-                </div>}
+              <EmptyState view={activeView} hasEntries={entries.length>0} onLoad={loadExamples} onAdd={()=>setEditing({})} />
+            ) : density==="kompakt" ? (
+              <div className="compactlist">
+                {viewList.map(e=><CompactRow key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} onOpen={()=>setDetail(e)} onPin={()=>togglePin(e)} />)}
               </div>
             ) : (
               <div className="cards">
-                {viewList.map(e=><EntryCard key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} copied={copiedId===e.id} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} onPin={()=>togglePin(e)} onTag={t=>{setSearch(t);}} onOpen={()=>setDetail(e)} />)}
+                {viewList.map(e=><EntryCard key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} copied={copiedId===e.id} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} onPin={()=>togglePin(e)} onTag={t=>toggleTag(t)} onOpen={()=>setDetail(e)} />)}
               </div>
             )}
           </>
@@ -988,7 +1099,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
 
       {toast && <div className="toast">{toast}</div>}
       {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} onSave={saveEntry} onClose={()=>setEditing(null)} />}
-      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);setSearch(t);setActiveView("bibliotek");}} />}
+      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
     </div>
   );
@@ -1122,12 +1233,15 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
   );
 }
 
-function DetailModal({entry,entries,mine=true,onClose,onOpen,onEdit,onTag}){
+function DetailModal({entry,entries,mine=true,token,onRestore,onClose,onOpen,onEdit,onTag}){
   const color=CAT_COLOR[entry.category]||"#94a3b8";
   const sys=entry.system||"Ignition";
   const sysColor=SYS_COLOR[sys]||"#94a3b8";
   const tags=entry.tags||[];
   const [copied,setCopied]=useState(false);
+  const [hist,setHist]=useState(null); const [histBusy,setHistBusy]=useState(false); const [restoring,setRestoring]=useState(false);
+  async function openHist(){ setHistBusy(true); try{ setHist(await listVersions(token, entry.id)); }catch(e){ setHist([]); } setHistBusy(false); }
+  async function doRestore(v){ setRestoring(true); try{ await onRestore(entry.id, v.snapshot); setHist(null); }catch(e){ alert("Kunde inte återställa: "+e.message); } setRestoring(false); }
   function copy(){ navigator.clipboard&&navigator.clipboard.writeText(entry.content); setCopied(true); setTimeout(()=>setCopied(false),1500); }
   const related=entries.filter(e=>e.id!==entry.id).map(e=>{
     let score=0;
@@ -1157,9 +1271,9 @@ function DetailModal({entry,entries,mine=true,onClose,onOpen,onEdit,onTag}){
             <>
               {entry.notes && entry.notes.trim() && <p className="note desc" style={{padding:"2px 0"}}>{entry.notes}</p>}
               <div className="code-wrap">
-                <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span>
+                <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">{entry.lang&&entry.lang!=="auto"?entry.lang:"kod"}</span>
                   <button className="code-copy" onClick={copy}>{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
-                <CodeBlock code={entry.content} />
+                <CodeBlock code={entry.content} lang={entry.lang} />
               </div>
             </>
           ) : <p className="note" style={{padding:"6px 0"}}>{entry.content}</p>}
@@ -1170,6 +1284,22 @@ function DetailModal({entry,entries,mine=true,onClose,onOpen,onEdit,onTag}){
               ))}
             </div>
           )}
+          {hist!==null && (
+            <div className="histbox">
+              <div className="related-h">{Ico.undo} Versionshistorik</div>
+              {histBusy ? <div className="hist-empty">Laddar…</div>
+               : hist.length===0 ? <div className="hist-empty">Inga tidigare versioner än. Nästa gång du sparar en ändring hamnar den föregående versionen här.</div>
+               : hist.map(v=>(
+                  <div key={v.id} className="histrow">
+                    <div style={{minWidth:0,flex:1}}>
+                      <div className="hist-when">{Ico.clock} {fmtDateTime(v.created_at)}</div>
+                      <div className="hist-snip">{((v.snapshot&&v.snapshot.content)||"").replace(/\s+/g," ").slice(0,70)||"(tom)"}</div>
+                    </div>
+                    <button className="hist-restore" disabled={restoring} onClick={()=>doRestore(v)}>{Ico.undo} Återställ</button>
+                  </div>
+                 ))}
+            </div>
+          )}
           {related.length>0 && <div className="related">
             <div className="related-h">{Ico.link} Relaterade poster</div>
             {related.map(r=><MiniRow key={r.id} entry={r} onClick={()=>onOpen(r)} />)}
@@ -1177,6 +1307,7 @@ function DetailModal({entry,entries,mine=true,onClose,onOpen,onEdit,onTag}){
         </div>
         <div className="modal-foot">
           <button className="foot-btn foot-cancel" onClick={onClose}>Stäng</button>
+          {mine && <button className="foot-btn foot-ghost" onClick={()=>hist===null?openHist():setHist(null)}>{Ico.undo} {hist===null?"Historik":"Dölj"}</button>}
           {mine && <button className="foot-btn foot-save" onClick={()=>onEdit(entry)}>{Ico.edit} Redigera</button>}
         </div>
       </div>
@@ -1184,17 +1315,78 @@ function DetailModal({entry,entries,mine=true,onClose,onOpen,onEdit,onTag}){
   );
 }
 
+const EmptyArt = (
+  <svg width="92" height="92" viewBox="0 0 92 92" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="17" y="13" width="42" height="55" rx="6" strokeWidth="2"/>
+    <line x1="26" y1="27" x2="50" y2="27" strokeWidth="3"/>
+    <line x1="26" y1="36" x2="43" y2="36" strokeWidth="3"/>
+    <line x1="26" y1="45" x2="47" y2="45" strokeWidth="3"/>
+    <circle cx="60" cy="60" r="15" strokeWidth="3" style={{stroke:"#f5a524"}}/>
+    <line x1="71" y1="71" x2="81" y2="81" strokeWidth="3" style={{stroke:"#f5a524"}}/>
+  </svg>
+);
+function SkeletonCards(){
+  return <div className="cards">{[0,1,2,3].map(i=>(
+    <div key={i} className="card skelcard">
+      <div className="skel" style={{height:15,width:"52%"}}></div>
+      <div className="skel" style={{height:9,width:"26%",marginTop:11}}></div>
+      <div className="skel" style={{height:62,width:"100%",marginTop:14,borderRadius:10}}></div>
+    </div>
+  ))}</div>;
+}
+function EmptyState({view,hasEntries,onLoad,onAdd}){
+  return (
+    <div className="empty">
+      <div className="empty-art">{EmptyArt}</div>
+      <div className="empty-title">{hasEntries?"Inga träffar":"Din kunskapsbas är tom"}</div>
+      <div className="empty-sub">{hasEntries?"Prova att rensa filtren eller söka på något annat.":"Ladda in exemplen vi gått igenom, eller skapa din första post."}</div>
+      {!hasEntries && <div style={{marginTop:18,display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+        <button className="btn-amber" onClick={onLoad}>{Ico.down} Ladda exempelposter</button>
+        <button className="btn-amber" style={{background:"var(--line2)",color:"var(--txt2)"}} onClick={onAdd}>{Ico.add} Ny post</button>
+      </div>}
+    </div>
+  );
+}
+function CompactRow({entry,mine=true,onOpen,onPin}){
+  const color=CAT_COLOR[entry.category]||"#94a3b8";
+  const sys=entry.system||"Ignition";
+  const sysColor=SYS_COLOR[sys]||"#94a3b8";
+  return (
+    <div className="compactrow" onClick={onOpen}>
+      <span className="cr-type" style={{color:entry.is_code?"#a78bfa":"#60a5fa"}}>{entry.is_code?Ico.terminal:Ico.note}</span>
+      <span className="cr-title">{entry.title}</span>
+      {entry.shared && <span className="cr-ico" title={mine?"delad":"delad av "+(entry.author||"team")} style={{color:"#34d399"}}>{Ico.users}</span>}
+      <span className="cr-sys" style={{color:sysColor}}>{sys}</span>
+      <span className="cr-badge" style={{color,background:color+"22"}}>{entry.category}</span>
+      <span className="cr-date">{fmtDate(entry.updated_at)}</span>
+      {mine && <button className={"ibtn"+(entry.pinned?" on":"")} onClick={e=>{e.stopPropagation();onPin();}} title={entry.pinned?"Ta bort favorit":"Favoritmarkera"}>{Ico.star}</button>}
+    </div>
+  );
+}
 function Chip({label,active,color,count,onClick}){
   return (<button className={"chip"+(active?" active":"")} style={{borderColor:active?color:"var(--line)"}} onClick={onClick}>
     <span className="cdot" style={{background:color}}></span>{label}{count>0&&<span className="cnt">{count}</span>}</button>);
 }
 
 function fmtDate(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleDateString("sv-SE",{year:"numeric",month:"short",day:"numeric"}); }catch(e){ return ""; } }
-function CodeBlock({code}){
+function fmtDateTime(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleString("sv-SE",{dateStyle:"medium",timeStyle:"short"}); }catch(e){ return ""; } }
+function CodeBlock({code,lang}){
   let html=null;
-  try{ if(window.hljs) html=window.hljs.highlightAuto(code,["python","sql","json","javascript","bash","xml"]).value; }catch(e){}
-  if(html!=null) return <pre className="code"><code className="hljs" dangerouslySetInnerHTML={{__html:html}} /></pre>;
-  return <pre className="code">{code}</pre>;
+  try{
+    if(window.hljs){
+      if(lang && lang!=="auto" && window.hljs.getLanguage(lang)) html=window.hljs.highlight(code,{language:lang,ignoreIllegals:true}).value;
+      else html=window.hljs.highlightAuto(code,["python","sql","json","javascript","bash","xml"]).value;
+    }
+  }catch(e){}
+  const lineCount=(code||"").split("\n").length;
+  const gutter=Array.from({length:lineCount},(_,i)=>i+1).join("\n");
+  return (
+    <pre className="code"><span className="gutter" aria-hidden="true">{gutter}</span>
+      {html!=null
+        ? <code className="hljs codebody" dangerouslySetInnerHTML={{__html:html}} />
+        : <code className="codebody">{code}</code>}
+    </pre>
+  );
 }
 
 function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,onOpen}){
@@ -1235,9 +1427,9 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
         <>
           {entry.notes && entry.notes.trim() && <p className="note desc">{entry.notes}</p>}
           <div className="code-wrap">
-            <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">kod</span>
+            <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">{entry.lang&&entry.lang!=="auto"?entry.lang:"kod"}</span>
               <button className="code-copy" onClick={onCopy} title="Kopiera kod">{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
-            <CodeBlock code={codeText} />
+            <CodeBlock code={codeText} lang={entry.lang} />
           </div>
         </>
       ) : <p className="note">{shown}{!exp&&long?" …":""}</p>}
@@ -1271,6 +1463,7 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
   const [text,setText]=useState(!startCode?(initial.content||""):"");
   const [desc,setDesc]=useState(initial.notes||"");
   const [shared,setShared]=useState(!!initial.shared);
+  const [lang,setLang]=useState(initial.lang||"auto");
   const [images,setImages]=useState(initial.images||[]);
   const [upBusy,setUpBusy]=useState(false); const [upErr,setUpErr]=useState("");
   const fileRef=useRef(null);
@@ -1285,7 +1478,7 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
     setUpBusy(false);
   }
   function removeImage(url){ setImages(im=>im.filter(u=>u!==url)); }
-  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:isCode?code:text,notes:isCode?desc:"",isCode,shared,images}); }
+  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:isCode?code:text,notes:isCode?desc:"",isCode,shared,images,lang:isCode?lang:"auto"}); }
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e=>e.stopPropagation()}>
@@ -1312,7 +1505,11 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
           </div>
           {isCode ? (
             <div className="splitfields">
-              <label className="field"><span className="lbl">{Ico.code} Kod / script</span>
+              <label className="field"><span className="lbl" style={{display:"flex",alignItems:"center",gap:8}}>{Ico.code} Kod / script
+                <select className="langsel" value={lang} onChange={e=>setLang(e.target.value)}>
+                  <option value="auto">auto</option><option value="python">Python</option><option value="sql">SQL</option>
+                  <option value="json">JSON</option><option value="javascript">JavaScript</option><option value="bash">Bash</option><option value="xml">XML/HTML</option>
+                </select></span>
                 <textarea value={code} onChange={e=>setCode(e.target.value)} rows={10} placeholder="Klistra in din kod här…" style={{fontFamily:"var(--mono)"}} /></label>
               <label className="field"><span className="lbl">{Ico.note} Beskrivning / anteckning <span className="lbl-opt">valfritt</span></span>
                 <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={10} placeholder="Beskriv vad koden gör, fallgropar, var den används…" style={{fontFamily:"var(--sans)"}} /></label>
@@ -1402,6 +1599,13 @@ function UserModal({token,user,name,isAdmin,onName,onClose}){
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
 </script>
 </body>
 </html>
