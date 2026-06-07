@@ -412,6 +412,9 @@
   .chat-input textarea:focus{outline:none;border-color:var(--accent);}
   .chat-send{flex-shrink:0;width:44px;height:44px;border-radius:12px;border:none;background:var(--accent);color:#1a1206;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .chat-send:disabled{opacity:.5;cursor:default;}
+  .nav-ic{position:relative;}
+  .nav-bubble{position:absolute;top:-7px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#f87171;color:#fff;font-size:9.5px;font-family:var(--mono);font-weight:600;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
+  .person-dot{width:8px;height:8px;border-radius:50%;background:#f87171;margin-left:3px;}
 </style>
 </head>
 <body>
@@ -941,6 +944,27 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   },[]);
   function flash(m){ setToast(m); setTimeout(()=>setToast(""),2400); }
 
+  const seenRef=useRef((function(){ try{ return JSON.parse(localStorage.getItem("scada-seen-"+(uid||user))||"{}"); }catch(e){ return {}; } })());
+  const [unreadMap,setUnreadMap]=useState({});
+  function saveSeen(){ try{ localStorage.setItem("scada-seen-"+(uid||user), JSON.stringify(seenRef.current)); }catch(e){} }
+  async function pollUnread(){
+    try{
+      const q="or=(recipient_id.is.null,recipient_id.eq."+uid+")";
+      const r=await fetch(msgBase+"?"+q+"&select=sender_id,recipient_id,created_at&order=created_at.desc&limit=80",{headers:dataHeaders(token)});
+      if(!r.ok) return;
+      const rows=await r.json(); const seen=seenRef.current; const map={};
+      rows.forEach(m=>{
+        if(m.sender_id===uid) return;
+        const conv=m.recipient_id==null?"team":m.sender_id;
+        if((m.created_at||"")>(seen[conv]||"1970")) map[conv]=(map[conv]||0)+1;
+      });
+      setUnreadMap(map);
+    }catch(e){}
+  }
+  useEffect(()=>{ pollUnread(); const iv=setInterval(pollUnread,15000); return ()=>clearInterval(iv); },[uid,token]);
+  function markConvSeen(conv){ seenRef.current[conv]=new Date().toISOString(); saveSeen(); setUnreadMap(m=>{ const c={...m}; delete c[conv]; return c; }); }
+  const totalUnread=Object.keys(unreadMap).reduce((s,k)=>s+(unreadMap[k]||0),0);
+
   async function load(){
     setLoading(true); setError(null);
     try{
@@ -1050,7 +1074,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
 
   return (
     <div className="app">
-      <Nav active={activeView} onNav={v=>setActiveView(v)} onUsers={()=>setShowUsers(true)}
+      <Nav active={activeView} onNav={v=>setActiveView(v)} onUsers={()=>setShowUsers(true)} chatUnread={totalUnread}
         counts={{bibliotek:entries.length,kod:codeCount,anteckningar:noteCount}}
         user={display} onLogout={onLogout} onExport={exportData} onImport={()=>fileRef.current.click()} busy={busy} />
       <input ref={fileRef} type="file" accept="application/json" onChange={importData} style={{display:"none"}} />
@@ -1076,7 +1100,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
             onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
             onOpen={e=>setDetail(e)} loadExamples={loadExamples} />
         ) : activeView==="chatt" ? (
-          <ChatView token={token} uid={uid} name={name} user={user} display={display} />
+          <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} />
         ) : (
           <>
             <div className="page-head">
@@ -1161,7 +1185,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   );
 }
 
-function Nav({active,onNav,onUsers,counts,user,onLogout,onExport,onImport,busy}){
+function Nav({active,onNav,onUsers,counts,user,onLogout,onExport,onImport,busy,chatUnread}){
   const items=[["oversikt","Översikt",Ico.grid,null],["bibliotek","Bibliotek",Ico.book,counts.bibliotek],["kod","Kod",Ico.terminal,counts.kod],["anteckningar","Anteckningar",Ico.note,counts.anteckningar],["chatt","Chatt",Ico.chat,null]];
   return (
     <nav className="nav">
@@ -1172,7 +1196,7 @@ function Nav({active,onNav,onUsers,counts,user,onLogout,onExport,onImport,busy})
       <div className="nav-items">
         {items.map(([key,label,icon,cnt])=>(
           <button key={key} className={"nav-item"+(active===key?" active":"")} onClick={()=>onNav(key)}>
-            <span className="nav-ic">{icon}</span><span className="nav-lbl">{label}</span>{cnt!=null&&<span className="nav-cnt">{cnt}</span>}
+            <span className="nav-ic">{icon}{key==="chatt"&&chatUnread>0&&<span className="nav-bubble">{chatUnread>9?"9+":chatUnread}</span>}</span><span className="nav-lbl">{label}</span>{cnt!=null&&<span className="nav-cnt">{cnt}</span>}
           </button>
         ))}
         <button className="nav-item nav-users" onClick={onUsers}><span className="nav-ic">{Ico.users}</span><span className="nav-lbl">Användare</span></button>
@@ -1419,7 +1443,7 @@ function CompactRow({entry,mine=true,onOpen,onPin}){
     </div>
   );
 }
-function ChatView({token, uid, name, user, display}){
+function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   const [members,setMembers]=useState([]);
   const [conv,setConv]=useState("team");
   const [msgs,setMsgs]=useState([]);
@@ -1430,7 +1454,7 @@ function ChatView({token, uid, name, user, display}){
   useEffect(()=>{ listMembers(token).then(ms=>setMembers((ms||[]).filter(m=>m.id!==uid))); },[]);
   useEffect(()=>{
     let stop=false; setLoading(true);
-    async function tick(){ try{ const m=await fetchMessages(token, uid, conv); if(!stop) setMsgs(m); }catch(e){} if(!stop) setLoading(false); }
+    async function tick(){ try{ const m=await fetchMessages(token, uid, conv); if(!stop){ setMsgs(m); if(onSeen) onSeen(conv); } }catch(e){} if(!stop) setLoading(false); }
     tick();
     const iv=setInterval(tick, 4000);
     return ()=>{ stop=true; clearInterval(iv); };
@@ -1449,10 +1473,10 @@ function ChatView({token, uid, name, user, display}){
     <div className="chat">
       <div className="page-head"><div><h2 className="page-title">Chatt</h2><p className="page-sub">{conv==="team"?"Hela teamet":"Privat med "+convLabel}</p></div></div>
       <div className="chat-people">
-        <button className={"person"+(conv==="team"?" active":"")} onClick={()=>setConv("team")}><span className="person-ic">{Ico.users}</span>Teamet</button>
+        <button className={"person"+(conv==="team"?" active":"")} onClick={()=>setConv("team")}><span className="person-ic">{Ico.users}</span>Teamet{conv!=="team"&&unreadMap.team>0&&<span className="person-dot"></span>}</button>
         {members.map(m=>(
           <button key={m.id} className={"person"+(conv===m.id?" active":"")} onClick={()=>setConv(m.id)}>
-            <span className="person-av">{memberLabel(m).slice(0,2).toUpperCase()}</span>{memberLabel(m)}
+            <span className="person-av">{memberLabel(m).slice(0,2).toUpperCase()}</span>{memberLabel(m)}{conv!==m.id&&unreadMap[m.id]>0&&<span className="person-dot"></span>}
           </button>
         ))}
         {members.length===0 && <span className="chat-hint">Inga andra medlemmar än</span>}
