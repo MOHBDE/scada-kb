@@ -108,7 +108,7 @@
   label.field{display:block;}
   label.field .lbl{font-size:12px;color:var(--dim);margin-bottom:7px;display:block;letter-spacing:.01em;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .toggle-row{display:flex;gap:8px;}
+  .toggle-row{display:flex;gap:8px;flex-wrap:wrap;}
   .toggle{flex:1;padding:9px;border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;background:var(--code);border:1px solid var(--line);color:var(--dim);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;}
   .toggle.active{background:var(--accent-soft);border-color:rgba(245,165,36,.5);color:var(--accent);}
   textarea{resize:vertical;}
@@ -458,6 +458,30 @@
   .tplfield input{padding:8px 10px;font-family:var(--mono);font-size:13px;}
   .tplhint{font-size:12px;color:var(--dim);margin-top:2px;}
   .tplhint code{font-family:var(--mono);background:var(--code);padding:1px 5px;border-radius:5px;color:var(--accent);}
+  /* Checklist display */
+  .checklist{margin-top:4px;}
+  .cl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .cl-prog{font-family:var(--mono);font-size:12px;color:var(--txt2);display:inline-flex;align-items:center;gap:5px;}
+  .cl-prog.done{color:var(--ok);}
+  .cl-prog.done svg{width:14px;height:14px;}
+  .cl-reset{background:none;border:1px solid var(--line);color:var(--dim);font-size:11px;border-radius:8px;padding:4px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);}
+  .cl-reset:hover{color:var(--accent);border-color:var(--accent);}
+  .cl-reset svg{width:12px;height:12px;}
+  .cl-items{display:flex;flex-direction:column;gap:6px;}
+  .cl-item{display:flex;align-items:flex-start;gap:10px;text-align:left;background:var(--code);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;font-family:var(--sans);color:var(--txt);width:100%;}
+  .cl-item:hover{border-color:var(--line-strong);}
+  .cl-item.ro{cursor:default;}
+  .cl-box{flex-shrink:0;width:20px;height:20px;border-radius:6px;border:2px solid var(--line-strong);display:flex;align-items:center;justify-content:center;color:#fff;margin-top:1px;}
+  .cl-box svg{width:13px;height:13px;}
+  .cl-item.done .cl-box{background:var(--ok,#34d399);border-color:var(--ok,#34d399);}
+  .cl-text{font-size:14px;line-height:1.4;}
+  .cl-item.done .cl-text{text-decoration:line-through;color:var(--dim);}
+  /* Steps editor */
+  .steps-edit{display:flex;flex-direction:column;gap:8px;}
+  .stepedit{display:flex;align-items:center;gap:8px;}
+  .step-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;}
+  .stepedit input{flex:1;min-width:0;}
+  .typechip.is-check{background:rgba(52,211,153,.14);color:#34d399;}
 </style>
 </head>
 <body>
@@ -694,7 +718,7 @@ async function apiGet(token){
   const r = await fetch(restBase + "?select=*&order=updated_at.desc", {headers: dataHeaders(token)});
   if (!r.ok) throw new Error("GET " + r.status); return r.json();
 }
-const OPTIONAL_COLS = ["shared","author","notes","images","lang","blocks"];
+const OPTIONAL_COLS = ["shared","author","notes","images","lang","blocks","checklist"];
 const IMG_BUCKET = "kb-images";
 async function uploadImage(token, uid, file){
   let ext = (file.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
@@ -873,6 +897,7 @@ const Ico={
   rows:<I d={<><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>} />,
   chat:<I d={<path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 0 1-.9-3.8 8.38 8.38 0 0 1 8.5-8.5 8.38 8.38 0 0 1 8.5 8.5z"/>} />,
   send:<I size={16} d={<><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></>} />,
+  checklist:<I d={<><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="m3 6 1 1 2-2"/><path d="m3 12 1 1 2-2"/><path d="m3 18 1 1 2-2"/></>} />,
 };
 const TOPIC_ICON={"Scripting":Ico=>Ico.terminal,"Larm":Ico=>Ico.bell,"UDT/Tags":Ico=>Ico.box,"Trend":Ico=>Ico.chart,"Rapport":Ico=>Ico.report,"OPC":Ico=>Ico.plug,"SQL":Ico=>Ico.db,"Behörighet":Ico=>Ico.shield,"Övrigt":Ico=>Ico.dots};
 function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
@@ -1040,7 +1065,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   async function saveEntry(data){
     if(typeof navigator!=="undefined" && navigator.onLine===false){ alert("Du är offline – ändringar kan inte sparas just nu. Försök igen när du har täckning."); return; }
     setBusy(true);
-    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",blocks:data.blocks||[],updated_at:new Date().toISOString()};
+    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",blocks:data.blocks||[],checklist:data.checklist||[],updated_at:new Date().toISOString()};
     try{
       if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
       else{ const n=await apiInsert(token,[{...row,pinned:false}]); setEntries([...n, ...entries]); }
@@ -1049,7 +1074,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
     setBusy(false);
   }
   async function restoreVersion(entryId, snap){
-    const row={title:snap.title,system:snap.system,category:snap.category,tags:snap.tags||[],content:snap.content,notes:snap.notes||"",is_code:snap.is_code,shared:!!snap.shared,images:snap.images||[],lang:snap.lang||"auto",blocks:snap.blocks||[],author:snap.author||(name||user),updated_at:new Date().toISOString()};
+    const row={title:snap.title,system:snap.system,category:snap.category,tags:snap.tags||[],content:snap.content,notes:snap.notes||"",is_code:snap.is_code,shared:!!snap.shared,images:snap.images||[],lang:snap.lang||"auto",blocks:snap.blocks||[],checklist:snap.checklist||[],author:snap.author||(name||user),updated_at:new Date().toISOString()};
     const u=await apiUpdate(token,entryId,row);
     setEntries(entries.map(e=>e.id===entryId?u:e));
     setDetail(u);
@@ -1066,7 +1091,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   async function loadExamples(){
     setBusy(true);
     try{
-      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], lang:s.lang||"auto", blocks:s.blocks||[], pinned:false, updated_at:new Date().toISOString()}));
+      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], lang:s.lang||"auto", blocks:s.blocks||[], checklist:s.checklist||[], pinned:false, updated_at:new Date().toISOString()}));
       const inserted=await apiInsert(token,rows);
       setEntries([...inserted, ...entries]);
       flash("Laddade "+inserted.length+" exempelposter");
@@ -1087,7 +1112,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       try{
         const data=JSON.parse(e.target.result);
         if(!Array.isArray(data)) throw new Error();
-        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],lang:d.lang||"auto",blocks:d.blocks||[],pinned:!!d.pinned,updated_at:new Date().toISOString()}));
+        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],lang:d.lang||"auto",blocks:d.blocks||[],checklist:d.checklist||[],pinned:!!d.pinned,updated_at:new Date().toISOString()}));
         setBusy(true);
         const inserted=await apiInsert(token,rows);
         setEntries([...inserted, ...entries]);
@@ -1421,14 +1446,19 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
         <div className="modal-body">
           <h2 className="detail-title">{entry.title}</h2>
           <div className="detail-meta">
-            <span className={"typechip "+(entry.is_code?"is-code":"is-note")}>{entry.is_code?Ico.code:Ico.note}{entry.is_code?"kod":"text"}</span>
+            <span className={"typechip "+(entryKind(entry)==="code"?"is-code":entryKind(entry)==="checklist"?"is-check":"is-note")}>{entryKind(entry)==="code"?Ico.code:entryKind(entry)==="checklist"?Ico.checklist:Ico.note}{entryKind(entry)==="code"?"kod":entryKind(entry)==="checklist"?"checklista":"text"}</span>
             {entry.shared
               ? <span className="sharechip shared">{Ico.users}{mine?"delad med teamet":"delad av "+(entry.author||"team")}</span>
               : <span className="sharechip priv">{Ico.lock}privat</span>}
             <span className="detail-date">{Ico.clock} uppdaterad {fmtDate(entry.updated_at)}</span>
           </div>
           {tags.length>0&&<div className="tags">{tags.map(t=><button key={t} className="tag" onClick={()=>onTag&&onTag(t)}>#{t}</button>)}</div>}
-          {blocks ? (
+          {entry.checklist && entry.checklist.length ? (
+            <>
+              {entry.notes && entry.notes.trim() && <p className="note desc" style={{padding:"2px 0"}}>{entry.notes}</p>}
+              <Checklist entry={entry} interactive={true} />
+            </>
+          ) : blocks ? (
             <>
               {entry.notes && entry.notes.trim() && <p className="note desc" style={{padding:"2px 0"}}>{entry.notes}</p>}
               {tplVars.length>0 && (
@@ -1550,7 +1580,7 @@ function CompactRow({entry,mine=true,onOpen,onPin}){
   const sysColor=SYS_COLOR[sys]||"#94a3b8";
   return (
     <div className="compactrow" onClick={onOpen}>
-      <span className="cr-type" style={{color:entry.is_code?"#a78bfa":"#60a5fa"}}>{entry.is_code?Ico.terminal:Ico.note}</span>
+      <span className="cr-type" style={{color:entry.is_code?"#a78bfa":(entry.checklist&&entry.checklist.length)?"#34d399":"#60a5fa"}}>{entry.is_code?Ico.terminal:(entry.checklist&&entry.checklist.length)?Ico.checklist:Ico.note}</span>
       <span className="cr-title">{entry.title}</span>
       {entry.shared && <span className="cr-ico" title={mine?"delad":"delad av "+(entry.author||"team")} style={{color:"#34d399"}}>{Ico.users}</span>}
       <span className="cr-sys" style={{color:sysColor}}>{sys}</span>
@@ -1622,6 +1652,34 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   );
 }
 
+function Checklist({entry, interactive=true}){
+  const items=entry.checklist||[];
+  const key="scada-check-"+entry.id;
+  const [done,setDone]=useState(function(){ try{ return JSON.parse(localStorage.getItem(key)||"[]"); }catch(e){ return []; } });
+  function persist(n){ try{ localStorage.setItem(key, JSON.stringify(n)); }catch(e){} }
+  function toggle(i){ setDone(d=>{ const n=d.indexOf(i)>=0?d.filter(x=>x!==i):[...d,i]; persist(n); return n; }); }
+  function reset(){ setDone([]); try{ localStorage.removeItem(key); }catch(e){} }
+  const count=done.filter(i=>i<items.length).length;
+  const allDone=count===items.length && items.length>0;
+  return (
+    <div className="checklist">
+      <div className="cl-head">
+        <span className={"cl-prog"+(allDone?" done":"")}>{allDone?<>{Ico.check} Klar</>:count+"/"+items.length+" klara"}</span>
+        {count>0 && interactive && <button className="cl-reset" onClick={reset}>{Ico.undo} Nollställ</button>}
+      </div>
+      <div className="cl-items">
+        {items.map((s,i)=>{
+          const checked=done.indexOf(i)>=0;
+          return <button key={i} className={"cl-item"+(checked?" done":"")+(interactive?"":" ro")} onClick={()=>{ if(interactive) toggle(i); }}>
+            <span className="cl-box">{checked?Ico.check:null}</span>
+            <span className="cl-text">{s}</span>
+          </button>;
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Chip({label,active,color,count,onClick}){
   return (<button className={"chip"+(active?" active":"")} style={{borderColor:active?color:"var(--line)"}} onClick={onClick}>
     <span className="cdot" style={{background:color}}></span>{label}{count>0&&<span className="cnt">{count}</span>}</button>);
@@ -1634,6 +1692,11 @@ function entryBlocks(entry){
   if(entry.blocks && entry.blocks.length) return entry.blocks;
   if(entry.is_code) return [{title:"",code:entry.content||"",lang:entry.lang||"auto"}];
   return null;
+}
+function entryKind(entry){
+  if(entry.checklist && entry.checklist.length) return "checklist";
+  if((entry.blocks && entry.blocks.length) || entry.is_code) return "code";
+  return "note";
 }
 function CodeBlock({code,lang}){
   let html=null;
@@ -1665,6 +1728,7 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
   function copyBlock(codeStr,i){ navigator.clipboard&&navigator.clipboard.writeText(codeStr); setCopiedIdx(i); setTimeout(()=>setCopiedIdx(-1),1500); }
   const blocks=entryBlocks(entry);
   const isCode=!!blocks;
+  const kind=entryKind(entry);
   const lines=(entry.content||"").split("\n");
   const long=!isCode&&lines.length>16;
   const shownNote=exp||!long?entry.content:lines.slice(0,16).join("\n");
@@ -1679,7 +1743,7 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
             <button className="card-title" onClick={()=>onOpen&&onOpen(entry)}>{entry.title}</button>
             <span className="systag" style={{color:sysColor,borderColor:sysColor+"55"}}>{sys}</span>
             <span className="badge" style={{background:color+"22",color}}>{entry.category}</span>
-            <span className={"typechip "+(entry.is_code?"is-code":"is-note")}>{entry.is_code?Ico.code:Ico.note}{entry.is_code?"kod":"text"}</span>
+            <span className={"typechip "+(entryKind(entry)==="code"?"is-code":entryKind(entry)==="checklist"?"is-check":"is-note")}>{entryKind(entry)==="code"?Ico.code:entryKind(entry)==="checklist"?Ico.checklist:Ico.note}{entryKind(entry)==="code"?"kod":entryKind(entry)==="checklist"?"checklista":"text"}</span>
             {entry.shared
               ? <span className="sharechip shared">{Ico.users}{mine?"delad":"av "+(entry.author||"team")}</span>
               : <span className="sharechip priv">{Ico.lock}privat</span>}
@@ -1693,7 +1757,12 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
           {mine && <button className="ibtn" onClick={()=>setConfirm(true)} title="Ta bort">{Ico.trash}</button>}
         </div>
       </div>
-      {isCode ? (
+      {kind==="checklist" ? (
+        <>
+          {entry.notes && entry.notes.trim() && <p className="note desc">{entry.notes}</p>}
+          <Checklist entry={entry} interactive={false} />
+        </>
+      ) : isCode ? (
         <>
           {entry.notes && entry.notes.trim() && <p className="note desc">{entry.notes}</p>}
           {blocks.map((b,i)=>(
@@ -1734,7 +1803,13 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
   const [category,setCategory]=useState(initial.category||"Scripting");
   const [tags,setTags]=useState((initial.tags||[]).join(", "));
   const startCode=initial.is_code!==undefined?initial.is_code:true;
-  const [isCode,setIsCode]=useState(startCode);
+  const startKind=(initial.checklist&&initial.checklist.length)?"checklist":(((initial.blocks&&initial.blocks.length)||startCode)?"code":"note");
+  const [kind,setKind]=useState(startKind);
+  const isCode=kind==="code";
+  const [steps,setSteps]=useState((initial.checklist&&initial.checklist.length)?initial.checklist.slice():[""]);
+  function updateStep(i,val){ setSteps(s=>s.map((x,j)=>j===i?val:x)); }
+  function addStep(){ setSteps(s=>[...s,""]); }
+  function removeStep(i){ setSteps(s=>s.length>1?s.filter((_,j)=>j!==i):s); }
   const [text,setText]=useState(!startCode?(initial.content||""):"");
   const [desc,setDesc]=useState(initial.notes||"");
   const [shared,setShared]=useState(!!initial.shared);
@@ -1746,7 +1821,7 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
   const [images,setImages]=useState(initial.images||[]);
   const [upBusy,setUpBusy]=useState(false); const [upErr,setUpErr]=useState("");
   const fileRef=useRef(null);
-  const valid=title.trim()&&(isCode?blocks.some(b=>(b.code||"").trim()):text.trim());
+  const valid=title.trim()&&(kind==="code"?blocks.some(b=>(b.code||"").trim()):kind==="checklist"?steps.some(s=>s.trim()):text.trim());
   async function addImages(e){
     const files=Array.prototype.slice.call(e.target.files||[]); e.target.value="";
     if(!files.length) return;
@@ -1758,11 +1833,15 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
   function removeImage(url){ setImages(im=>im.filter(u=>u!==url)); }
   function handleSave(){
     if(!valid)return;
-    if(isCode){
+    const base={id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),shared,images};
+    if(kind==="code"){
       const clean=blocks.filter(b=>(b.code||"").trim()).map(b=>({title:(b.title||"").trim(),code:b.code,lang:b.lang||"auto"}));
-      onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:clean.map(b=>b.code).join("\n\n"),notes:desc,isCode:true,shared,images,lang:(clean[0]&&clean[0].lang)||"auto",blocks:clean});
+      onSave({...base,content:clean.map(b=>b.code).join("\n\n"),notes:desc,isCode:true,lang:(clean[0]&&clean[0].lang)||"auto",blocks:clean,checklist:[]});
+    } else if(kind==="checklist"){
+      const cl=steps.map(s=>s.trim()).filter(Boolean);
+      onSave({...base,content:cl.join("\n"),notes:desc,isCode:false,lang:"auto",blocks:[],checklist:cl});
     } else {
-      onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:text,notes:"",isCode:false,shared,images,lang:"auto",blocks:[]});
+      onSave({...base,content:text,notes:"",isCode:false,lang:"auto",blocks:[],checklist:[]});
     }
   }
   return (
@@ -1786,8 +1865,9 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
           </div>
           <div className="share-hint">{shared?"Alla godkända i teamet kan se den här posten (bara du kan ändra den).":"Bara du ser den här posten."}</div>
           <div className="toggle-row">
-            <button className={"toggle"+(isCode?" active":"")} onClick={()=>setIsCode(true)}>{Ico.code} Kod</button>
-            <button className={"toggle"+(!isCode?" active":"")} onClick={()=>setIsCode(false)}>{Ico.note} Anteckning</button>
+            <button className={"toggle"+(kind==="code"?" active":"")} onClick={()=>setKind("code")}>{Ico.code} Kod</button>
+            <button className={"toggle"+(kind==="note"?" active":"")} onClick={()=>setKind("note")}>{Ico.note} Anteckning</button>
+            <button className={"toggle"+(kind==="checklist"?" active":"")} onClick={()=>setKind("checklist")}>{Ico.checklist} Checklista</button>
           </div>
           {isCode ? (
             <div className="blocks-edit">
@@ -1808,6 +1888,19 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
               <div className="tplhint">Tips: skriv <code>{"{{station}}"}</code> i koden för fält som kan fyllas i när posten används.</div>
               <label className="field"><span className="lbl">{Ico.note} Beskrivning / anteckning <span className="lbl-opt">valfritt</span></span>
                 <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={4} placeholder="Beskriv vad koden gör, fallgropar, var den används…" style={{fontFamily:"var(--sans)"}} /></label>
+            </div>
+          ) : kind==="checklist" ? (
+            <div className="steps-edit">
+              {steps.map((s,i)=>(
+                <div className="stepedit" key={i}>
+                  <span className="step-num">{i+1}</span>
+                  <input value={s} onChange={e=>updateStep(i,e.target.value)} placeholder={"Steg "+(i+1)+" – t.ex. Kvittera larm"} onKeyDown={e=>{ if(e.key==="Enter"){ e.preventDefault(); addStep(); } }} />
+                  {steps.length>1 && <button className="block-del" title="Ta bort steg" onClick={()=>removeStep(i)}>{Ico.x}</button>}
+                </div>
+              ))}
+              <button className="addblock" onClick={addStep}>{Ico.add} Lägg till steg</button>
+              <label className="field"><span className="lbl">{Ico.note} Beskrivning <span className="lbl-opt">valfritt</span></span>
+                <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={3} placeholder="Kort kontext för rutinen…" style={{fontFamily:"var(--sans)"}} /></label>
             </div>
           ) : (
             <label className="field"><span className="lbl">{Ico.note} Text</span>
