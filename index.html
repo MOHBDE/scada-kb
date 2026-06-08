@@ -450,6 +450,14 @@
   .block-del:hover{color:var(--danger);border-color:rgba(248,113,113,.4);}
   .addblock{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);border:1px solid rgba(245,165,36,.35);color:var(--accent);padding:8px 13px;border-radius:10px;font-size:13px;font-family:var(--sans);cursor:pointer;}
   .addblock:hover{border-color:var(--accent);}
+  /* Template fill */
+  .tplfill{border:1px solid rgba(245,165,36,.3);background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin-bottom:12px;}
+  .tplfields{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:6px;}
+  .tplfield{display:flex;flex-direction:column;gap:4px;}
+  .tplfield span{font-family:var(--mono);font-size:11px;color:var(--accent);}
+  .tplfield input{padding:8px 10px;font-family:var(--mono);font-size:13px;}
+  .tplhint{font-size:12px;color:var(--dim);margin-top:2px;}
+  .tplhint code{font-family:var(--mono);background:var(--code);padding:1px 5px;border-radius:5px;color:var(--accent);}
 </style>
 </head>
 <body>
@@ -1388,6 +1396,14 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
   const [copiedIdx,setCopiedIdx]=useState(-1);
   function copyBlock(codeStr,i){ navigator.clipboard&&navigator.clipboard.writeText(codeStr); setCopiedIdx(i); setTimeout(()=>setCopiedIdx(-1),1500); }
   const blocks=entryBlocks(entry);
+  const tplVars=useMemo(()=>{
+    if(!blocks) return [];
+    const re=/\{\{\s*([a-zA-Z0-9_åäöÅÄÖ.\-]+)\s*\}\}/g; const out=[];
+    blocks.forEach(b=>{ const code=b.code||""; let m; re.lastIndex=0; while((m=re.exec(code))){ if(out.indexOf(m[1])<0) out.push(m[1]); } });
+    return out;
+  },[entry.id]);
+  const [vals,setVals]=useState({});
+  function fill(code){ return (code||"").replace(/\{\{\s*([a-zA-Z0-9_åäöÅÄÖ.\-]+)\s*\}\}/g,(m,k)=>(vals[k]&&vals[k].length)?vals[k]:m); }
   const related=entries.filter(e=>e.id!==entry.id).map(e=>{
     let score=0;
     if(e.category===entry.category) score+=2;
@@ -1415,11 +1431,22 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
           {blocks ? (
             <>
               {entry.notes && entry.notes.trim() && <p className="note desc" style={{padding:"2px 0"}}>{entry.notes}</p>}
+              {tplVars.length>0 && (
+                <div className="tplfill">
+                  <div className="related-h">{Ico.code} Fyll i mall</div>
+                  <div className="tplfields">
+                    {tplVars.map(v=>(
+                      <label key={v} className="tplfield"><span>{v}</span>
+                        <input value={vals[v]||""} onChange={e=>setVals(x=>({...x,[v]:e.target.value}))} placeholder={"{{"+v+"}}"} /></label>
+                    ))}
+                  </div>
+                </div>
+              )}
               {blocks.map((b,i)=>(
                 <div className="code-wrap" key={i}>
                   <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">{b.title||(b.lang&&b.lang!=="auto"?b.lang:"kod")}</span>
-                    <button className="code-copy" onClick={()=>copyBlock(b.code,i)}>{copiedIdx===i?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
-                  <CodeBlock code={b.code} lang={b.lang} />
+                    <button className="code-copy" onClick={()=>copyBlock(fill(b.code),i)}>{copiedIdx===i?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
+                  <CodeBlock code={fill(b.code)} lang={b.lang} />
                 </div>
               ))}
             </>
@@ -1778,6 +1805,7 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
                 </div>
               ))}
               <button className="addblock" onClick={addBlock}>{Ico.add} Lägg till kodblock</button>
+              <div className="tplhint">Tips: skriv <code>{"{{station}}"}</code> i koden för fält som kan fyllas i när posten används.</div>
               <label className="field"><span className="lbl">{Ico.note} Beskrivning / anteckning <span className="lbl-opt">valfritt</span></span>
                 <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={4} placeholder="Beskriv vad koden gör, fallgropar, var den används…" style={{fontFamily:"var(--sans)"}} /></label>
             </div>
