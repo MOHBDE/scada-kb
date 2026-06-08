@@ -421,6 +421,22 @@
   .nav-ic{position:relative;}
   .nav-bubble{position:absolute;top:-7px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#f87171;color:#fff;font-size:9.5px;font-family:var(--mono);font-weight:600;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
   .person-dot{width:8px;height:8px;border-radius:50%;background:#f87171;margin-left:3px;}
+  /* Comments */
+  .comments{border-top:1px solid var(--line);padding-top:14px;margin-top:6px;}
+  .cmt-empty{color:var(--dim);font-size:13px;line-height:1.5;margin-bottom:12px;}
+  .cmt{padding:10px 0;border-bottom:1px solid var(--line);}
+  .cmt:first-of-type{padding-top:0;}
+  .cmt-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+  .cmt-av{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;flex-shrink:0;}
+  .cmt-name{font-size:13px;font-weight:600;color:var(--txt);}
+  .cmt-time{font-family:var(--mono);font-size:10.5px;color:var(--dim);}
+  .cmt-del{margin-left:auto;background:none;border:none;color:var(--dim);cursor:pointer;display:flex;padding:3px;border-radius:6px;}
+  .cmt-del:hover{color:var(--danger);background:rgba(248,113,113,.1);}
+  .cmt-del svg{width:14px;height:14px;}
+  .cmt-body{font-size:14px;color:var(--txt2);line-height:1.5;white-space:pre-wrap;word-break:break-word;padding-left:32px;}
+  .cmt-input{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+  .cmt-input textarea{resize:vertical;min-height:46px;font-family:var(--sans);}
+  .cmt-input .foot-btn{align-self:flex-end;}
 </style>
 </head>
 <body>
@@ -672,6 +688,21 @@ async function uploadImage(token, uid, file){
 }
 const verBase = SUPABASE_URL + "/rest/v1/entry_versions";
 const msgBase = SUPABASE_URL + "/rest/v1/messages";
+const commentsBase = SUPABASE_URL + "/rest/v1/comments";
+async function listComments(token, entryId){
+  const r = await fetch(commentsBase + "?entry_id=eq." + entryId + "&select=*&order=created_at.asc", {headers: dataHeaders(token)});
+  if(!r.ok) throw new Error("Kunde inte hämta kommentarer ("+r.status+")");
+  return r.json();
+}
+async function addComment(token, row){
+  const r = await fetch(commentsBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify([row])});
+  if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte spara kommentaren ("+r.status+")")); }
+  return (await r.json())[0];
+}
+async function deleteComment(token, id){
+  const r = await fetch(commentsBase + "?id=eq." + id, {method:"DELETE", headers: dataHeaders(token)});
+  if(!r.ok) throw new Error("Kunde inte ta bort ("+r.status+")");
+}
 async function listMembers(token){
   const r = await fetch(profBase + "?select=id,email,approved&approved=eq.true&order=email.asc", {headers: dataHeaders(token)});
   if(!r.ok) return [];
@@ -1185,7 +1216,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
 
       {toast && <div className="toast">{toast}</div>}
       {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} onSave={saveEntry} onClose={()=>setEditing(null)} />}
-      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
+      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
     </div>
   );
@@ -1319,13 +1350,25 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
   );
 }
 
-function DetailModal({entry,entries,mine=true,token,onRestore,onClose,onOpen,onEdit,onTag}){
+function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRestore,onClose,onOpen,onEdit,onTag}){
   const color=CAT_COLOR[entry.category]||"#94a3b8";
   const sys=entry.system||"Ignition";
   const sysColor=SYS_COLOR[sys]||"#94a3b8";
   const tags=entry.tags||[];
   const [copied,setCopied]=useState(false);
   const [hist,setHist]=useState(null); const [histBusy,setHistBusy]=useState(false); const [restoring,setRestoring]=useState(false);
+  const [comments,setComments]=useState(null); const [ctext,setCtext]=useState(""); const [csending,setCsending]=useState(false);
+  useEffect(()=>{ let stop=false; listComments(token, entry.id).then(c=>{ if(!stop) setComments(c); }).catch(()=>{ if(!stop) setComments([]); }); return ()=>{ stop=true; }; },[entry.id]);
+  async function postComment(){
+    const b=ctext.trim(); if(!b||csending) return;
+    setCsending(true);
+    try{ const c=await addComment(token,{entry_id:entry.id, user_id:uid, author_name:(name||display||user), body:b}); setComments(x=>[...(x||[]),c]); setCtext(""); }
+    catch(e){ alert(e.message); }
+    setCsending(false);
+  }
+  async function removeComment(id){
+    try{ await deleteComment(token,id); setComments(x=>(x||[]).filter(c=>c.id!==id)); }catch(e){ alert(e.message); }
+  }
   async function openHist(){ setHistBusy(true); try{ setHist(await listVersions(token, entry.id)); }catch(e){ setHist([]); } setHistBusy(false); }
   async function doRestore(v){ setRestoring(true); try{ await onRestore(entry.id, v.snapshot); setHist(null); }catch(e){ alert("Kunde inte återställa: "+e.message); } setRestoring(false); }
   function copy(){ navigator.clipboard&&navigator.clipboard.writeText(entry.content); setCopied(true); setTimeout(()=>setCopied(false),1500); }
@@ -1390,6 +1433,29 @@ function DetailModal({entry,entries,mine=true,token,onRestore,onClose,onOpen,onE
             <div className="related-h">{Ico.link} Relaterade poster</div>
             {related.map(r=><MiniRow key={r.id} entry={r} onClick={()=>onOpen(r)} />)}
           </div>}
+
+          <div className="comments">
+            <div className="related-h">{Ico.chat} Kommentarer{comments&&comments.length>0?" ("+comments.length+")":""}</div>
+            {comments===null ? <div className="cmt-empty">Laddar…</div>
+             : comments.length===0 ? <div className="cmt-empty">Inga kommentarer än. Skriv den första – bra för att förtydliga eller komplettera.</div>
+             : comments.map(c=>{
+                const canDel = c.user_id===uid || mine;
+                return <div key={c.id} className="cmt">
+                  <div className="cmt-head">
+                    <span className="cmt-av">{(c.author_name||"?").slice(0,2).toUpperCase()}</span>
+                    <span className="cmt-name">{c.author_name||"medlem"}</span>
+                    <span className="cmt-time">{fmtDateTime(c.created_at)}</span>
+                    {canDel && <button className="cmt-del" title="Ta bort" onClick={()=>removeComment(c.id)}>{Ico.x}</button>}
+                  </div>
+                  <div className="cmt-body">{c.body}</div>
+                </div>;
+               })}
+            <div className="cmt-input">
+              <textarea value={ctext} onChange={e=>setCtext(e.target.value)} rows={2} placeholder="Skriv en kommentar…"
+                onKeyDown={e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); postComment(); } }} />
+              <button className="foot-btn foot-save" disabled={csending||!ctext.trim()} onClick={postComment}>{Ico.send} Kommentera</button>
+            </div>
+          </div>
         </div>
         <div className="modal-foot">
           <button className="foot-btn foot-cancel" onClick={onClose}>Stäng</button>
