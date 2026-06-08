@@ -31,7 +31,7 @@
   :root{--bg:#080b10;--panel:#10151d;--panel2:#0c1118;--code:#0a0f16;--line:rgba(255,255,255,.07);--line-strong:rgba(255,255,255,.13);--line2:#161c26;--txt:#e6edf3;--txt2:#cbd5e1;--muted:#9aa7b5;--dim:#64717f;--accent:#f5a524;--accent-soft:rgba(245,165,36,.13);--ok:#34d399;--danger:#f87171;--mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;--surface:linear-gradient(180deg,#11161f,#0d121a);--surface2:linear-gradient(180deg,#0c1118,#080b10);--glass:rgba(16,21,29,.66);--glow:rgba(245,165,36,.07);}
   body.light{--bg:#eef1f6;--panel:#ffffff;--panel2:#ffffff;--line:rgba(15,23,42,.10);--line-strong:rgba(15,23,42,.17);--line2:#eef1f5;--txt:#0f172a;--txt2:#33415a;--muted:#52617a;--dim:#8492a6;--accent-soft:rgba(245,165,36,.16);--surface:linear-gradient(180deg,#ffffff,#f6f8fc);--surface2:linear-gradient(180deg,#ffffff,#f1f4f9);--glass:rgba(255,255,255,.72);--glow:rgba(245,165,36,.10);}
   *{box-sizing:border-box;}
-  body{margin:0;color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased;background:radial-gradient(1100px 480px at 50% -8%,rgba(245,165,36,.07),transparent 62%),radial-gradient(900px 600px at 100% 0%,rgba(34,211,238,.04),transparent 60%),var(--bg);background-attachment:fixed;}
+  body{margin:0;color:var(--txt);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;background:radial-gradient(1100px 480px at 50% -8%,rgba(245,165,36,.07),transparent 62%),radial-gradient(900px 600px at 100% 0%,rgba(34,211,238,.04),transparent 60%),var(--bg);background-attachment:fixed;}
   .grid-bg{position:fixed;inset:0;pointer-events:none;opacity:.035;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:34px 34px;-webkit-mask-image:radial-gradient(circle at 50% 0%,#000,transparent 75%);mask-image:radial-gradient(circle at 50% 0%,#000,transparent 75%);}
   .wrap{position:relative;max-width:780px;margin:0 auto;padding:0 18px 120px;}
   header{padding:32px 0 18px;}
@@ -162,7 +162,7 @@
   .udivider{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-family:var(--mono);border-top:1px solid var(--line);padding-top:16px;margin-top:2px;}
   /* App shell */
   .app{display:flex;min-height:100vh;}
-  .main{flex:1;min-width:0;max-width:1000px;margin:0 auto;padding:26px 26px 120px;width:100%;}
+  .main{flex:1;min-width:0;max-width:1080px;margin:0 auto;padding:26px 26px 120px;width:100%;}
   .nav{position:fixed;top:0;left:0;bottom:0;width:248px;background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;z-index:30;}
   .nav-brand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px;}
   .nav-brandtxt .nav-title{font-family:var(--mono);font-size:17px;font-weight:600;}
@@ -175,6 +175,7 @@
   .nav-item.active .nav-ic,.nav-item:hover .nav-ic{color:inherit;}
   .nav-item.active .nav-ic{color:var(--accent);}
   .nav-lbl{flex:1;}
+  .nav-lbl-s{display:none;}
   .nav-cnt{font-size:11px;color:var(--dim);background:rgba(255,255,255,.05);padding:1px 8px;border-radius:8px;font-family:var(--mono);}
   .nav-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);}
   .nav-user{display:flex;align-items:center;gap:10px;padding:6px 8px;color:var(--muted);font-size:12px;}
@@ -182,15 +183,18 @@
   .nav-footbtns{display:flex;gap:6px;margin-top:8px;}
   @media(min-width:861px){.main{margin-left:248px;}.fab{display:none;}}
   @media(max-width:860px){
-    .nav{top:auto;width:100%;height:66px;flex-direction:row;border-right:none;border-top:1px solid var(--line);padding:0;background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+    .nav{top:auto;width:100%;height:calc(64px + env(safe-area-inset-bottom));flex-direction:row;border-right:none;border-top:1px solid var(--line);padding:0 0 env(safe-area-inset-bottom);background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
     .nav-brand,.nav-foot{display:none;}
     .nav-items{flex-direction:row;flex:1;gap:0;}
-    .nav-item{flex:1;flex-direction:column;gap:3px;padding:9px 2px;border-radius:0;font-size:10px;justify-content:center;border:none;}
+    .nav-item{flex:1;flex-direction:column;gap:3px;padding:8px 1px;border-radius:0;font-size:9.5px;justify-content:center;border:none;min-width:0;}
     .nav-item.active{background:none;color:var(--accent);}
-    .nav-lbl{flex:none;}
+    .nav-lbl{display:none;}
+    .nav-lbl-s{display:block;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
     .nav-cnt{display:none;}
-    .nav-ic svg{width:21px;height:21px;}
-    .main{padding:18px 16px 96px;}
+    .nav-ic svg{width:22px;height:22px;}
+    .main{padding:16px 15px calc(92px + env(safe-area-inset-bottom));}
+    .page-title{font-size:20px;}
+    .topbar-email{max-width:40vw;}
   }
   .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px;}
   .page-title{font-family:var(--mono);font-size:24px;font-weight:600;margin:0;letter-spacing:-.02em;}
@@ -228,7 +232,9 @@
   .mini-title{flex:1;font-size:13px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .mini-pin{display:flex;}
   .mini-badge{font-size:9.5px;padding:2px 7px;border-radius:6px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;}
-  .cards{display:flex;flex-direction:column;}
+  .cards{display:grid;grid-template-columns:1fr;gap:14px;align-items:start;}
+  .cards .card{margin-bottom:0;min-width:0;}
+  @media(min-width:900px){.cards{grid-template-columns:repeat(2,1fr);}}
   .typechip{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:6px;border:1px solid;}
   .typechip.is-code{color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.1);}
   .typechip.is-note{color:#60a5fa;border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.1);}
@@ -1186,7 +1192,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
 }
 
 function Nav({active,onNav,onUsers,counts,user,onLogout,onExport,onImport,busy,chatUnread}){
-  const items=[["oversikt","Översikt",Ico.grid,null],["bibliotek","Bibliotek",Ico.book,counts.bibliotek],["kod","Kod",Ico.terminal,counts.kod],["anteckningar","Anteckningar",Ico.note,counts.anteckningar],["chatt","Chatt",Ico.chat,null]];
+  const items=[["oversikt","Översikt","Hem",Ico.grid,null],["bibliotek","Bibliotek","Bibliotek",Ico.book,counts.bibliotek],["kod","Kod","Kod",Ico.terminal,counts.kod],["anteckningar","Anteckningar","Anteck.",Ico.note,counts.anteckningar],["chatt","Chatt","Chatt",Ico.chat,null]];
   return (
     <nav className="nav">
       <div className="nav-brand">
@@ -1194,12 +1200,12 @@ function Nav({active,onNav,onUsers,counts,user,onLogout,onExport,onImport,busy,c
         <div className="nav-brandtxt"><div className="nav-title">SCADA<span style={{color:"var(--accent)"}}>·</span>KB</div><div className="nav-sub">{busy?"arbetar…":"Kunskapsbas"}</div></div>
       </div>
       <div className="nav-items">
-        {items.map(([key,label,icon,cnt])=>(
+        {items.map(([key,label,short,icon,cnt])=>(
           <button key={key} className={"nav-item"+(active===key?" active":"")} onClick={()=>onNav(key)}>
-            <span className="nav-ic">{icon}{key==="chatt"&&chatUnread>0&&<span className="nav-bubble">{chatUnread>9?"9+":chatUnread}</span>}</span><span className="nav-lbl">{label}</span>{cnt!=null&&<span className="nav-cnt">{cnt}</span>}
+            <span className="nav-ic">{icon}{key==="chatt"&&chatUnread>0&&<span className="nav-bubble">{chatUnread>9?"9+":chatUnread}</span>}</span><span className="nav-lbl">{label}</span><span className="nav-lbl-s">{short}</span>{cnt!=null&&<span className="nav-cnt">{cnt}</span>}
           </button>
         ))}
-        <button className="nav-item nav-users" onClick={onUsers}><span className="nav-ic">{Ico.users}</span><span className="nav-lbl">Användare</span></button>
+        <button className="nav-item nav-users" onClick={onUsers}><span className="nav-ic">{Ico.users}</span><span className="nav-lbl">Användare</span><span className="nav-lbl-s">Konton</span></button>
       </div>
       <div className="nav-foot">
         <div className="nav-user"><span className="nav-ic" style={{color:"var(--accent)"}}>{Ico.users}</span><span className="nav-email" title={user}>{user}</span></div>
