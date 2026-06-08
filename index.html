@@ -437,6 +437,19 @@
   .cmt-input{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
   .cmt-input textarea{resize:vertical;min-height:46px;font-family:var(--sans);}
   .cmt-input .foot-btn{align-self:flex-end;}
+  /* Multiple code blocks */
+  .code-wrap + .code-wrap{margin-top:10px;}
+  .readmore{margin-top:8px;background:none;border:none;color:var(--accent);font-size:12.5px;font-family:var(--sans);cursor:pointer;padding:4px 0;align-self:flex-start;}
+  .readmore:hover{text-decoration:underline;}
+  .blocks-edit{display:flex;flex-direction:column;gap:12px;}
+  .blockedit{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--code);}
+  .blockedit-top{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .block-title{flex:1;min-width:0;font-family:var(--sans)!important;font-size:13px;padding:8px 10px;}
+  .blockedit .langsel{margin-left:0;flex-shrink:0;}
+  .block-del{flex-shrink:0;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--dim);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .block-del:hover{color:var(--danger);border-color:rgba(248,113,113,.4);}
+  .addblock{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);border:1px solid rgba(245,165,36,.35);color:var(--accent);padding:8px 13px;border-radius:10px;font-size:13px;font-family:var(--sans);cursor:pointer;}
+  .addblock:hover{border-color:var(--accent);}
 </style>
 </head>
 <body>
@@ -673,7 +686,7 @@ async function apiGet(token){
   const r = await fetch(restBase + "?select=*&order=updated_at.desc", {headers: dataHeaders(token)});
   if (!r.ok) throw new Error("GET " + r.status); return r.json();
 }
-const OPTIONAL_COLS = ["shared","author","notes","images","lang"];
+const OPTIONAL_COLS = ["shared","author","notes","images","lang","blocks"];
 const IMG_BUCKET = "kb-images";
 async function uploadImage(token, uid, file){
   let ext = (file.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
@@ -1019,7 +1032,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   async function saveEntry(data){
     if(typeof navigator!=="undefined" && navigator.onLine===false){ alert("Du är offline – ändringar kan inte sparas just nu. Försök igen när du har täckning."); return; }
     setBusy(true);
-    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",updated_at:new Date().toISOString()};
+    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",blocks:data.blocks||[],updated_at:new Date().toISOString()};
     try{
       if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
       else{ const n=await apiInsert(token,[{...row,pinned:false}]); setEntries([...n, ...entries]); }
@@ -1028,7 +1041,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
     setBusy(false);
   }
   async function restoreVersion(entryId, snap){
-    const row={title:snap.title,system:snap.system,category:snap.category,tags:snap.tags||[],content:snap.content,notes:snap.notes||"",is_code:snap.is_code,shared:!!snap.shared,images:snap.images||[],lang:snap.lang||"auto",author:snap.author||(name||user),updated_at:new Date().toISOString()};
+    const row={title:snap.title,system:snap.system,category:snap.category,tags:snap.tags||[],content:snap.content,notes:snap.notes||"",is_code:snap.is_code,shared:!!snap.shared,images:snap.images||[],lang:snap.lang||"auto",blocks:snap.blocks||[],author:snap.author||(name||user),updated_at:new Date().toISOString()};
     const u=await apiUpdate(token,entryId,row);
     setEntries(entries.map(e=>e.id===entryId?u:e));
     setDetail(u);
@@ -1045,7 +1058,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   async function loadExamples(){
     setBusy(true);
     try{
-      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], lang:s.lang||"auto", pinned:false, updated_at:new Date().toISOString()}));
+      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], lang:s.lang||"auto", blocks:s.blocks||[], pinned:false, updated_at:new Date().toISOString()}));
       const inserted=await apiInsert(token,rows);
       setEntries([...inserted, ...entries]);
       flash("Laddade "+inserted.length+" exempelposter");
@@ -1066,7 +1079,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       try{
         const data=JSON.parse(e.target.result);
         if(!Array.isArray(data)) throw new Error();
-        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],lang:d.lang||"auto",pinned:!!d.pinned,updated_at:new Date().toISOString()}));
+        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],lang:d.lang||"auto",blocks:d.blocks||[],pinned:!!d.pinned,updated_at:new Date().toISOString()}));
         setBusy(true);
         const inserted=await apiInsert(token,rows);
         setEntries([...inserted, ...entries]);
@@ -1372,6 +1385,9 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
   async function openHist(){ setHistBusy(true); try{ setHist(await listVersions(token, entry.id)); }catch(e){ setHist([]); } setHistBusy(false); }
   async function doRestore(v){ setRestoring(true); try{ await onRestore(entry.id, v.snapshot); setHist(null); }catch(e){ alert("Kunde inte återställa: "+e.message); } setRestoring(false); }
   function copy(){ navigator.clipboard&&navigator.clipboard.writeText(entry.content); setCopied(true); setTimeout(()=>setCopied(false),1500); }
+  const [copiedIdx,setCopiedIdx]=useState(-1);
+  function copyBlock(codeStr,i){ navigator.clipboard&&navigator.clipboard.writeText(codeStr); setCopiedIdx(i); setTimeout(()=>setCopiedIdx(-1),1500); }
+  const blocks=entryBlocks(entry);
   const related=entries.filter(e=>e.id!==entry.id).map(e=>{
     let score=0;
     if(e.category===entry.category) score+=2;
@@ -1396,14 +1412,16 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
             <span className="detail-date">{Ico.clock} uppdaterad {fmtDate(entry.updated_at)}</span>
           </div>
           {tags.length>0&&<div className="tags">{tags.map(t=><button key={t} className="tag" onClick={()=>onTag&&onTag(t)}>#{t}</button>)}</div>}
-          {entry.is_code ? (
+          {blocks ? (
             <>
               {entry.notes && entry.notes.trim() && <p className="note desc" style={{padding:"2px 0"}}>{entry.notes}</p>}
-              <div className="code-wrap">
-                <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">{entry.lang&&entry.lang!=="auto"?entry.lang:"kod"}</span>
-                  <button className="code-copy" onClick={copy}>{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
-                <CodeBlock code={entry.content} lang={entry.lang} />
-              </div>
+              {blocks.map((b,i)=>(
+                <div className="code-wrap" key={i}>
+                  <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">{b.title||(b.lang&&b.lang!=="auto"?b.lang:"kod")}</span>
+                    <button className="code-copy" onClick={()=>copyBlock(b.code,i)}>{copiedIdx===i?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
+                  <CodeBlock code={b.code} lang={b.lang} />
+                </div>
+              ))}
             </>
           ) : <p className="note" style={{padding:"6px 0"}}>{entry.content}</p>}
           {entry.images && entry.images.length>0 && (
@@ -1585,6 +1603,11 @@ function Chip({label,active,color,count,onClick}){
 function fmtDate(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleDateString("sv-SE",{year:"numeric",month:"short",day:"numeric"}); }catch(e){ return ""; } }
 function fmtDateTime(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleString("sv-SE",{dateStyle:"medium",timeStyle:"short"}); }catch(e){ return ""; } }
 function fmtTime(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
+function entryBlocks(entry){
+  if(entry.blocks && entry.blocks.length) return entry.blocks;
+  if(entry.is_code) return [{title:"",code:entry.content||"",lang:entry.lang||"auto"}];
+  return null;
+}
 function CodeBlock({code,lang}){
   let html=null;
   try{
@@ -1611,10 +1634,15 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
   const sys=entry.system||"Ignition";
   const sysColor=SYS_COLOR[sys]||"#94a3b8";
   const tags=entry.tags||[];
+  const [copiedIdx,setCopiedIdx]=useState(-1);
+  function copyBlock(codeStr,i){ navigator.clipboard&&navigator.clipboard.writeText(codeStr); setCopiedIdx(i); setTimeout(()=>setCopiedIdx(-1),1500); }
+  const blocks=entryBlocks(entry);
+  const isCode=!!blocks;
   const lines=(entry.content||"").split("\n");
-  const long=lines.length>16;
-  const shown=exp||!long?entry.content:lines.slice(0,16).join("\n");
-  const codeText=shown+(!exp&&long?"\n…":"");
+  const long=!isCode&&lines.length>16;
+  const shownNote=exp||!long?entry.content:lines.slice(0,16).join("\n");
+  const codeLong=isCode&&blocks.some(b=>(b.code||"").split("\n").length>14);
+  function clampCode(code){ if(exp) return code||""; const ls=(code||"").split("\n"); return ls.length>14?ls.slice(0,14).join("\n")+"\n…":code; }
   return (
     <div className={"card"+(entry.pinned?" pinned":"")} style={{"--cat":color}}>
       <div className="card-head">
@@ -1638,16 +1666,22 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
           {mine && <button className="ibtn" onClick={()=>setConfirm(true)} title="Ta bort">{Ico.trash}</button>}
         </div>
       </div>
-      {entry.is_code ? (
+      {isCode ? (
         <>
           {entry.notes && entry.notes.trim() && <p className="note desc">{entry.notes}</p>}
-          <div className="code-wrap">
-            <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">{entry.lang&&entry.lang!=="auto"?entry.lang:"kod"}</span>
-              <button className="code-copy" onClick={onCopy} title="Kopiera kod">{copied?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
-            <CodeBlock code={codeText} lang={entry.lang} />
-          </div>
+          {blocks.map((b,i)=>(
+            <div className="code-wrap" key={i}>
+              <div className="code-bar"><span className="cdots"><i></i><i></i><i></i></span><span className="code-lbl">{b.title||(b.lang&&b.lang!=="auto"?b.lang:"kod")}</span>
+                <button className="code-copy" onClick={()=>copyBlock(b.code,i)} title="Kopiera kod">{copiedIdx===i?<>{Ico.check} kopierat</>:<>{Ico.copy} kopiera</>}</button></div>
+              <CodeBlock code={clampCode(b.code)} lang={b.lang} />
+            </div>
+          ))}
+          {codeLong && <button className="readmore" onClick={()=>setExp(!exp)}>{exp?"Visa mindre":"Visa mer"}</button>}
         </>
-      ) : <p className="note">{shown}{!exp&&long?" …":""}</p>}
+      ) : <>
+          <p className="note">{shownNote}</p>
+          {long && <button className="readmore" onClick={()=>setExp(!exp)}>{exp?"Visa mindre":"Visa mer"}</button>}
+        </>}
       {entry.images && entry.images.length>0 && (
         <div className="imgstrip">
           {entry.images.slice(0,4).map((url,i)=>(
@@ -1674,16 +1708,18 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
   const [tags,setTags]=useState((initial.tags||[]).join(", "));
   const startCode=initial.is_code!==undefined?initial.is_code:true;
   const [isCode,setIsCode]=useState(startCode);
-  const [code,setCode]=useState(startCode?(initial.content||""):"");
   const [text,setText]=useState(!startCode?(initial.content||""):"");
   const [desc,setDesc]=useState(initial.notes||"");
   const [shared,setShared]=useState(!!initial.shared);
-  const [lang,setLang]=useState(initial.lang||"auto");
+  const initBlocks=(initial.blocks&&initial.blocks.length)?initial.blocks.map(b=>({title:b.title||"",code:b.code||"",lang:b.lang||"auto"})):[{title:"",code:startCode?(initial.content||""):"",lang:initial.lang||"auto"}];
+  const [blocks,setBlocks]=useState(initBlocks);
+  function updateBlock(i,field,val){ setBlocks(bs=>bs.map((b,j)=>j===i?{...b,[field]:val}:b)); }
+  function addBlock(){ setBlocks(bs=>[...bs,{title:"",code:"",lang:"auto"}]); }
+  function removeBlock(i){ setBlocks(bs=>bs.length>1?bs.filter((_,j)=>j!==i):bs); }
   const [images,setImages]=useState(initial.images||[]);
   const [upBusy,setUpBusy]=useState(false); const [upErr,setUpErr]=useState("");
   const fileRef=useRef(null);
-  const body=isCode?code:text;
-  const valid=title.trim()&&body.trim();
+  const valid=title.trim()&&(isCode?blocks.some(b=>(b.code||"").trim()):text.trim());
   async function addImages(e){
     const files=Array.prototype.slice.call(e.target.files||[]); e.target.value="";
     if(!files.length) return;
@@ -1693,7 +1729,15 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
     setUpBusy(false);
   }
   function removeImage(url){ setImages(im=>im.filter(u=>u!==url)); }
-  function handleSave(){ if(!valid)return; onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:isCode?code:text,notes:isCode?desc:"",isCode,shared,images,lang:isCode?lang:"auto"}); }
+  function handleSave(){
+    if(!valid)return;
+    if(isCode){
+      const clean=blocks.filter(b=>(b.code||"").trim()).map(b=>({title:(b.title||"").trim(),code:b.code,lang:b.lang||"auto"}));
+      onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:clean.map(b=>b.code).join("\n\n"),notes:desc,isCode:true,shared,images,lang:(clean[0]&&clean[0].lang)||"auto",blocks:clean});
+    } else {
+      onSave({id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),content:text,notes:"",isCode:false,shared,images,lang:"auto",blocks:[]});
+    }
+  }
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e=>e.stopPropagation()}>
@@ -1719,15 +1763,23 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
             <button className={"toggle"+(!isCode?" active":"")} onClick={()=>setIsCode(false)}>{Ico.note} Anteckning</button>
           </div>
           {isCode ? (
-            <div className="splitfields">
-              <label className="field"><span className="lbl" style={{display:"flex",alignItems:"center",gap:8}}>{Ico.code} Kod / script
-                <select className="langsel" value={lang} onChange={e=>setLang(e.target.value)}>
-                  <option value="auto">auto</option><option value="python">Python</option><option value="sql">SQL</option>
-                  <option value="json">JSON</option><option value="javascript">JavaScript</option><option value="bash">Bash</option><option value="xml">XML/HTML</option>
-                </select></span>
-                <textarea value={code} onChange={e=>setCode(e.target.value)} rows={10} placeholder="Klistra in din kod här…" style={{fontFamily:"var(--mono)"}} /></label>
+            <div className="blocks-edit">
+              {blocks.map((b,i)=>(
+                <div className="blockedit" key={i}>
+                  <div className="blockedit-top">
+                    <input className="block-title" value={b.title} onChange={e=>updateBlock(i,"title",e.target.value)} placeholder="Rubrik (valfritt) – t.ex. Tag-config" />
+                    <select className="langsel" value={b.lang} onChange={e=>updateBlock(i,"lang",e.target.value)}>
+                      <option value="auto">auto</option><option value="python">Python</option><option value="sql">SQL</option>
+                      <option value="json">JSON</option><option value="javascript">JavaScript</option><option value="bash">Bash</option><option value="xml">XML/HTML</option>
+                    </select>
+                    {blocks.length>1 && <button className="block-del" title="Ta bort kodblock" onClick={()=>removeBlock(i)}>{Ico.x}</button>}
+                  </div>
+                  <textarea value={b.code} onChange={e=>updateBlock(i,"code",e.target.value)} rows={8} placeholder="Klistra in din kod här…" style={{fontFamily:"var(--mono)"}} />
+                </div>
+              ))}
+              <button className="addblock" onClick={addBlock}>{Ico.add} Lägg till kodblock</button>
               <label className="field"><span className="lbl">{Ico.note} Beskrivning / anteckning <span className="lbl-opt">valfritt</span></span>
-                <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={10} placeholder="Beskriv vad koden gör, fallgropar, var den används…" style={{fontFamily:"var(--sans)"}} /></label>
+                <textarea value={desc} onChange={e=>setDesc(e.target.value)} rows={4} placeholder="Beskriv vad koden gör, fallgropar, var den används…" style={{fontFamily:"var(--sans)"}} /></label>
             </div>
           ) : (
             <label className="field"><span className="lbl">{Ico.note} Text</span>
