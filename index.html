@@ -499,6 +499,38 @@
   .file-del svg{width:14px;height:14px;}
   .file-more{font-size:12px;color:var(--dim);padding:2px 2px;}
   .filesection{margin-top:16px;}
+  /* QR modal */
+  .qroverlay{z-index:60;}
+  .qrmodal{max-width:360px;}
+  .qr-title{font-size:15px;font-weight:600;color:var(--txt);margin:0 0 14px;}
+  .qrbox{display:inline-flex;align-items:center;justify-content:center;background:#fff;padding:14px;border-radius:14px;min-height:160px;min-width:160px;}
+  .qrbox img,.qrbox canvas{display:block;}
+  .qr-hint{font-size:12.5px;color:var(--dim);line-height:1.5;margin:14px auto 0;max-width:280px;}
+  .qr-link{font-family:var(--mono);font-size:11px;color:var(--txt2);background:var(--code);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:12px;word-break:break-all;}
+  .qr-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+  /* What's new feed */
+  .feed{display:flex;flex-direction:column;}
+  .feed-row{display:flex;align-items:flex-start;gap:11px;padding:10px 4px;border:none;border-bottom:1px solid var(--line);background:none;cursor:pointer;text-align:left;width:100%;}
+  .feed-row:last-child{border-bottom:none;}
+  .feed-row:hover{background:var(--accent-soft);border-radius:8px;}
+  .feed-ic{flex-shrink:0;display:flex;margin-top:2px;}
+  .feed-ic svg{width:17px;height:17px;}
+  .feed-main{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
+  .feed-title{font-size:14px;color:var(--txt);font-weight:500;display:flex;align-items:center;gap:8px;}
+  .feed-new{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#f87171;color:#fff;border-radius:5px;padding:1px 6px;flex-shrink:0;}
+  .feed-meta{font-size:12px;color:var(--dim);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* Offline package */
+  .offline-pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-family:var(--mono);color:#34d399;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:6px;padding:2px 7px;}
+  .offline-pill svg{width:11px;height:11px;}
+  .foot-ghost.on{border-color:rgba(52,211,153,.5);color:#34d399;background:rgba(52,211,153,.1);}
+  /* Station filter + badge */
+  .stationrow{display:flex;align-items:center;gap:9px;margin-bottom:14px;flex-wrap:wrap;}
+  .station-lbl{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--dim);font-family:var(--mono);}
+  .station-lbl svg{width:13px;height:13px;}
+  .station-sel{min-width:160px;}
+  .station-pill{display:inline-flex;align-items:center;gap:4px;font-family:var(--sans);font-size:11px;color:#5eead4;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);border-radius:7px;padding:2px 8px;text-transform:none;}
+  .station-pill svg{width:12px;height:12px;}
+  .card-foot .station-pill{margin-left:auto;}
 </style>
 </head>
 <body>
@@ -506,6 +538,7 @@
 <div id="root"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
@@ -517,6 +550,7 @@ const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 const CATEGORIES=["Scripting","Larm","UDT/Tags","Trend","Rapport","OPC","SQL","Behörighet","Övrigt"];
 const CAT_COLOR={"Scripting":"#a78bfa","Larm":"#ef4444","UDT/Tags":"#22c55e","Trend":"#f59e0b","Rapport":"#60a5fa","OPC":"#fb923c","SQL":"#2dd4bf","Behörighet":"#f472b6","Övrigt":"#94a3b8"};
+const STATION_EXAMPLES=["Pumpstation 1","Pumpstation 2","Pumpstation 3","Avloppspumpstation 1","Avloppspumpstation 2","Tryckstegringsstation","Bräddningsstation","Reservoar Norra","Reservoar Södra","Högreservoar","Lågreservoar","Vattenverk","Reningsverk"];
 
 /* ─── Exempelposter (laddas EN gång via knapp) ─── */
 const SEED=[
@@ -735,7 +769,7 @@ async function apiGet(token){
   const r = await fetch(restBase + "?select=*&order=updated_at.desc", {headers: dataHeaders(token)});
   if (!r.ok) throw new Error("GET " + r.status); return r.json();
 }
-const OPTIONAL_COLS = ["shared","author","notes","images","lang","blocks","checklist","files"];
+const OPTIONAL_COLS = ["shared","author","notes","images","lang","blocks","checklist","files","station"];
 const IMG_BUCKET = "kb-images";
 async function uploadImage(token, uid, file){
   let ext = (file.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
@@ -927,6 +961,9 @@ const Ico={
   send:<I size={16} d={<><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></>} />,
   checklist:<I d={<><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="m3 6 1 1 2-2"/><path d="m3 12 1 1 2-2"/><path d="m3 18 1 1 2-2"/></>} />,
   clip:<I d={<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>} />,
+  qr:<I d={<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3"/><path d="M21 14v7h-7"/><path d="M17 21v-4"/></>} />,
+  pin:<I d={<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>} />,
+  spark:<I d={<><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="m6 6 2.5 2.5"/><path d="m15.5 15.5 2.5 2.5"/><path d="m18 6-2.5 2.5"/><path d="m8.5 15.5-2.5 2.5"/></>} />,
 };
 const TOPIC_ICON={"Scripting":Ico=>Ico.terminal,"Larm":Ico=>Ico.bell,"UDT/Tags":Ico=>Ico.box,"Trend":Ico=>Ico.chart,"Rapport":Ico=>Ico.report,"OPC":Ico=>Ico.plug,"SQL":Ico=>Ico.db,"Behörighet":Ico=>Ico.shield,"Övrigt":Ico=>Ico.dots};
 function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
@@ -1036,6 +1073,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   const [activeSystem,setActiveSystem]=useState("Alla");
   const [activeCat,setActiveCat]=useState("Alla");
   const [activeTags,setActiveTags]=useState([]);
+  const [activeStation,setActiveStation]=useState("Alla");
   const [density,setDensity]=useState("kort");
   function toggleTag(t){ setActiveTags(a=>a.indexOf(t)>=0?a.filter(x=>x!==t):[...a,t]); }
   const [sortBy,setSortBy]=useState("senaste");
@@ -1077,6 +1115,35 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   function markConvSeen(conv){ seenRef.current[conv]=new Date().toISOString(); saveSeen(); setUnreadMap(m=>{ const c={...m}; delete c[conv]; return c; }); }
   const totalUnread=Object.keys(unreadMap).reduce((s,k)=>s+(unreadMap[k]||0),0);
 
+  const deepRef=useRef(getDeepLinkPost());
+  useEffect(()=>{
+    if(deepRef.current && entries.length){
+      const e=entries.find(x=>x.id===deepRef.current);
+      if(e){ setDetail(e); setActiveView("bibliotek"); }
+      deepRef.current=null;
+      try{ history.replaceState(null,"",window.location.pathname); }catch(err){}
+    }
+  },[entries]);
+
+  const offlineKey="scada-offline-"+(uid||user||"x");
+  const [offlineSet,setOfflineSet]=useState(function(){ try{ return JSON.parse(localStorage.getItem(offlineKey)||"[]"); }catch(e){ return []; } });
+  function isOfflineSaved(id){ return offlineSet.indexOf(id)>=0; }
+  async function cacheMedia(urls){
+    const list=(urls||[]).filter(Boolean);
+    if(!list.length || !("caches" in window)) return;
+    try{ const c=await caches.open("scada-media"); await Promise.all(list.map(u=>fetch(u,{mode:"no-cors"}).then(r=>c.put(u,r)).catch(()=>{}))); }catch(e){}
+  }
+  function toggleOffline(entry){
+    const has=offlineSet.indexOf(entry.id)>=0;
+    const next=has?offlineSet.filter(x=>x!==entry.id):[...offlineSet, entry.id];
+    setOfflineSet(next);
+    try{ localStorage.setItem(offlineKey, JSON.stringify(next)); }catch(e){}
+    if(!has){
+      cacheMedia([].concat(entry.images||[], (entry.files||[]).map(f=>f&&f.url)));
+      flash("Sparad offline – finns nu i fält även utan täckning");
+    } else { flash("Borttagen från offline"); }
+  }
+
   async function load(){
     setLoading(true); setError(null);
     try{
@@ -1094,7 +1161,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   async function saveEntry(data){
     if(typeof navigator!=="undefined" && navigator.onLine===false){ alert("Du är offline – ändringar kan inte sparas just nu. Försök igen när du har täckning."); return; }
     setBusy(true);
-    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",blocks:data.blocks||[],checklist:data.checklist||[],files:data.files||[],updated_at:new Date().toISOString()};
+    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",blocks:data.blocks||[],checklist:data.checklist||[],files:data.files||[],station:data.station||"",updated_at:new Date().toISOString()};
     try{
       if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
       else{ const n=await apiInsert(token,[{...row,pinned:false}]); setEntries([...n, ...entries]); }
@@ -1103,7 +1170,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
     setBusy(false);
   }
   async function restoreVersion(entryId, snap){
-    const row={title:snap.title,system:snap.system,category:snap.category,tags:snap.tags||[],content:snap.content,notes:snap.notes||"",is_code:snap.is_code,shared:!!snap.shared,images:snap.images||[],lang:snap.lang||"auto",blocks:snap.blocks||[],checklist:snap.checklist||[],files:snap.files||[],author:snap.author||(name||user),updated_at:new Date().toISOString()};
+    const row={title:snap.title,system:snap.system,category:snap.category,tags:snap.tags||[],content:snap.content,notes:snap.notes||"",is_code:snap.is_code,shared:!!snap.shared,images:snap.images||[],lang:snap.lang||"auto",blocks:snap.blocks||[],checklist:snap.checklist||[],files:snap.files||[],station:snap.station||"",author:snap.author||(name||user),updated_at:new Date().toISOString()};
     const u=await apiUpdate(token,entryId,row);
     setEntries(entries.map(e=>e.id===entryId?u:e));
     setDetail(u);
@@ -1120,7 +1187,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   async function loadExamples(){
     setBusy(true);
     try{
-      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], lang:s.lang||"auto", blocks:s.blocks||[], checklist:s.checklist||[], files:s.files||[], pinned:false, updated_at:new Date().toISOString()}));
+      const rows=SEED.map(s=>({...s, system:s.system||"Ignition", notes:s.notes||"", shared:false, author:name||user, images:s.images||[], lang:s.lang||"auto", blocks:s.blocks||[], checklist:s.checklist||[], files:s.files||[], station:s.station||"", pinned:false, updated_at:new Date().toISOString()}));
       const inserted=await apiInsert(token,rows);
       setEntries([...inserted, ...entries]);
       flash("Laddade "+inserted.length+" exempelposter");
@@ -1141,7 +1208,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       try{
         const data=JSON.parse(e.target.result);
         if(!Array.isArray(data)) throw new Error();
-        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],lang:d.lang||"auto",blocks:d.blocks||[],checklist:d.checklist||[],files:d.files||[],pinned:!!d.pinned,updated_at:new Date().toISOString()}));
+        const rows=data.filter(d=>d&&d.title).map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:d.is_code!==undefined?d.is_code:!!d.isCode,shared:!!d.shared,author:d.author||name||user,images:d.images||[],lang:d.lang||"auto",blocks:d.blocks||[],checklist:d.checklist||[],files:d.files||[],station:d.station||"",pinned:!!d.pinned,updated_at:new Date().toISOString()}));
         setBusy(true);
         const inserted=await apiInsert(token,rows);
         setEntries([...inserted, ...entries]);
@@ -1158,8 +1225,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       if(activeSystem!=="Alla"&&(e.system||"Ignition")!==activeSystem) return false;
       if(activeCat!=="Alla"&&e.category!==activeCat) return false;
       if(activeTags.length){ const et=(e.tags||[]).map(t=>(t||"").toLowerCase()); if(!activeTags.every(t=>et.indexOf(t.toLowerCase())>=0)) return false; }
+      if(activeStation!=="Alla" && (e.station||"")!==activeStation) return false;
       if(!q) return true;
-      return (e.title+" "+e.content+" "+(e.notes||"")+" "+(e.author||"")+" "+(e.tags||[]).join(" ")).toLowerCase().includes(q);
+      return (e.title+" "+e.content+" "+(e.notes||"")+" "+(e.author||"")+" "+(e.station||"")+" "+(e.tags||[]).join(" ")).toLowerCase().includes(q);
     });
     list=list.slice().sort((a,b)=>{
       if(!!b.pinned!==!!a.pinned) return (b.pinned?1:0)-(a.pinned?1:0);
@@ -1168,7 +1236,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       return (b.updated_at||"").localeCompare(a.updated_at||"");
     });
     return list;
-  },[entries,search,activeSystem,activeCat,sortBy,activeTags]);
+  },[entries,search,activeSystem,activeCat,sortBy,activeTags,activeStation]);
+
+  const stationList=useMemo(()=>{ const set=[]; entries.forEach(e=>{ const s=(e.station||"").trim(); if(s&&set.indexOf(s)<0) set.push(s); }); set.sort((a,b)=>a.localeCompare(b,"sv")); return set; },[entries]);
   const sysScope=useMemo(()=>activeSystem==="Alla"?entries:entries.filter(e=>(e.system||"Ignition")===activeSystem),[entries,activeSystem]);
   const counts=useMemo(()=>{const c={}; sysScope.forEach(e=>c[e.category]=(c[e.category]||0)+1); return c;},[sysScope]);
   const sysCounts=useMemo(()=>{const c={}; entries.forEach(e=>{const s=e.system||"Ignition"; c[s]=(c[s]||0)+1;}); return c;},[entries]);
@@ -1181,8 +1251,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
     if(activeView==="anteckningar" && e.is_code) return false;
     if(scope==="mina" && !(e.user_id===uid || !e.user_id)) return false;
     if(scope==="delade" && !e.shared) return false;
+    if(scope==="offline" && offlineSet.indexOf(e.id)<0) return false;
     return true;
-  }),[filtered,activeView,scope,uid]);
+  }),[filtered,activeView,scope,uid,offlineSet]);
 
   return (
     <div className="app">
@@ -1206,7 +1277,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
 
         {activeView==="oversikt" ? (
           <Dashboard entries={entries} sysCounts={sysCounts} topicCounts={topicCounts}
-            codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading} user={display}
+            codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading} user={display} uid={uid}
             onOpenLibrary={cat=>{setActiveCat(cat||"Alla");setActiveSystem("Alla");setSearch("");setActiveView("bibliotek");}}
             onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
             onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
@@ -1245,6 +1316,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
               <button className={"scopebtn"+(scope==="alla"?" active":"")} onClick={()=>setScope("alla")}>Alla</button>
               <button className={"scopebtn"+(scope==="mina"?" active":"")} onClick={()=>setScope("mina")}>{Ico.lock} Mina</button>
               <button className={"scopebtn"+(scope==="delade"?" active":"")} onClick={()=>setScope("delade")}>{Ico.users} Delade</button>
+              <button className={"scopebtn"+(scope==="offline"?" active":"")} onClick={()=>setScope("offline")}>{Ico.down} Offline{offlineSet.length>0?" ("+offlineSet.length+")":""}</button>
             </div>
 
             {activeTags.length>0 && (
@@ -1252,6 +1324,17 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
                 <span className="activetags-lbl">Taggar:</span>
                 {activeTags.map(t=><button key={t} className="atag" onClick={()=>toggleTag(t)}>#{t}{Ico.x}</button>)}
                 <button className="atag-clear" onClick={()=>setActiveTags([])}>Rensa</button>
+              </div>
+            )}
+
+            {stationList.length>0 && (
+              <div className="stationrow">
+                <span className="station-lbl">{Ico.pin} Station:</span>
+                <select className="sortsel station-sel" value={activeStation} onChange={e=>setActiveStation(e.target.value)}>
+                  <option value="Alla">Alla stationer</option>
+                  {stationList.map(s=><option key={s} value={s}>{s}</option>)}
+                </select>
+                {activeStation!=="Alla" && <button className="atag-clear" onClick={()=>setActiveStation("Alla")}>Rensa</button>}
               </div>
             )}
 
@@ -1282,7 +1365,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
               </div>
             ) : (
               <div className="cards">
-                {viewList.map(e=><EntryCard key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} copied={copiedId===e.id} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} onPin={()=>togglePin(e)} onTag={t=>toggleTag(t)} onOpen={()=>setDetail(e)} />)}
+                {viewList.map(e=><EntryCard key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} copied={copiedId===e.id} offlineSaved={isOfflineSaved(e.id)} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} onPin={()=>togglePin(e)} onTag={t=>toggleTag(t)} onOpen={()=>setDetail(e)} />)}
               </div>
             )}
           </>
@@ -1290,8 +1373,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
       </main>
 
       {toast && <div className="toast">{toast}</div>}
-      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} onSave={saveEntry} onClose={()=>setEditing(null)} />}
-      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
+      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} onSave={saveEntry} onClose={()=>setEditing(null)} />}
+      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
     </div>
   );
@@ -1357,7 +1440,37 @@ function ActivityChart({entries}){
   );
 }
 
-function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCount,loading,user,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
+function WhatsNew({entries, uid, onOpen}){
+  const seenKey="scada-feed-seen-"+(uid||"x");
+  const [lastSeen]=useState(function(){ try{ return localStorage.getItem(seenKey)||""; }catch(e){ return ""; } });
+  const feed=entries.slice().sort((a,b)=>(b.updated_at||"").localeCompare(a.updated_at||"")).slice(0,10);
+  useEffect(()=>{ const newest=feed.length?(feed[0].updated_at||""):""; if(newest){ try{ localStorage.setItem(seenKey,newest); }catch(e){} } },[]);
+  if(feed.length===0) return null;
+  function kindLabel(e){ const c=e.created_at||"", u=e.updated_at||""; if(!c) return "Uppdaterad"; return Math.abs(new Date(u)-new Date(c))<90000?"Ny":"Uppdaterad"; }
+  return (
+    <div className="panel">
+      <div className="panel-h">{Ico.spark} Vad är nytt</div>
+      <div className="feed">
+        {feed.map(e=>{
+          const isNew=lastSeen && (e.updated_at||"")>lastSeen;
+          const mine=e.user_id===uid;
+          const who=mine?"du":(e.author||"en kollega");
+          const col=e.is_code?"#a78bfa":(e.checklist&&e.checklist.length)?"#34d399":"#60a5fa";
+          const ic=e.is_code?Ico.terminal:(e.checklist&&e.checklist.length)?Ico.checklist:Ico.note;
+          return <button key={e.id} className="feed-row" onClick={()=>onOpen(e)}>
+            <span className="feed-ic" style={{color:col}}>{ic}</span>
+            <span className="feed-main">
+              <span className="feed-title">{e.title}{isNew?<span className="feed-new">Ny</span>:null}</span>
+              <span className="feed-meta">{kindLabel(e)} · {who} · {fmtDateTime(e.updated_at)}{e.station?" · "+e.station:""}</span>
+            </span>
+          </button>;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
   if(loading) return <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>;
   if(entries.length===0) return (
     <div className="empty">
@@ -1393,6 +1506,7 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
         <Tile icon={Ico.pin} label="Favoriter" value={pinnedCount} color="#34d399" onClick={()=>onOpenLibrary()} />
       </div>
       <ActivityChart entries={entries} />
+      <WhatsNew entries={entries} uid={uid} onOpen={onOpen} />
       <div className="dash-grid">
         <div className="panel">
           <div className="panel-h">{Ico.layers} System</div>
@@ -1425,7 +1539,7 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
   );
 }
 
-function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRestore,onClose,onOpen,onEdit,onTag}){
+function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,onRestore,onClose,onOpen,onEdit,onTag}){
   const color=CAT_COLOR[entry.category]||"#94a3b8";
   const sys=entry.system||"Ignition";
   const sysColor=SYS_COLOR[sys]||"#94a3b8";
@@ -1448,6 +1562,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
   async function doRestore(v){ setRestoring(true); try{ await onRestore(entry.id, v.snapshot); setHist(null); }catch(e){ alert("Kunde inte återställa: "+e.message); } setRestoring(false); }
   function copy(){ navigator.clipboard&&navigator.clipboard.writeText(entry.content); setCopied(true); setTimeout(()=>setCopied(false),1500); }
   const [copiedIdx,setCopiedIdx]=useState(-1);
+  const [showQR,setShowQR]=useState(false);
   function copyBlock(codeStr,i){ navigator.clipboard&&navigator.clipboard.writeText(codeStr); setCopiedIdx(i); setTimeout(()=>setCopiedIdx(-1),1500); }
   const blocks=entryBlocks(entry);
   const tplVars=useMemo(()=>{
@@ -1466,6 +1581,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
     return {e,score};
   }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.e);
   return (
+    <>
     <div className="overlay" onClick={onClose}>
       <div className="modal detail" onClick={e=>e.stopPropagation()}>
         <div className="modal-head">
@@ -1480,6 +1596,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
               ? <span className="sharechip shared">{Ico.users}{mine?"delad med teamet":"delad av "+(entry.author||"team")}</span>
               : <span className="sharechip priv">{Ico.lock}privat</span>}
             <span className="detail-date">{Ico.clock} uppdaterad {fmtDate(entry.updated_at)}</span>
+            {entry.station&&entry.station.trim()&&<span className="station-pill">{Ico.pin}{entry.station}</span>}
           </div>
           {tags.length>0&&<div className="tags">{tags.map(t=><button key={t} className="tag" onClick={()=>onTag&&onTag(t)}>#{t}</button>)}</div>}
           {entry.checklist && entry.checklist.length ? (
@@ -1575,11 +1692,15 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,onRest
         </div>
         <div className="modal-foot">
           <button className="foot-btn foot-cancel" onClick={onClose}>Stäng</button>
+          <button className="foot-btn foot-ghost" onClick={()=>setShowQR(true)}>{Ico.qr} QR</button>
+          <button className={"foot-btn foot-ghost"+(offlineSaved?" on":"")} onClick={onToggleOffline}>{Ico.down} {offlineSaved?"Sparad offline":"Ta med offline"}</button>
           {mine && <button className="foot-btn foot-ghost" onClick={()=>hist===null?openHist():setHist(null)}>{Ico.undo} {hist===null?"Historik":"Dölj"}</button>}
           {mine && <button className="foot-btn foot-save" onClick={()=>onEdit(entry)}>{Ico.edit} Redigera</button>}
         </div>
       </div>
     </div>
+    {showQR && <QRModal entry={entry} onClose={()=>setShowQR(false)} />}
+    </>
   );
 }
 
@@ -1721,6 +1842,45 @@ function Checklist({entry, interactive=true}){
   );
 }
 
+function QRModal({entry,onClose}){
+  const ref=useRef(null);
+  const url=postUrl(entry.id);
+  useEffect(()=>{
+    if(!ref.current) return;
+    ref.current.innerHTML="";
+    if(window.QRCode){ try{ new window.QRCode(ref.current,{text:url,width:220,height:220,colorDark:"#0b0f14",colorLight:"#ffffff",correctLevel:window.QRCode.CorrectLevel.M}); }catch(e){} }
+    else { ref.current.textContent="QR-biblioteket kunde inte laddas (kräver internet första gången)."; }
+  },[url]);
+  function download(){
+    const cv=ref.current&&ref.current.querySelector("canvas");
+    const img=ref.current&&ref.current.querySelector("img");
+    let data=cv?cv.toDataURL("image/png"):(img&&img.src);
+    if(!data) return;
+    const a=document.createElement("a"); a.href=data;
+    a.download=("qr-"+(entry.title||"post")).replace(/[^a-z0-9]+/gi,"-").toLowerCase().replace(/^-|-$/g,"")+".png";
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  const [copied,setCopied]=useState(false);
+  function copyLink(){ navigator.clipboard&&navigator.clipboard.writeText(url); setCopied(true); setTimeout(()=>setCopied(false),1500); }
+  return (
+    <div className="overlay qroverlay" onClick={onClose}>
+      <div className="modal qrmodal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-head"><h2>QR-kod</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
+        <div className="modal-body" style={{textAlign:"center"}}>
+          <p className="qr-title">{entry.title}</p>
+          <div className="qrbox" ref={ref}></div>
+          <p className="qr-hint">Skanna för att öppna posten direkt. Skriv ut och sätt t.ex. på stationen eller i ställverket.</p>
+          <div className="qr-link">{url}</div>
+          <div className="qr-actions">
+            <button className="foot-btn foot-ghost" onClick={copyLink}>{Ico.link} {copied?"Kopierad":"Kopiera länk"}</button>
+            <button className="foot-btn foot-save" onClick={download}>{Ico.down} Ladda ner PNG</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Chip({label,active,color,count,onClick}){
   return (<button className={"chip"+(active?" active":"")} style={{borderColor:active?color:"var(--line)"}} onClick={onClick}>
     <span className="cdot" style={{background:color}}></span>{label}{count>0&&<span className="cnt">{count}</span>}</button>);
@@ -1730,6 +1890,8 @@ function fmtDate(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleDat
 function fmtDateTime(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleString("sv-SE",{dateStyle:"medium",timeStyle:"short"}); }catch(e){ return ""; } }
 function fmtTime(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
 function fmtSize(n){ if(n===undefined||n===null||isNaN(n)) return ""; if(n<1024) return n+" B"; if(n<1048576) return Math.round(n/1024)+" kB"; return (n/1048576).toFixed(1)+" MB"; }
+function postUrl(id){ try{ return window.location.origin+window.location.pathname+"?post="+id; }catch(e){ return "?post="+id; } }
+function getDeepLinkPost(){ try{ return new URL(window.location.href).searchParams.get("post"); }catch(e){ return null; } }
 function entryBlocks(entry){
   if(entry.blocks && entry.blocks.length) return entry.blocks;
   if(entry.is_code) return [{title:"",code:entry.content||"",lang:entry.lang||"auto"}];
@@ -1759,7 +1921,7 @@ function CodeBlock({code,lang}){
   );
 }
 
-function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,onOpen}){
+function EntryCard({entry,mine=true,copied,offlineSaved,onCopy,onEdit,onDelete,onPin,onTag,onOpen}){
   const [confirm,setConfirm]=useState(false);
   const [exp,setExp]=useState(false);
   const color=CAT_COLOR[entry.category]||"#94a3b8";
@@ -1840,7 +2002,7 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
         </div>
       )}
       {long && <button className="more" onClick={()=>setExp(!exp)}>{exp?<>{Ico.chevU} Visa mindre</>:<>{Ico.chevD} Visa mer</>}</button>}
-      <div className="card-foot">{Ico.clock}<span>uppdaterad {fmtDate(entry.updated_at)}</span></div>
+      <div className="card-foot">{Ico.clock}<span>uppdaterad {fmtDate(entry.updated_at)}</span>{offlineSaved&&<span className="offline-pill">{Ico.down} offline</span>}{entry.station&&entry.station.trim()&&<span className="station-pill">{Ico.pin}{entry.station}</span>}</div>
       {confirm && (<div className="confirm"><span className="msg">{Ico.alert} Ta bort permanent?</span>
         <div style={{display:"flex",gap:8}}><button className="btn-cancel" onClick={()=>setConfirm(false)}>Avbryt</button>
         <button className="btn-del" onClick={onDelete}>Ta bort</button></div></div>)}
@@ -1848,11 +2010,12 @@ function EntryCard({entry,mine=true,copied,onCopy,onEdit,onDelete,onPin,onTag,on
   );
 }
 
-function EntryForm({initial,busy,token,uid,onSave,onClose}){
+function EntryForm({initial,busy,token,uid,stations=[],onSave,onClose}){
   const [title,setTitle]=useState(initial.title||"");
   const [system,setSystem]=useState(initial.system||"Ignition");
   const [category,setCategory]=useState(initial.category||"Scripting");
   const [tags,setTags]=useState((initial.tags||[]).join(", "));
+  const [station,setStation]=useState(initial.station||"");
   const startCode=initial.is_code!==undefined?initial.is_code:true;
   const startKind=(initial.checklist&&initial.checklist.length)?"checklist":(((initial.blocks&&initial.blocks.length)||startCode)?"code":"note");
   const [kind,setKind]=useState(startKind);
@@ -1896,7 +2059,7 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
   function removeImage(url){ setImages(im=>im.filter(u=>u!==url)); }
   function handleSave(){
     if(!valid)return;
-    const base={id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),shared,images,files};
+    const base={id:initial.id,title:title.trim(),system,category,tags:tags.split(",").map(t=>t.trim()).filter(Boolean),shared,images,files,station:station.trim()};
     if(kind==="code"){
       const clean=blocks.filter(b=>(b.code||"").trim()).map(b=>({title:(b.title||"").trim(),code:b.code,lang:b.lang||"auto"}));
       onSave({...base,content:clean.map(b=>b.code).join("\n\n"),notes:desc,isCode:true,lang:(clean[0]&&clean[0].lang)||"auto",blocks:clean,checklist:[]});
@@ -1922,6 +2085,11 @@ function EntryForm({initial,busy,token,uid,onSave,onClose}){
           </div>
           <label className="field"><span className="lbl">Taggar (komma)</span>
             <input value={tags} onChange={e=>setTags(e.target.value)} placeholder="udt, perspective" /></label>
+          <label className="field"><span className="lbl">{Ico.pin} Station / anläggning <span className="lbl-opt">valfritt</span></span>
+            <input value={station} onChange={e=>setStation(e.target.value)} placeholder="t.ex. Pumpstation 1" list="station-suggest" />
+            <datalist id="station-suggest">
+              {STATION_EXAMPLES.concat(stations.filter(s=>STATION_EXAMPLES.indexOf(s)<0)).map(s=><option key={s} value={s} />)}
+            </datalist></label>
           <div className="toggle-row share-toggle">
             <button className={"toggle"+(!shared?" active":"")} onClick={()=>setShared(false)}>{Ico.lock} Privat</button>
             <button className={"toggle"+(shared?" active":"")} onClick={()=>setShared(true)}>{Ico.users} Delad med teamet</button>
