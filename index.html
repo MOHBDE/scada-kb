@@ -111,6 +111,21 @@
   .foot-mini svg{width:15px;height:15px;}
   .foot-mini.on{border-color:rgba(52,211,153,.5);color:#34d399;background:rgba(52,211,153,.1);}
   @media(min-width:760px){ .modal-foot{flex-wrap:nowrap;} .foot-main{flex:0 0 auto;min-width:0;} }
+  .systab.sysmanage{border-style:dashed;color:var(--dim);}
+  .systab.sysmanage svg{width:13px;height:13px;}
+  .sys-hint{font-size:12.5px;color:var(--dim);line-height:1.5;margin:0 0 14px;}
+  .sys-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+  .sys-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--code);border:1px solid var(--line);border-radius:11px;}
+  .sys-item .sysdot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+  .sys-name{font-size:14px;color:var(--txt);font-weight:600;}
+  .sys-count{margin-left:auto;font-size:11.5px;color:var(--dim);font-family:var(--mono);}
+  .sys-lock{font-size:10.5px;color:var(--dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--line);border-radius:6px;padding:2px 7px;}
+  .sys-rm{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--dim);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .sys-rm:hover{color:var(--danger);border-color:rgba(248,113,113,.4);}
+  .sys-rm svg{width:15px;height:15px;}
+  .sys-add{display:flex;gap:9px;align-items:stretch;}
+  .sys-add input{flex:1;min-width:0;}
+  .sys-add .foot-btn{flex:0 0 auto;padding:10px 14px;}
   .modal-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
   .x{background:none;border:none;color:var(--dim);cursor:pointer;transition:color .15s;}
   .x:hover{color:#fff;}
@@ -584,6 +599,13 @@ const { useState, useEffect, useMemo, useRef } = React;
 
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
+function colorForSys(name){
+  if(SYS_COLOR[name]) return SYS_COLOR[name];
+  let h=0; const s=String(name||""); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0;
+  return "hsl("+(h%360)+",65%,58%)";
+}
+function loadSysList(){ try{ return JSON.parse(localStorage.getItem("scada-systems")||"[]"); }catch(e){ return []; } }
+function saveSysList(arr){ try{ localStorage.setItem("scada-systems", JSON.stringify(arr)); }catch(e){} }
 const CATEGORIES=["Scripting","Larm","UDT/Tags","Trend","Rapport","OPC","SQL","Behörighet","Övrigt"];
 const CAT_COLOR={"Scripting":"#a78bfa","Larm":"#ef4444","UDT/Tags":"#22c55e","Trend":"#f59e0b","Rapport":"#60a5fa","OPC":"#fb923c","SQL":"#2dd4bf","Behörighet":"#f472b6","Övrigt":"#94a3b8"};
 const STATION_EXAMPLES=["Pumpstation 1","Pumpstation 2","Pumpstation 3","Avloppspumpstation 1","Avloppspumpstation 2","Tryckstegringsstation","Bräddningsstation","Reservoar Norra","Reservoar Södra","Högreservoar","Lågreservoar","Vattenverk","Reningsverk"];
@@ -1322,7 +1344,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   async function saveEntry(data){
     if(typeof navigator!=="undefined" && navigator.onLine===false){ alert("Du är offline – ändringar kan inte sparas just nu. Försök igen när du har täckning."); return; }
     setBusy(true);
-    const row={title:data.title,system:data.system,category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",blocks:data.blocks||[],checklist:data.checklist||[],files:data.files||[],station:data.station||"",updated_at:new Date().toISOString()};
+    if(data.system){ data.system=String(data.system).trim(); addSystem(data.system); }
+    const row={title:data.title,system:data.system||"Ignition",category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",blocks:data.blocks||[],checklist:data.checklist||[],files:data.files||[],station:data.station||"",updated_at:new Date().toISOString()};
     try{
       if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
       else{ const n=await apiInsert(token,[{...row,pinned:false}]); setEntries([...n, ...entries]); }
@@ -1403,6 +1426,11 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   const sysScope=useMemo(()=>activeSystem==="Alla"?entries:entries.filter(e=>(e.system||"Ignition")===activeSystem),[entries,activeSystem]);
   const counts=useMemo(()=>{const c={}; sysScope.forEach(e=>c[e.category]=(c[e.category]||0)+1); return c;},[sysScope]);
   const sysCounts=useMemo(()=>{const c={}; entries.forEach(e=>{const s=e.system||"Ignition"; c[s]=(c[s]||0)+1;}); return c;},[entries]);
+  const [customSys,setCustomSys]=useState(loadSysList);
+  const [showSys,setShowSys]=useState(false);
+  const systems=useMemo(()=>{ const out=[]; const add=n=>{ n=(n||"").trim(); if(n&&!out.includes(n)) out.push(n); }; SYSTEMS.forEach(add); customSys.forEach(add); entries.forEach(e=>add(e.system||"Ignition")); return out; },[customSys,entries]);
+  function addSystem(name){ name=(name||"").trim(); if(!name||systems.includes(name)) return; const next=[...customSys,name]; setCustomSys(next); saveSysList(next); }
+  function removeSystem(name){ if(SYSTEMS.includes(name)) return; if((sysCounts[name]||0)>0) return; const next=customSys.filter(s=>s!==name); setCustomSys(next); saveSysList(next); }
   const pinnedCount=useMemo(()=>entries.filter(e=>e.pinned).length,[entries]);
   const codeCount=useMemo(()=>entries.filter(e=>e.is_code).length,[entries]);
   const noteCount=useMemo(()=>entries.filter(e=>!e.is_code).length,[entries]);
@@ -1451,7 +1479,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
         {error && <div className="banner err">{error}</div>}
 
         {activeView==="oversikt" ? (
-          <Dashboard entries={entries} sysCounts={sysCounts} topicCounts={topicCounts}
+          <Dashboard entries={entries} sysCounts={sysCounts} systems={systems} topicCounts={topicCounts}
             codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading} user={display} uid={uid}
             onOpenLibrary={cat=>{setActiveCat(cat||"Alla");setActiveSystem("Alla");setSearch("");setActiveView("bibliotek");}}
             onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
@@ -1463,7 +1491,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
           <>
             <div className="page-head">
               <div>
-                <div className="crumbs page-crumbs"><span>SCADA·KB</span>{Ico.chevR}<span style={{color:"var(--txt)"}}>{activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek"}</span>{activeSystem!=="Alla"&&<>{Ico.chevR}<span style={{color:SYS_COLOR[activeSystem]}}>{activeSystem}</span></>}{activeCat!=="Alla"&&<>{Ico.chevR}<span style={{color:CAT_COLOR[activeCat]}}>{activeCat}</span></>}</div>
+                <div className="crumbs page-crumbs"><span>SCADA·KB</span>{Ico.chevR}<span style={{color:"var(--txt)"}}>{activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek"}</span>{activeSystem!=="Alla"&&<>{Ico.chevR}<span style={{color:colorForSys(activeSystem)}}>{activeSystem}</span></>}{activeCat!=="Alla"&&<>{Ico.chevR}<span style={{color:CAT_COLOR[activeCat]}}>{activeCat}</span></>}</div>
                 <h2 className="page-title">{activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek"}</h2>
                 <p className="page-sub">{activeView==="kod"?"Kodsnuttar och script":activeView==="anteckningar"?"Anteckningar och rutiner":"Alla poster i kunskapsbasen"}</p>
               </div>
@@ -1472,11 +1500,12 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
 
             <div className="systabs">
               <button className={"systab"+(activeSystem==="Alla"?" active":"")} onClick={()=>{setActiveSystem("Alla");setActiveCat("Alla");}}>Alla system<span className="syscnt">{entries.length}</span></button>
-              {SYSTEMS.map(s=>(
-                <button key={s} className={"systab"+(activeSystem===s?" active":"")} style={{"--sys":SYS_COLOR[s]}} onClick={()=>{setActiveSystem(s);setActiveCat("Alla");}}>
-                  <span className="sysdot" style={{background:SYS_COLOR[s]}}></span>{s}<span className="syscnt">{sysCounts[s]||0}</span>
+              {systems.map(s=>(
+                <button key={s} className={"systab"+(activeSystem===s?" active":"")} style={{"--sys":colorForSys(s)}} onClick={()=>{setActiveSystem(s);setActiveCat("Alla");}}>
+                  <span className="sysdot" style={{background:colorForSys(s)}}></span>{s}<span className="syscnt">{sysCounts[s]||0}</span>
                 </button>
               ))}
+              <button className="systab sysmanage" onClick={()=>setShowSys(true)} title="Hantera system">{Ico.add} System</button>
             </div>
 
             <div className="search-box">{Ico.search}
@@ -1549,7 +1578,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       </main>
 
       {toast && <div className="toast">{toast}</div>}
-      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} onSave={saveEntry} onClose={()=>setEditing(null)} />}
+      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} systems={systems} onSave={saveEntry} onClose={()=>setEditing(null)} />}
+      {showSys && <SystemModal systems={systems} counts={sysCounts} onAdd={addSystem} onRemove={removeSystem} onClose={()=>setShowSys(false)} />}
       {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} onExportPdf={()=>exportPostPdf(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
     </div>
@@ -1648,7 +1678,7 @@ function WhatsNew({entries, uid, onOpen}){
   );
 }
 
-function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
+function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
   if(loading) return <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>;
   if(entries.length===0) return (
     <div className="empty">
@@ -1688,11 +1718,11 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
       <div className="dash-grid">
         <div className="panel">
           <div className="panel-h">{Ico.layers} System</div>
-          {SYSTEMS.map(s=>(
+          {(systems||SYSTEMS).map(s=>(
             <div key={s} className="bar-row" onClick={()=>onOpenLibrary()}>
-              <span className="bar-dot" style={{background:SYS_COLOR[s]}}></span>
+              <span className="bar-dot" style={{background:colorForSys(s)}}></span>
               <span className="bar-label">{s}</span>
-              <div className="bar-track"><div className="bar-fill" style={{width:((sysCounts[s]||0)/total*100)+"%",background:SYS_COLOR[s]}}></div></div>
+              <div className="bar-track"><div className="bar-fill" style={{width:((sysCounts[s]||0)/total*100)+"%",background:colorForSys(s)}}></div></div>
               <span className="bar-num">{sysCounts[s]||0}</span>
             </div>
           ))}
@@ -1720,7 +1750,7 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
 function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,onExportPdf,onRestore,onClose,onOpen,onEdit,onTag}){
   const color=CAT_COLOR[entry.category]||"#94a3b8";
   const sys=entry.system||"Ignition";
-  const sysColor=SYS_COLOR[sys]||"#94a3b8";
+  const sysColor=colorForSys(sys);
   const tags=entry.tags||[];
   const [copied,setCopied]=useState(false);
   const [hist,setHist]=useState(null); const [histBusy,setHistBusy]=useState(false); const [restoring,setRestoring]=useState(false);
@@ -1922,7 +1952,7 @@ function EmptyState({view,hasEntries,onLoad,onAdd}){
 function CompactRow({entry,mine=true,onOpen,onPin}){
   const color=CAT_COLOR[entry.category]||"#94a3b8";
   const sys=entry.system||"Ignition";
-  const sysColor=SYS_COLOR[sys]||"#94a3b8";
+  const sysColor=colorForSys(sys);
   return (
     <div className="compactrow" onClick={onOpen}>
       <span className="cr-type" style={{color:entry.is_code?"#a78bfa":(entry.checklist&&entry.checklist.length)?"#34d399":"#60a5fa"}}>{entry.is_code?Ico.terminal:(entry.checklist&&entry.checklist.length)?Ico.checklist:Ico.note}</span>
@@ -2122,7 +2152,7 @@ function EntryCard({entry,mine=true,copied,offlineSaved,onCopy,onEdit,onDelete,o
   const [exp,setExp]=useState(false);
   const color=CAT_COLOR[entry.category]||"#94a3b8";
   const sys=entry.system||"Ignition";
-  const sysColor=SYS_COLOR[sys]||"#94a3b8";
+  const sysColor=colorForSys(sys);
   const tags=entry.tags||[];
   const [copiedIdx,setCopiedIdx]=useState(-1);
   function copyBlock(codeStr,i){ navigator.clipboard&&navigator.clipboard.writeText(codeStr); setCopiedIdx(i); setTimeout(()=>setCopiedIdx(-1),1500); }
@@ -2206,7 +2236,41 @@ function EntryCard({entry,mine=true,copied,offlineSaved,onCopy,onEdit,onDelete,o
   );
 }
 
-function EntryForm({initial,busy,token,uid,stations=[],onSave,onClose}){
+function SystemModal({systems,counts,onAdd,onRemove,onClose}){
+  const [val,setVal]=useState("");
+  function add(){ const v=val.trim(); if(!v) return; onAdd(v); setVal(""); }
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-head"><h2>Hantera system</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
+        <div className="modal-body">
+          <p className="sys-hint">Lägg till de SCADA-/HMI-system ni jobbar med. Ett system som redan har poster kan inte tas bort förrän posterna flyttats eller raderats.</p>
+          <div className="sys-list">
+            {systems.map(s=>{
+              const c=counts[s]||0; const builtin=SYSTEMS.includes(s); const removable=!builtin && c===0;
+              return (
+                <div className="sys-item" key={s}>
+                  <span className="sysdot" style={{background:colorForSys(s)}}></span>
+                  <span className="sys-name">{s}</span>
+                  <span className="sys-count">{c} {c===1?"post":"poster"}</span>
+                  {removable
+                    ? <button className="sys-rm" title="Ta bort system" onClick={()=>onRemove(s)}>{Ico.x}</button>
+                    : <span className="sys-lock">{builtin?"inbyggt":"används"}</span>}
+                </div>
+              );
+            })}
+          </div>
+          <div className="sys-add">
+            <input value={val} onChange={e=>setVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()} placeholder="Nytt system – t.ex. WinCC, FactoryTalk, Citect…" />
+            <button className="foot-btn foot-save" onClick={add} disabled={!val.trim()}>{Ico.add} Lägg till</button>
+          </div>
+        </div>
+        <div className="modal-foot"><div className="foot-main"><button className="foot-btn foot-cancel" onClick={onClose}>Stäng</button></div></div>
+      </div>
+    </div>
+  );
+}
+function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onSave,onClose}){
   const [title,setTitle]=useState(initial.title||"");
   const [system,setSystem]=useState(initial.system||"Ignition");
   const [category,setCategory]=useState(initial.category||"Scripting");
@@ -2275,7 +2339,8 @@ function EntryForm({initial,busy,token,uid,stations=[],onSave,onClose}){
             <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="t.ex. Läsa UDT-parameter med getConfiguration" /></label>
           <div className="row2">
             <label className="field"><span className="lbl">System</span>
-              <select value={system} onChange={e=>setSystem(e.target.value)}>{SYSTEMS.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
+              <input list="sysoptions" value={system} onChange={e=>setSystem(e.target.value)} placeholder="Ignition, iFIX, …" />
+              <datalist id="sysoptions">{systems.map(s=><option key={s} value={s} />)}</datalist></label>
             <label className="field"><span className="lbl">Ämne</span>
               <select value={category} onChange={e=>setCategory(e.target.value)}>{CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
           </div>
