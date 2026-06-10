@@ -366,7 +366,7 @@
   .atag-clear{padding:5px 10px;border-radius:9px;border:1px solid var(--line-strong);background:none;color:var(--muted);font-size:12px;cursor:pointer;}
   .atag-clear:hover{color:var(--accent);border-color:var(--accent);}
   /* Language selector */
-  .langsel{margin-left:auto;background:var(--code);border:1px solid var(--line);color:var(--txt2);border-radius:7px;padding:3px 8px;font-family:var(--mono);font-size:11px;text-transform:none;letter-spacing:0;}
+  .langsel{background:var(--code);border:1px solid var(--line-strong);color:var(--txt2);border-radius:8px;padding:8px 10px;font-family:var(--sans);font-size:13px;text-transform:none;letter-spacing:0;min-width:120px;}
   /* Code line numbers */
   pre.code{display:flex;gap:12px;}
   pre.code .gutter{flex:none;text-align:right;color:#5a6673;user-select:none;white-space:pre;border-right:1px solid rgba(255,255,255,.07);padding-right:11px;}
@@ -452,8 +452,10 @@
   .readmore:hover{text-decoration:underline;}
   .blocks-edit{display:flex;flex-direction:column;gap:12px;}
   .blockedit{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--code);}
-  .blockedit-top{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
-  .block-title{flex:1;min-width:0;font-family:var(--sans)!important;font-size:13px;padding:8px 10px;}
+  .blockedit-top{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+  .block-title{flex:1 1 160px;min-width:0;font-family:var(--sans)!important;font-size:13px;padding:8px 10px;}
+  .langpick{display:flex;align-items:center;gap:7px;flex-shrink:0;margin-left:auto;}
+  .langpick>span{font-size:11px;color:var(--dim);font-family:var(--sans);}
   .blockedit .langsel{margin-left:0;flex-shrink:0;}
   .block-del{flex-shrink:0;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--dim);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
   .block-del:hover{color:var(--danger);border-color:rgba(248,113,113,.4);}
@@ -796,6 +798,32 @@ async function signIn(email, password){
   if (!r.ok) throw new Error(d.error_description || d.msg || d.message || d.error || ("Fel " + r.status));
   return d; // access_token, user...
 }
+const SESSION_KEY = "scada-auth";
+function saveSession(d){
+  try{
+    const exp = d.expires_at ? d.expires_at*1000 : (Date.now() + (d.expires_in?d.expires_in*1000:3600000));
+    const prev = JSON.parse(localStorage.getItem(SESSION_KEY)||"null") || {};
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      access_token: d.access_token,
+      refresh_token: d.refresh_token || prev.refresh_token || "",
+      expires_at: exp,
+      uid: (d.user&&d.user.id) || prev.uid || "",
+      email: (d.user&&d.user.email) || prev.email || "",
+      name: metaName(d) || prev.name || ""
+    }));
+  }catch(e){}
+}
+function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY)||"null"); }catch(e){ return null; } }
+function clearSession(){ try{ localStorage.removeItem(SESSION_KEY); }catch(e){} }
+async function refreshSession(refresh_token){
+  const r = await fetch(authBase + "/token?grant_type=refresh_token", {
+    method:"POST", headers:{ apikey: SUPABASE_KEY, "Content-Type":"application/json" },
+    body: JSON.stringify({ refresh_token })
+  });
+  let d={}; try{ d=await r.json(); }catch(e){}
+  if(!r.ok || !d.access_token) throw new Error("refresh "+r.status);
+  return d;
+}
 function dataHeaders(token){
   return { apikey: SUPABASE_KEY, Authorization: "Bearer " + token, "Content-Type":"application/json" };
 }
@@ -1057,6 +1085,7 @@ function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
 function App(){
   const configured = !SUPABASE_URL.includes("DITT-PROJEKT") && !SUPABASE_KEY.includes("DIN-ANON");
   const [token, setToken] = useState(null);
+  const [booting, setBooting] = useState(true);
   const [user, setUser] = useState("");
   const [name, setName] = useState("");
   const [uid, setUid] = useState("");
@@ -1076,14 +1105,52 @@ function App(){
   const toggleTheme=()=>setTheme(t=>t==="light"?"dark":"light");
 
   async function afterLogin(d){
+    saveSession(d);
     const id=(d.user&&d.user.id)||""; const email=(d.user&&d.user.email)||"";
     setToken(d.access_token); setUser(email); setName(metaName(d)); setUid(id); setProfile(undefined);
     try{ setProfile(await getMyProfile(d.access_token, id, email)); }
     catch(e){ setProfile({approved:true,is_admin:false,_legacy:true}); } // profiles ej uppsatt → spärra inte
   }
-  function logout(){ setToken(null); setUser(""); setName(""); setUid(""); setProfile(undefined); }
+  function logout(){ clearSession(); setToken(null); setUser(""); setName(""); setUid(""); setProfile(undefined); }
+
+  // Återställ sparad inloggning vid start
+  useEffect(()=>{
+    (async()=>{
+      const s = loadSession();
+      if(!s || !s.refresh_token){ setBooting(false); return; }
+      try{
+        let access=s.access_token, uidV=s.uid, emailV=s.email, nameV=s.name;
+        if(!access || !s.expires_at || Date.now() > s.expires_at - 60000){
+          const d = await refreshSession(s.refresh_token);
+          saveSession(d);
+          access=d.access_token;
+          uidV=(d.user&&d.user.id)||uidV; emailV=(d.user&&d.user.email)||emailV; nameV=metaName(d)||nameV;
+        }
+        setToken(access); setUser(emailV); setName(nameV); setUid(uidV); setProfile(undefined);
+        try{ setProfile(await getMyProfile(access, uidV, emailV)); }
+        catch(e){ setProfile({approved:true,is_admin:false,_legacy:true}); }
+      }catch(e){ clearSession(); }
+      setBooting(false);
+    })();
+  },[]);
+
+  // Förnya token automatiskt så man hålls inloggad
+  useEffect(()=>{
+    if(!token) return;
+    async function ensureFresh(){
+      const s = loadSession(); if(!s || !s.refresh_token) return;
+      if(Date.now() > (s.expires_at||0) - 120000){
+        try{ const d=await refreshSession(s.refresh_token); saveSession(d); setToken(d.access_token); }catch(e){}
+      }
+    }
+    const iv=setInterval(ensureFresh, 60000);
+    const onVis=()=>{ if(document.visibilityState==="visible") ensureFresh(); };
+    document.addEventListener("visibilitychange", onVis);
+    return ()=>{ clearInterval(iv); document.removeEventListener("visibilitychange", onVis); };
+  },[token]);
 
   if (!configured) return (<div className="wrap"><div className="banner err" style={{marginTop:40}}>Inte konfigurerad. Fyll i <b>SUPABASE_URL</b> och <b>SUPABASE_KEY</b>.</div></div>);
+  if (booting) return (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
   if (!token) return <Login onLogin={afterLogin} theme={theme} onToggleTheme={toggleTheme} />;
   if (profile===undefined) return (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
   if (profile && !profile.approved && !profile._legacy) return <Pending email={user} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />;
@@ -2235,10 +2302,12 @@ function EntryForm({initial,busy,token,uid,stations=[],onSave,onClose}){
                 <div className="blockedit" key={i}>
                   <div className="blockedit-top">
                     <input className="block-title" value={b.title} onChange={e=>updateBlock(i,"title",e.target.value)} placeholder="Rubrik (valfritt) – t.ex. Tag-config" />
-                    <select className="langsel" value={b.lang} onChange={e=>updateBlock(i,"lang",e.target.value)}>
-                      <option value="auto">auto</option><option value="python">Python</option><option value="sql">SQL</option>
-                      <option value="json">JSON</option><option value="javascript">JavaScript</option><option value="bash">Bash</option><option value="xml">XML/HTML</option>
-                    </select>
+                    <label className="langpick"><span>Språk</span>
+                      <select className="langsel" value={b.lang} onChange={e=>updateBlock(i,"lang",e.target.value)}>
+                        <option value="auto">auto</option><option value="python">Python</option><option value="sql">SQL</option>
+                        <option value="json">JSON</option><option value="javascript">JavaScript</option><option value="bash">Bash</option><option value="xml">XML/HTML</option>
+                      </select>
+                    </label>
                     {blocks.length>1 && <button className="block-del" title="Ta bort kodblock" onClick={()=>removeBlock(i)}>{Ico.x}</button>}
                   </div>
                   <textarea value={b.code} onChange={e=>updateBlock(i,"code",e.target.value)} rows={8} placeholder="Klistra in din kod här…" style={{fontFamily:"var(--mono)"}} />
