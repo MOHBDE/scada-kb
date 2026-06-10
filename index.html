@@ -1906,7 +1906,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
       <div className="page-head">
         <div><h2 className="page-title">Chatt</h2><p className="page-sub">{conv==="team"?"Hela teamet":"Privat med "+convLabel}</p></div>
         {pushSupported() && <div style={{display:"flex",gap:8,flexShrink:0}}>
-          <button className={"notifbtn"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy||pushOn}>{Ico.bell} {pushOn?"Aviseringar på":(pushBusy?"…":"Aviseringar")}</button>
+          <button className={"notifbtn"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy} title={pushOn?"Tryck för att registrera om":""}>{Ico.bell} {pushOn?"Aviseringar på":(pushBusy?"…":"Aviseringar")}</button>
           {pushOn && <button className="notifbtn" onClick={testNotif} title="Testa avisering">Testa</button>}
         </div>}
       </div>
