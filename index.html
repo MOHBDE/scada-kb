@@ -1891,11 +1891,24 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
     catch(e){ setPushMsg(e.message||"Kunde inte aktivera"); }
     setPushBusy(false);
   }
+  async function testNotif(){
+    setPushMsg("");
+    try{
+      if(!("Notification" in window)){ setPushMsg("Notiser stöds inte här."); return; }
+      if(Notification.permission!=="granted"){ const p=await Notification.requestPermission(); if(p!=="granted"){ setPushMsg("Du behöver tillåta notiser först."); return; } }
+      const reg=await navigator.serviceWorker.ready;
+      await reg.showNotification("Testavisering", { body:"Om du ser den här fungerar aviseringar i appen.", tag:"scada-test", data:{url:"./?chat=1"} });
+      setPushMsg("Testnotis skickad – kolla om den dök upp.");
+    }catch(e){ setPushMsg("Testfel: "+(e.message||e)); }
+  }
   return (
     <div className="chat">
       <div className="page-head">
         <div><h2 className="page-title">Chatt</h2><p className="page-sub">{conv==="team"?"Hela teamet":"Privat med "+convLabel}</p></div>
-        {pushSupported() && <button className={"notifbtn"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy||pushOn}>{Ico.bell} {pushOn?"Aviseringar på":(pushBusy?"…":"Aviseringar")}</button>}
+        {pushSupported() && <div style={{display:"flex",gap:8,flexShrink:0}}>
+          <button className={"notifbtn"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy||pushOn}>{Ico.bell} {pushOn?"Aviseringar på":(pushBusy?"…":"Aviseringar")}</button>
+          {pushOn && <button className="notifbtn" onClick={testNotif} title="Testa avisering">Testa</button>}
+        </div>}
       </div>
       {pushMsg && <div className="notifmsg">{pushMsg}</div>}
       <div className="chat-people">
