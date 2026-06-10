@@ -519,6 +519,30 @@
   .feed-title{font-size:14px;color:var(--txt);font-weight:500;display:flex;align-items:center;gap:8px;}
   .feed-new{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#f87171;color:#fff;border-radius:5px;padding:1px 6px;flex-shrink:0;}
   .feed-meta{font-size:12px;color:var(--dim);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* Push notif button */
+  .notifbtn{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;background:var(--code);border:1px solid var(--line-strong);color:var(--txt2);border-radius:10px;padding:8px 12px;font-size:13px;font-family:var(--sans);cursor:pointer;}
+  .notifbtn:hover{border-color:var(--accent);color:var(--accent);}
+  .notifbtn svg{width:15px;height:15px;}
+  .notifbtn.on{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.4);color:#34d399;cursor:default;}
+  .notifmsg{font-size:12.5px;color:var(--dim);margin:-4px 0 12px;}
+  .pdfbtn{display:inline-flex;align-items:center;gap:6px;background:var(--code);border:1px solid var(--line);color:var(--txt2);border-radius:9px;padding:6px 11px;font-size:12.5px;font-family:var(--sans);cursor:pointer;}
+  .pdfbtn:hover{border-color:var(--accent);color:var(--accent);}
+  .pdfbtn svg{width:15px;height:15px;}
+  /* Display modes: large text + high contrast */
+  .hbtn.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);}
+  body.bigtext .main{zoom:1.16;}
+  body.bigtext .modal{zoom:1.12;}
+  body.contrast{background:#ffffff !important;}
+  body.contrast .grid-bg{display:none;}
+  body.contrast{
+    --bg:#ffffff;--surface:#ffffff;--surface2:#eceef0;--panel:#ffffff;--glass:#ffffff;
+    --txt:#000000;--txt2:#141414;--dim:#3b3b3b;--muted:#3b3b3b;
+    --line:#9aa0a6;--line-strong:#5f6368;
+    --accent:#8a4b00;--accent-soft:#ffeccd;
+    --code:#f1f1f1;
+  }
+  body.contrast .card,body.contrast .panel,body.contrast .compactlist{border-width:1.5px;}
+  body.contrast .topbar,body.contrast .nav{background:#ffffff;}
   /* Offline package */
   .offline-pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-family:var(--mono);color:#34d399;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:6px;padding:2px 7px;}
   .offline-pill svg{width:11px;height:11px;}
@@ -539,6 +563,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
@@ -810,6 +835,57 @@ async function deleteComment(token, id){
   const r = await fetch(commentsBase + "?id=eq." + id, {method:"DELETE", headers: dataHeaders(token)});
   if(!r.ok) throw new Error("Kunde inte ta bort ("+r.status+")");
 }
+const VAPID_PUBLIC = "BIux-TJU-r4dlSCHZxQNhsBpKowgJk7nGNtri7F61yi6LakBgJNab6fYOWDz4eKBgMSHv4K15nogxaX3ibhf6LM";
+const pushBase = SUPABASE_URL + "/rest/v1/push_subscriptions";
+function urlB64ToUint8(base64){ const pad="=".repeat((4-base64.length%4)%4); const b=(base64+pad).replace(/-/g,"+").replace(/_/g,"/"); const raw=atob(b); const arr=new Uint8Array(raw.length); for(let i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i); return arr; }
+function pushSupported(){ return typeof window!=="undefined" && "Notification" in window && "serviceWorker" in navigator && "PushManager" in window; }
+async function enablePush(token, uid){
+  if(!pushSupported()) throw new Error("Aviseringar stöds inte här. På iPhone: lägg först till appen på hemskärmen, öppna den därifrån och försök igen.");
+  const perm = await Notification.requestPermission();
+  if(perm!=="granted") throw new Error("Du behöver tillåta aviseringar i webbläsaren.");
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if(!sub){ sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC) }); }
+  const r = await fetch(pushBase + "?on_conflict=endpoint", {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=merge-duplicates"}, body: JSON.stringify([{ user_id:uid, endpoint:sub.endpoint, subscription:sub.toJSON() }])});
+  if(!r.ok && r.status!==409){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message||("Kunde inte spara prenumerationen ("+r.status+")")); }
+  return true;
+}
+function exportEntriesPDF(list, heading){
+  if(!(window.jspdf && window.jspdf.jsPDF)){ alert("PDF-biblioteket kunde inte laddas (kräver internet första gången)."); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:"pt", format:"a4"});
+  const M=48, W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight(), CW=W-M*2;
+  let y=M;
+  function need(h){ if(y+h>H-M){ doc.addPage(); y=M; } }
+  function text(str, o){ o=o||{}; const size=o.size||10, lh=size*1.35; doc.setFont(o.font||"helvetica", o.style||"normal"); doc.setFontSize(size); const c=o.color||[25,25,25]; doc.setTextColor(c[0],c[1],c[2]); const lines=doc.splitTextToSize(String(str||""), o.width||CW); for(const ln of lines){ need(lh); doc.text(ln, o.x||M, y); y+=lh; } }
+  function rule(col){ need(2); doc.setDrawColor(col||230); doc.line(M,y,W-M,y); y+=14; }
+  text(heading||"SCADA-KB", {size:16, style:"bold"});
+  text(new Date().toLocaleString("sv-SE",{dateStyle:"medium",timeStyle:"short"})+"  ·  "+list.length+" poster", {size:9, color:[130,130,130]});
+  y+=6; rule(210);
+  list.forEach(e=>{
+    need(46);
+    text(e.title, {size:13, style:"bold"});
+    const meta=[(e.system||"Ignition"), e.category, e.station].filter(Boolean).join("   ·   ");
+    if(meta) text(meta, {size:9, color:[120,120,120]});
+    if(e.tags&&e.tags.length) text("Taggar: "+e.tags.join(", "), {size:9, color:[120,120,120]});
+    y+=4;
+    const kind=(e.checklist&&e.checklist.length)?"checklist":(((e.blocks&&e.blocks.length)||e.is_code)?"code":"note");
+    if(e.notes && e.notes.trim()) text(e.notes, {size:10});
+    if(kind==="note"){ text(e.content||"", {size:10}); }
+    else if(kind==="checklist"){ (e.checklist||[]).forEach(s=>text("[ ]  "+s, {size:10})); }
+    else if(kind==="code"){
+      const blocks=(e.blocks&&e.blocks.length)?e.blocks:[{title:"",code:e.content||"",lang:e.lang}];
+      blocks.forEach(b=>{ if(b.title) text(b.title, {size:9, style:"bold", color:[90,90,90]}); text(b.code||"", {size:8.5, font:"courier", color:[40,40,40]}); y+=4; });
+    }
+    if(e.images&&e.images.length) text("("+e.images.length+" bild"+(e.images.length>1?"er":"")+" finns i appen)", {size:8.5, color:[150,150,150]});
+    if(e.files&&e.files.length) text("Bilagor: "+e.files.map(f=>f.name).join(", "), {size:9, color:[120,120,120]});
+    y+=10; rule(238);
+  });
+  const pages=doc.internal.getNumberOfPages();
+  for(let p=1;p<=pages;p++){ doc.setPage(p); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(160); doc.text("SCADA-KB  ·  sida "+p+"/"+pages, M, H-20); }
+  const fname=(heading||"scada-kb").replace(/[^a-z0-9åäöÅÄÖ ]/gi,"").trim().replace(/\s+/g,"-").toLowerCase()||"scada-kb";
+  doc.save(fname+".pdf");
+}
 async function listMembers(token){
   const r = await fetch(profBase + "?select=id,email,approved&approved=eq.true&order=email.asc", {headers: dataHeaders(token)});
   if(!r.ok) return [];
@@ -964,6 +1040,7 @@ const Ico={
   qr:<I d={<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3"/><path d="M21 14v7h-7"/><path d="M17 21v-4"/></>} />,
   pin:<I d={<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>} />,
   spark:<I d={<><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="m6 6 2.5 2.5"/><path d="m15.5 15.5 2.5 2.5"/><path d="m18 6-2.5 2.5"/><path d="m8.5 15.5-2.5 2.5"/></>} />,
+  contrast:<I d={<><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></>} />,
 };
 const TOPIC_ICON={"Scripting":Ico=>Ico.terminal,"Larm":Ico=>Ico.bell,"UDT/Tags":Ico=>Ico.box,"Trend":Ico=>Ico.chart,"Rapport":Ico=>Ico.report,"OPC":Ico=>Ico.plug,"SQL":Ico=>Ico.db,"Behörighet":Ico=>Ico.shield,"Övrigt":Ico=>Ico.dots};
 function topicIcon(cat){const f=TOPIC_ICON[cat]; return f?f(Ico):Ico.dots;}
@@ -976,11 +1053,17 @@ function App(){
   const [uid, setUid] = useState("");
   const [profile, setProfile] = useState(undefined); // undefined=laddar, objekt annars
   const [theme, setTheme] = useState(()=>{ try{ return localStorage.getItem("scada-theme")||"dark"; }catch(e){ return "dark"; } });
+  const [bigText, setBigText] = useState(()=>{ try{ return localStorage.getItem("scada-bigtext")==="1"; }catch(e){ return false; } });
+  const [contrast, setContrast] = useState(()=>{ try{ return localStorage.getItem("scada-contrast")==="1"; }catch(e){ return false; } });
   useEffect(()=>{
     document.body.classList.toggle("light", theme==="light");
     try{ localStorage.setItem("scada-theme", theme); }catch(e){}
     const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content", theme==="light"?"#eef1f6":"#080b10");
   },[theme]);
+  useEffect(()=>{ document.body.classList.toggle("bigtext", bigText); try{ localStorage.setItem("scada-bigtext", bigText?"1":"0"); }catch(e){} },[bigText]);
+  useEffect(()=>{ document.body.classList.toggle("contrast", contrast); try{ localStorage.setItem("scada-contrast", contrast?"1":"0"); }catch(e){} },[contrast]);
+  const toggleBig=()=>setBigText(v=>!v);
+  const toggleContrast=()=>setContrast(v=>!v);
   const toggleTheme=()=>setTheme(t=>t==="light"?"dark":"light");
 
   async function afterLogin(d){
@@ -995,7 +1078,7 @@ function App(){
   if (!token) return <Login onLogin={afterLogin} theme={theme} onToggleTheme={toggleTheme} />;
   if (profile===undefined) return (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
   if (profile && !profile.approved && !profile._legacy) return <Pending email={user} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />;
-  return <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&profile.is_admin)} onName={setName} theme={theme} onToggleTheme={toggleTheme} onLogout={logout} />;
+  return <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&profile.is_admin)} onName={setName} theme={theme} onToggleTheme={toggleTheme} bigText={bigText} onToggleBig={toggleBig} contrast={contrast} onToggleContrast={toggleContrast} onLogout={logout} />;
 }
 
 function Pending({email,onLogout,theme,onToggleTheme}){
@@ -1061,7 +1144,7 @@ function Login({onLogin,theme,onToggleTheme}){
   );
 }
 
-function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLogout}){
+function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigText, onToggleBig, contrast, onToggleContrast, onLogout}){
   const display = (name && name.trim()) ? name.trim() : (user||"").split("@")[0];
   const [entries,setEntries]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -1070,6 +1153,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   const [search,setSearch]=useState("");
   const [activeView,setActiveView]=useState("oversikt");
   const [scope,setScope]=useState("alla");
+  const [printData,setPrintData]=useState(null);
   const [activeSystem,setActiveSystem]=useState("Alla");
   const [activeCat,setActiveCat]=useState("Alla");
   const [activeTags,setActiveTags]=useState([]);
@@ -1116,6 +1200,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
   const totalUnread=Object.keys(unreadMap).reduce((s,k)=>s+(unreadMap[k]||0),0);
 
   const deepRef=useRef(getDeepLinkPost());
+  useEffect(()=>{ try{ if(new URL(window.location.href).searchParams.get("chat")){ setActiveView("chatt"); history.replaceState(null,"",window.location.pathname); } }catch(e){} },[]);
   useEffect(()=>{
     if(deepRef.current && entries.length){
       const e=entries.find(x=>x.id===deepRef.current);
@@ -1255,7 +1340,19 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
     return true;
   }),[filtered,activeView,scope,uid,offlineSet]);
 
+  function exportPostPdf(entry){ setPrintData({mode:"post",items:[entry],label:entry.title}); }
+  function exportListPdf(){ const lbl=(activeCat!=="Alla"?activeCat:(activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek")); setPrintData({mode:"list",items:viewList,label:lbl}); }
+  useEffect(()=>{
+    if(!printData) return;
+    document.body.classList.add("printing");
+    const t=setTimeout(()=>{ try{ window.print(); }catch(e){} },200);
+    const done=()=>setPrintData(null);
+    window.addEventListener("afterprint",done);
+    return ()=>{ clearTimeout(t); window.removeEventListener("afterprint",done); document.body.classList.remove("printing"); };
+  },[printData]);
+
   return (
+    <>
     <div className="app">
       <Nav active={activeView} onNav={v=>setActiveView(v)} onUsers={()=>setShowUsers(true)} chatUnread={totalUnread}
         counts={{bibliotek:entries.length,kod:codeCount,anteckningar:noteCount}}
@@ -1268,6 +1365,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
           <div className="topbar-actions">
             {!online&&<span className="offline-badge"><span className="offline-dot"></span>Offline</span>}
             <button className="hbtn" title="Mörkt/ljust läge" onClick={onToggleTheme}>{theme==="light"?Ico.moon:Ico.sun}</button>
+            <button className={"hbtn"+(bigText?" on":"")} title="Större text" onClick={onToggleBig}><span style={{fontFamily:"var(--sans)",fontWeight:700,fontSize:bigText?15:13}}>A</span></button>
+            <button className={"hbtn"+(contrast?" on":"")} title="Hög kontrast (sol)" onClick={onToggleContrast}>{Ico.contrast}</button>
             <button className="hbtn" title="Exportera (backup)" onClick={exportData}>{Ico.down}</button>
             <button className="hbtn" title="Importera" onClick={()=>fileRef.current.click()}>{Ico.up}</button>
             <button className="hbtn" title="Logga ut" onClick={onLogout}>{Ico.out}</button>
@@ -1341,6 +1440,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
             <div className="subbar">
               <span className="resultcnt">{viewList.length} {viewList.length===1?"post":"poster"}{pinnedCount>0?" · "+pinnedCount+" ★":""}</span>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <button className="pdfbtn" onClick={()=>exportEntriesPDF(viewList, activeCat!=="Alla"?activeCat:(activeStation&&activeStation!=="Alla"?activeStation:"SCADA-KB – bibliotek"))} title="Exportera vyn som PDF">{Ico.report} PDF</button>
                 <div className="density">
                   <button className={"denbtn"+(density==="kort"?" active":"")} onClick={()=>setDensity("kort")} title="Kortvy">{Ico.grid}</button>
                   <button className={"denbtn"+(density==="kompakt"?" active":"")} onClick={()=>setDensity("kompakt")} title="Kompakt vy">{Ico.rows}</button>
@@ -1374,9 +1474,11 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, onLo
 
       {toast && <div className="toast">{toast}</div>}
       {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} onSave={saveEntry} onClose={()=>setEditing(null)} />}
-      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
+      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} onExportPdf={()=>exportPostPdf(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
     </div>
+    {printData && <PrintView data={printData} />}
+    </>
   );
 }
 
@@ -1539,7 +1641,7 @@ function Dashboard({entries,sysCounts,topicCounts,codeCount,noteCount,pinnedCoun
   );
 }
 
-function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,onRestore,onClose,onOpen,onEdit,onTag}){
+function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,onExportPdf,onRestore,onClose,onOpen,onEdit,onTag}){
   const color=CAT_COLOR[entry.category]||"#94a3b8";
   const sys=entry.system||"Ignition";
   const sysColor=SYS_COLOR[sys]||"#94a3b8";
@@ -1693,6 +1795,8 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlin
         <div className="modal-foot">
           <button className="foot-btn foot-cancel" onClick={onClose}>Stäng</button>
           <button className="foot-btn foot-ghost" onClick={()=>setShowQR(true)}>{Ico.qr} QR</button>
+          <button className="foot-btn foot-ghost" onClick={()=>exportEntriesPDF([entry], entry.title)}>{Ico.report} PDF</button>
+          <button className="foot-btn foot-ghost" onClick={onExportPdf}>{Ico.down} PDF</button>
           <button className={"foot-btn foot-ghost"+(offlineSaved?" on":"")} onClick={onToggleOffline}>{Ico.down} {offlineSaved?"Sparad offline":"Ta med offline"}</button>
           {mine && <button className="foot-btn foot-ghost" onClick={()=>hist===null?openHist():setHist(null)}>{Ico.undo} {hist===null?"Historik":"Dölj"}</button>}
           {mine && <button className="foot-btn foot-save" onClick={()=>onEdit(entry)}>{Ico.edit} Redigera</button>}
@@ -1778,9 +1882,22 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
     try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); }catch(e){ alert(e.message); }
     setSending(false);
   }
+  const [pushBusy,setPushBusy]=useState(false);
+  const [pushOn,setPushOn]=useState(typeof Notification!=="undefined" && Notification.permission==="granted");
+  const [pushMsg,setPushMsg]=useState("");
+  async function enableNotif(){
+    setPushBusy(true); setPushMsg("");
+    try{ await enablePush(token, uid); setPushOn(true); setPushMsg("Aviseringar på"); }
+    catch(e){ setPushMsg(e.message||"Kunde inte aktivera"); }
+    setPushBusy(false);
+  }
   return (
     <div className="chat">
-      <div className="page-head"><div><h2 className="page-title">Chatt</h2><p className="page-sub">{conv==="team"?"Hela teamet":"Privat med "+convLabel}</p></div></div>
+      <div className="page-head">
+        <div><h2 className="page-title">Chatt</h2><p className="page-sub">{conv==="team"?"Hela teamet":"Privat med "+convLabel}</p></div>
+        {pushSupported() && <button className={"notifbtn"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy||pushOn}>{Ico.bell} {pushOn?"Aviseringar på":(pushBusy?"…":"Aviseringar")}</button>}
+      </div>
+      {pushMsg && <div className="notifmsg">{pushMsg}</div>}
       <div className="chat-people">
         <button className={"person"+(conv==="team"?" active":"")} onClick={()=>setConv("team")}><span className="person-ic">{Ico.users}</span>Teamet{conv!=="team"&&unreadMap.team>0&&<span className="person-dot"></span>}</button>
         {members.map(m=>(
