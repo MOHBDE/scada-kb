@@ -181,6 +181,8 @@
   .stationset .stationset-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
   .stationset-input{flex:1;min-width:0;}
   .leaflet-container{font-family:var(--sans);}
+  .allstationsmap{height:300px;}
+  .stationmap-panel .panel-h{display:flex;align-items:center;}
   .bk-section{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
   .bk-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--txt);margin-bottom:8px;}
   .bk-head svg{width:17px;height:17px;color:var(--accent);}
@@ -661,7 +663,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.9.0";
+const APP_VERSION = "1.9.1";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1610,6 +1612,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       setStationGeo(map); try{ localStorage.setItem(stationGeoCacheKey, JSON.stringify(map)); }catch(e){}
     }catch(e){}
   })(); },[token]);
+  const stationPoints=useMemo(()=>Object.keys(stationGeo).map(n=>({name:n,lat:stationGeo[n].lat,lng:stationGeo[n].lng})).filter(p=>isFinite(p.lat)&&isFinite(p.lng)),[stationGeo]);
   async function saveStationGeo(name, lat, lng){
     lat=Number(lat); lng=Number(lng);
     if(!name || !isFinite(lat) || !isFinite(lng)) return;
@@ -1689,6 +1692,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
           <Dashboard entries={entries} sysCounts={sysCounts} systems={systems} topicCounts={topicCounts}
             codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading} user={display} uid={uid}
             recentOpened={recentIds.map(id=>entries.find(e=>e.id===id)).filter(Boolean).slice(0,6)}
+            stationPoints={stationPoints} onPickStation={s=>{setActiveStation(s);setActiveSystem("Alla");setActiveCat("Alla");setSearch("");setActiveView("bibliotek");}}
             favCount={favSet.length} onOpenFavorites={()=>{setScope("favoriter");setActiveView("bibliotek");}}
             onOpenLibrary={cat=>{setActiveCat(cat||"Alla");setActiveSystem("Alla");setSearch("");setActiveView("bibliotek");}}
             onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
@@ -1909,7 +1913,7 @@ function WhatsNew({entries, uid, onOpen}){
   );
 }
 
-function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,recentOpened=[],favCount=0,onOpenFavorites,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
+function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,recentOpened=[],favCount=0,onOpenFavorites,stationPoints=[],onPickStation,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
   if(loading) return <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>;
   if(entries.length===0) return (
     <div className="empty">
@@ -1945,6 +1949,12 @@ function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pi
         <Tile icon={Ico.pin} label="Favoriter" value={pinnedCount} color="#34d399" onClick={()=>onOpenLibrary()} />
       </div>
       <ActivityChart entries={entries} />
+      {stationPoints.length>0 && (
+        <div className="panel stationmap-panel">
+          <div className="panel-h" style={{padding:"14px 16px 10px"}}>{Ico.pin} Stationskarta <span style={{marginLeft:"auto",fontSize:11,color:"var(--dim)",fontFamily:"var(--mono)",fontWeight:400}}>{stationPoints.length} st</span></div>
+          <AllStationsMap points={stationPoints} onPick={onPickStation} />
+        </div>
+      )}
       {recentOpened.length>0 && (
         <div className="panel recent-panel">
           <div className="panel-h">{Ico.clock} Senast öppnade</div>
@@ -2483,6 +2493,29 @@ function EntryCard({entry,mine=true,copied,offlineSaved,fav,onFav,onStation,onCo
   );
 }
 
+function AllStationsMap({points, onPick}){
+  const ref=useRef(null);
+  const pickRef=useRef(onPick); pickRef.current=onPick;
+  useEffect(()=>{
+    if(!window.L || !ref.current || !points.length) return;
+    let map;
+    try{
+      map=window.L.map(ref.current,{zoomControl:true});
+      window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+      const latlngs=[];
+      points.forEach(p=>{
+        const m=window.L.marker([p.lat,p.lng]).addTo(map).bindPopup(p.name);
+        m.on("click",()=>{ if(pickRef.current) pickRef.current(p.name); });
+        latlngs.push([p.lat,p.lng]);
+      });
+      if(latlngs.length===1) map.setView(latlngs[0],14);
+      else map.fitBounds(window.L.latLngBounds(latlngs).pad(0.25));
+    }catch(e){}
+    const t=setTimeout(()=>{ try{ map&&map.invalidateSize(); }catch(e){} },150);
+    return ()=>{ clearTimeout(t); try{ map&&map.remove(); }catch(e){} };
+  },[points]);
+  return <div ref={ref} className="stationmap allstationsmap"></div>;
+}
 function StationMap({station, coord, onSet}){
   const ref=useRef(null);
   const [editing,setEditing]=useState(!coord);
