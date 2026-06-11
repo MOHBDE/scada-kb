@@ -652,7 +652,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.8.1";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1659,7 +1659,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
         {activeView==="oversikt" ? (
           <Dashboard entries={entries} sysCounts={sysCounts} systems={systems} topicCounts={topicCounts}
             codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading} user={display} uid={uid}
-            recent={recentIds.map(id=>entries.find(e=>e.id===id)).filter(Boolean).slice(0,6)}
+            recentOpened={recentIds.map(id=>entries.find(e=>e.id===id)).filter(Boolean).slice(0,6)}
             favCount={favSet.length} onOpenFavorites={()=>{setScope("favoriter");setActiveView("bibliotek");}}
             onOpenLibrary={cat=>{setActiveCat(cat||"Alla");setActiveSystem("Alla");setSearch("");setActiveView("bibliotek");}}
             onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
@@ -1877,7 +1877,7 @@ function WhatsNew({entries, uid, onOpen}){
   );
 }
 
-function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,recent=[],favCount=0,onOpenFavorites,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
+function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,recentOpened=[],favCount=0,onOpenFavorites,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
   if(loading) return <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>;
   if(entries.length===0) return (
     <div className="empty">
@@ -1913,11 +1913,11 @@ function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pi
         <Tile icon={Ico.pin} label="Favoriter" value={pinnedCount} color="#34d399" onClick={()=>onOpenLibrary()} />
       </div>
       <ActivityChart entries={entries} />
-      {recent.length>0 && (
+      {recentOpened.length>0 && (
         <div className="panel recent-panel">
           <div className="panel-h">{Ico.clock} Senast öppnade</div>
           <div className="recent-list">
-            {recent.map(e=>(
+            {recentOpened.map(e=>(
               <button key={e.id} className="recent-item" onClick={()=>onOpen&&onOpen(e)}>
                 <span className="recent-dot" style={{background:colorForSys(e.system||"Ignition")}}></span>
                 <span className="recent-title">{e.title}</span>
