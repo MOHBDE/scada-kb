@@ -126,6 +126,12 @@
   .sys-add{display:flex;gap:9px;align-items:stretch;}
   .sys-add input{flex:1;min-width:0;}
   .sys-add .foot-btn{flex:0 0 auto;padding:10px 14px;}
+  .newsys-row{display:flex;gap:8px;align-items:stretch;}
+  .newsys-row input{flex:1;min-width:0;}
+  .newsys-btn{flex:0 0 auto;width:42px;border-radius:11px;border:1px solid var(--line-strong);background:var(--code);color:var(--txt2);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .newsys-btn.ok{background:linear-gradient(180deg,#f7b73a,#f59e0b);color:#1a1206;border:none;}
+  .newsys-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .newsys-btn svg{width:17px;height:17px;}
   .modal-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
   .x{background:none;border:none;color:var(--dim);cursor:pointer;transition:color .15s;}
   .x:hover{color:#fff;}
@@ -1578,7 +1584,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       </main>
 
       {toast && <div className="toast">{toast}</div>}
-      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} systems={systems} onSave={saveEntry} onClose={()=>setEditing(null)} />}
+      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} systems={systems} onAddSystem={addSystem} onSave={saveEntry} onClose={()=>setEditing(null)} />}
       {showSys && <SystemModal systems={systems} counts={sysCounts} onAdd={addSystem} onRemove={removeSystem} onClose={()=>setShowSys(false)} />}
       {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} onExportPdf={()=>exportPostPdf(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
@@ -2270,9 +2276,12 @@ function SystemModal({systems,counts,onAdd,onRemove,onClose}){
     </div>
   );
 }
-function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onSave,onClose}){
+function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onAddSystem,onSave,onClose}){
   const [title,setTitle]=useState(initial.title||"");
   const [system,setSystem]=useState(initial.system||"Ignition");
+  const [addingSys,setAddingSys]=useState(false);
+  const [newSys,setNewSys]=useState("");
+  function confirmNewSys(){ const v=newSys.trim(); if(!v) return; if(onAddSystem) onAddSystem(v); setSystem(v); setAddingSys(false); setNewSys(""); }
   const [category,setCategory]=useState(initial.category||"Scripting");
   const [tags,setTags]=useState((initial.tags||[]).join(", "));
   const [station,setStation]=useState(initial.station||"");
@@ -2339,8 +2348,20 @@ function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onSave,on
             <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="t.ex. Läsa UDT-parameter med getConfiguration" /></label>
           <div className="row2">
             <label className="field"><span className="lbl">System</span>
-              <input list="sysoptions" value={system} onChange={e=>setSystem(e.target.value)} placeholder="Ignition, iFIX, …" />
-              <datalist id="sysoptions">{systems.map(s=><option key={s} value={s} />)}</datalist></label>
+              {!addingSys ? (
+                <select value={systems.includes(system)?system:"__new__"} onChange={e=>{ const v=e.target.value; if(v==="__new__"){ setNewSys(""); setAddingSys(true); } else setSystem(v); }}>
+                  {systems.map(s=><option key={s} value={s}>{s}</option>)}
+                  {system && !systems.includes(system) && <option value={system}>{system}</option>}
+                  <option value="__new__">➕ Nytt system…</option>
+                </select>
+              ) : (
+                <div className="newsys-row">
+                  <input autoFocus value={newSys} onChange={e=>setNewSys(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter"){ e.preventDefault(); confirmNewSys(); } }} placeholder="t.ex. WinCC, FactoryTalk…" />
+                  <button type="button" className="newsys-btn ok" disabled={!newSys.trim()} onClick={confirmNewSys} title="Lägg till">{Ico.check}</button>
+                  <button type="button" className="newsys-btn" onClick={()=>{ setAddingSys(false); setNewSys(""); }} title="Avbryt">{Ico.x}</button>
+                </div>
+              )}
+            </label>
             <label className="field"><span className="lbl">Ämne</span>
               <select value={category} onChange={e=>setCategory(e.target.value)}>{CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
           </div>
