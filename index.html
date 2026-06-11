@@ -15,6 +15,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='14' fill='%23080b10'/%3E%3Cg fill='none' stroke='%23f5a524' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='32' cy='19' rx='16' ry='6'/%3E%3Cpath d='M16 19v26a16 6 0 0 0 32 0V19'/%3E%3Cpath d='M16 32a16 6 0 0 0 32 0'/%3E%3C/g%3E%3C/svg%3E" />
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22SCADA%C2%B7KB%22%2C%22short_name%22%3A%22SCADA%C2%B7KB%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23080b10%22%2C%22theme_color%22%3A%22%23080b10%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520width%253D%2527192%2527%2520height%253D%2527192%2527%253E%253Crect%2520width%253D%2527192%2527%2520height%253D%2527192%2527%2520rx%253D%252742%2527%2520fill%253D%2527%2523080b10%2527%252F%253E%253Cg%2520fill%253D%2527none%2527%2520stroke%253D%2527%2523f5a524%2527%2520stroke-width%253D%252710%2527%2520stroke-linecap%253D%2527round%2527%2520stroke-linejoin%253D%2527round%2527%253E%253Cellipse%2520cx%253D%252796%2527%2520cy%253D%252756%2527%2520rx%253D%252749%2527%2520ry%253D%252717%2527%252F%253E%253Cpath%2520d%253D%2527M47%252056v80a49%252017%25200%25200%25200%252098%25200V56%2527%252F%253E%253Cpath%2520d%253D%2527M47%252096a49%252017%25200%25200%25200%252098%25200%2527%252F%253E%253C%252Fg%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 
 <!-- ===================================================================== -->
 <!--  STEG 1: Fyll i dina två Supabase-uppgifter (Project Settings → API)  -->
@@ -173,6 +174,13 @@
   .trash-btn.danger{color:var(--danger);border-color:rgba(248,113,113,.35);}
   .trash-btn.danger:hover{background:rgba(248,113,113,.1);}
   .trash-btn svg{width:14px;height:14px;}
+  .stationmap-panel{padding:0;overflow:hidden;}
+  .stationmap{height:240px;width:100%;background:var(--code);}
+  .stationmap-foot{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-top:1px solid var(--line);}
+  .stationmap-foot a.foot-mini{text-decoration:none;}
+  .stationset .stationset-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+  .stationset-input{flex:1;min-width:0;}
+  .leaflet-container{font-family:var(--sans);}
   .bk-section{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
   .bk-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--txt);margin-bottom:8px;}
   .bk-head svg{width:17px;height:17px;color:var(--accent);}
@@ -645,6 +653,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
@@ -652,7 +661,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.8.1";
+const APP_VERSION = "1.9.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -663,6 +672,7 @@ function colorForSys(name){
 function loadSysList(){ try{ return JSON.parse(localStorage.getItem("scada-systems")||"[]"); }catch(e){ return []; } }
 function saveSysList(arr){ try{ localStorage.setItem("scada-systems", JSON.stringify(arr)); }catch(e){} }
 const sysBase = SUPABASE_URL + "/rest/v1/app_systems";
+const stationGeoBase = SUPABASE_URL + "/rest/v1/app_stations";
 const CATEGORIES=["Scripting","Larm","UDT/Tags","Trend","Rapport","OPC","SQL","Behörighet","Övrigt"];
 const CAT_COLOR={"Scripting":"#a78bfa","Larm":"#ef4444","UDT/Tags":"#22c55e","Trend":"#f59e0b","Rapport":"#60a5fa","OPC":"#fb923c","SQL":"#2dd4bf","Behörighet":"#f472b6","Övrigt":"#94a3b8"};
 const STATION_EXAMPLES=["Pumpstation 1","Pumpstation 2","Pumpstation 3","Avloppspumpstation 1","Avloppspumpstation 2","Tryckstegringsstation","Bräddningsstation","Reservoar Norra","Reservoar Södra","Högreservoar","Lågreservoar","Vattenverk","Reningsverk"];
@@ -1589,6 +1599,25 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   },[entries,search,activeSystem,activeCat,sortBy,activeTags,activeStation]);
 
   const stationList=useMemo(()=>{ const set=[]; entries.forEach(e=>{ const s=(e.station||"").trim(); if(s&&set.indexOf(s)<0) set.push(s); }); set.sort((a,b)=>a.localeCompare(b,"sv")); return set; },[entries]);
+  const stationGeoCacheKey="scada-stationgeo";
+  const [stationGeo,setStationGeo]=useState(function(){ try{ return JSON.parse(localStorage.getItem(stationGeoCacheKey)||"{}"); }catch(e){ return {}; } });
+  useEffect(()=>{ if(!token) return; (async()=>{
+    try{
+      const r=await fetch(stationGeoBase+"?select=name,lat,lng", {headers:dataHeaders(token)});
+      if(!r.ok) return;
+      const rows=await r.json(); const map={};
+      rows.forEach(x=>{ if(x&&x.name&&x.lat!=null&&x.lng!=null) map[x.name]={lat:x.lat,lng:x.lng}; });
+      setStationGeo(map); try{ localStorage.setItem(stationGeoCacheKey, JSON.stringify(map)); }catch(e){}
+    }catch(e){}
+  })(); },[token]);
+  async function saveStationGeo(name, lat, lng){
+    lat=Number(lat); lng=Number(lng);
+    if(!name || !isFinite(lat) || !isFinite(lng)) return;
+    const next={...stationGeo, [name]:{lat,lng}}; setStationGeo(next);
+    try{ localStorage.setItem(stationGeoCacheKey, JSON.stringify(next)); }catch(e){}
+    try{ await fetch(stationGeoBase+"?on_conflict=name", {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=merge-duplicates"}, body:JSON.stringify([{name,lat,lng,updated_at:new Date().toISOString()}])}); }catch(e){}
+    flash("Position sparad för "+name);
+  }
   const sysScope=useMemo(()=>activeSystem==="Alla"?entries:entries.filter(e=>(e.system||"Ignition")===activeSystem),[entries,activeSystem]);
   const counts=useMemo(()=>{const c={}; sysScope.forEach(e=>c[e.category]=(c[e.category]||0)+1); return c;},[sysScope]);
   const sysCounts=useMemo(()=>{const c={}; entries.forEach(e=>{const s=e.system||"Ignition"; c[s]=(c[s]||0)+1;}); return c;},[entries]);
@@ -1742,6 +1771,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
             </div>
 
             {activeStation!=="Alla" && (()=>{ const inSt=entries.filter(e=>(e.station||"")===activeStation); return (
+              <>
               <div className="station-head">
                 <div className="station-head-main">
                   <span className="station-head-icon">{Ico.pin}</span>
@@ -1756,6 +1786,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
                   <button className="foot-mini" onClick={()=>setActiveStation("Alla")}>{Ico.x} Stäng</button>
                 </div>
               </div>
+              <StationMap station={activeStation} coord={stationGeo[activeStation]} onSet={(la,ln)=>saveStationGeo(activeStation,la,ln)} />
+              </>
             ); })()}
 
             {loading ? (
@@ -2451,6 +2483,63 @@ function EntryCard({entry,mine=true,copied,offlineSaved,fav,onFav,onStation,onCo
   );
 }
 
+function StationMap({station, coord, onSet}){
+  const ref=useRef(null);
+  const [editing,setEditing]=useState(!coord);
+  const [manual,setManual]=useState("");
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{
+    if(!coord || editing || !window.L || !ref.current) return;
+    let map;
+    try{
+      map=window.L.map(ref.current,{zoomControl:true}).setView([coord.lat,coord.lng],15);
+      window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+      window.L.marker([coord.lat,coord.lng]).addTo(map).bindPopup(station);
+    }catch(e){}
+    const t=setTimeout(()=>{ try{ map&&map.invalidateSize(); }catch(e){} },150);
+    return ()=>{ clearTimeout(t); try{ map&&map.remove(); }catch(e){} };
+  },[coord&&coord.lat, coord&&coord.lng, station, editing]);
+  function useMyLocation(){
+    if(!navigator.geolocation){ alert("Plats stöds inte i den här webbläsaren."); return; }
+    setBusy(true);
+    navigator.geolocation.getCurrentPosition(
+      p=>{ setBusy(false); onSet(p.coords.latitude,p.coords.longitude); setEditing(false); },
+      err=>{ setBusy(false); alert("Kunde inte hämta plats: "+err.message); },
+      {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+    );
+  }
+  function saveManual(){
+    const m=(manual||"").split(/[,\s]+/).map(s=>parseFloat(s)).filter(n=>isFinite(n));
+    if(m.length<2){ alert("Skriv koordinater som: 56.674, 12.857"); return; }
+    onSet(m[0],m[1]); setManual(""); setEditing(false);
+  }
+  if(coord && !editing){
+    const mapsUrl="https://maps.apple.com/?q="+encodeURIComponent(station)+"&ll="+coord.lat+","+coord.lng;
+    return (
+      <div className="panel stationmap-panel">
+        <div ref={ref} className="stationmap"></div>
+        <div className="stationmap-foot">
+          <a className="foot-mini" href={mapsUrl} target="_blank" rel="noopener">{Ico.pin} Öppna i Kartor</a>
+          <button className="foot-mini" onClick={()=>setEditing(true)}>{Ico.edit} Ändra position</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="panel stationset">
+      <div className="panel-h">{Ico.pin} Position för {station}</div>
+      <p className="sys-hint" style={{margin:"0 0 12px"}}>Sätt en position så visas stationen på karta. Använd din nuvarande plats (om du står där), eller klistra in koordinater från en karttjänst.</p>
+      <div className="stationset-row">
+        <button className="foot-btn foot-save" onClick={useMyLocation} disabled={busy}>{Ico.pin} {busy?"Hämtar…":"Använd min plats"}</button>
+      </div>
+      <div className="stationset-row">
+        <input className="stationset-input" value={manual} onChange={e=>setManual(e.target.value)} placeholder="t.ex. 56.674, 12.857" />
+        <button className="foot-mini" onClick={saveManual} disabled={!manual.trim()}>Spara</button>
+        {coord && <button className="foot-mini" onClick={()=>setEditing(false)}>Avbryt</button>}
+      </div>
+    </div>
+  );
+}
 function TrashRow({entry,onRestore,onPurge}){
   const [confirm,setConfirm]=useState(false);
   return (
