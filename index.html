@@ -132,6 +132,55 @@
   .newsys-btn.ok{background:linear-gradient(180deg,#f7b73a,#f59e0b);color:#1a1206;border:none;}
   .newsys-btn:disabled{opacity:.4;cursor:not-allowed;}
   .newsys-btn svg{width:17px;height:17px;}
+  .update-bar{position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));background:linear-gradient(180deg,#f7b73a,#f59e0b);color:#1a1206;font-size:13.5px;font-weight:600;font-family:var(--sans);box-shadow:0 2px 12px rgba(0,0,0,.28);}
+  .update-bar span{display:inline-flex;align-items:center;gap:7px;}
+  .update-bar svg{width:16px;height:16px;}
+  .update-bar button{background:#1a1206;color:#fff;border:none;border-radius:8px;padding:7px 15px;font-size:13px;font-weight:700;font-family:var(--sans);cursor:pointer;}
+  .update-bar button:active{transform:scale(.97);}
+  .ver-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--dim);font-family:var(--mono);}
+  .ver-check{background:var(--code);border:1px solid var(--line-strong);color:var(--txt2);border-radius:8px;padding:7px 12px;font-size:12px;font-family:var(--sans);cursor:pointer;}
+  .ver-check:hover{border-color:var(--accent);color:var(--accent);}
+  .station-pill.clickable{cursor:pointer;}
+  .station-pill.clickable:hover{background:rgba(45,212,191,.22);border-color:rgba(45,212,191,.55);}
+  .station-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(45,212,191,.1),rgba(45,212,191,.03));border:1px solid rgba(45,212,191,.28);border-radius:16px;padding:16px 18px;margin-bottom:16px;}
+  .station-head-main{display:flex;align-items:center;gap:13px;min-width:0;}
+  .station-head-icon{width:42px;height:42px;flex-shrink:0;border-radius:12px;background:rgba(45,212,191,.16);color:#5eead4;display:flex;align-items:center;justify-content:center;}
+  .station-head-icon svg{width:21px;height:21px;}
+  .station-head-name{margin:0;font-size:19px;color:var(--txt);font-weight:700;}
+  .station-head-sub{margin:2px 0 0;font-size:12.5px;color:var(--dim);font-family:var(--mono);}
+  .station-head-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .recent-panel .panel-h{margin-bottom:10px;}
+  .recent-list{display:flex;flex-direction:column;gap:6px;}
+  .recent-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--code);border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer;font-family:var(--sans);}
+  .recent-item:hover{border-color:var(--accent);}
+  .recent-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .recent-title{flex:1;min-width:0;color:var(--txt);font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .recent-sys{font-size:11px;color:var(--dim);font-family:var(--mono);flex-shrink:0;}
+  .hbtn-trash{position:relative;}
+  .hbtn-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;font-family:var(--sans);display:flex;align-items:center;justify-content:center;}
+  .trash-empty{text-align:center;color:var(--dim);padding:24px 0;}
+  .trash-empty svg{width:34px;height:34px;opacity:.5;}
+  .trash-empty p{margin:8px 0 0;font-size:13px;}
+  .trash-list{display:flex;flex-direction:column;gap:8px;}
+  .trash-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--code);border:1px solid var(--line);border-radius:11px;}
+  .trash-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .trash-info{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .trash-title{font-size:13.5px;color:var(--txt);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .trash-meta{font-size:11px;color:var(--dim);font-family:var(--mono);}
+  .trash-confirm{font-size:12px;color:var(--dim);}
+  .trash-btn{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;background:var(--panel);border:1px solid var(--line-strong);color:var(--txt2);border-radius:8px;padding:7px 11px;font-size:12px;font-family:var(--sans);cursor:pointer;}
+  .trash-btn.restore:hover{border-color:var(--accent);color:var(--accent);}
+  .trash-btn.danger{color:var(--danger);border-color:rgba(248,113,113,.35);}
+  .trash-btn.danger:hover{background:rgba(248,113,113,.1);}
+  .trash-btn svg{width:14px;height:14px;}
+  .bk-section{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
+  .bk-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--txt);margin-bottom:8px;}
+  .bk-head svg{width:17px;height:17px;color:var(--accent);}
+  .bk-list{display:flex;flex-direction:column;gap:8px;}
+  .bk-item{display:flex;align-items:center;gap:9px;padding:9px 12px;background:var(--code);border:1px solid var(--line);border-radius:10px;flex-wrap:wrap;}
+  .bk-info{flex:1;min-width:90px;display:flex;flex-direction:column;}
+  .bk-date{font-size:13px;color:var(--txt);font-weight:600;font-family:var(--mono);}
+  .bk-count{font-size:11px;color:var(--dim);font-family:var(--mono);}
   .modal-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
   .x{background:none;border:none;color:var(--dim);cursor:pointer;transition:color .15s;}
   .x:hover{color:#fff;}
@@ -603,6 +652,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
+const APP_VERSION = "1.8.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -612,6 +662,7 @@ function colorForSys(name){
 }
 function loadSysList(){ try{ return JSON.parse(localStorage.getItem("scada-systems")||"[]"); }catch(e){ return []; } }
 function saveSysList(arr){ try{ localStorage.setItem("scada-systems", JSON.stringify(arr)); }catch(e){} }
+const sysBase = SUPABASE_URL + "/rest/v1/app_systems";
 const CATEGORIES=["Scripting","Larm","UDT/Tags","Trend","Rapport","OPC","SQL","Behörighet","Övrigt"];
 const CAT_COLOR={"Scripting":"#a78bfa","Larm":"#ef4444","UDT/Tags":"#22c55e","Trend":"#f59e0b","Rapport":"#60a5fa","OPC":"#fb923c","SQL":"#2dd4bf","Behörighet":"#f472b6","Övrigt":"#94a3b8"};
 const STATION_EXAMPLES=["Pumpstation 1","Pumpstation 2","Pumpstation 3","Avloppspumpstation 1","Avloppspumpstation 2","Tryckstegringsstation","Bräddningsstation","Reservoar Norra","Reservoar Södra","Högreservoar","Lågreservoar","Vattenverk","Reningsverk"];
@@ -1177,12 +1228,39 @@ function App(){
     return ()=>{ clearInterval(iv); document.removeEventListener("visibilitychange", onVis); };
   },[token]);
 
-  if (!configured) return (<div className="wrap"><div className="banner err" style={{marginTop:40}}>Inte konfigurerad. Fyll i <b>SUPABASE_URL</b> och <b>SUPABASE_KEY</b>.</div></div>);
-  if (booting) return (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
-  if (!token) return <Login onLogin={afterLogin} theme={theme} onToggleTheme={toggleTheme} />;
-  if (profile===undefined) return (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
-  if (profile && !profile.approved && !profile._legacy) return <Pending email={user} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />;
-  return <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&profile.is_admin)} onName={setName} theme={theme} onToggleTheme={toggleTheme} bigText={bigText} onToggleBig={toggleBig} contrast={contrast} onToggleContrast={toggleContrast} onLogout={logout} />;
+  const [updateReady,setUpdateReady]=useState(false);
+  const swWaitingRef=useRef(null);
+  useEffect(()=>{
+    if(!("serviceWorker" in navigator)) return;
+    let reloaded=false, onVis=null;
+    const onCtrl=()=>{ if(reloaded) return; reloaded=true; window.location.reload(); };
+    navigator.serviceWorker.addEventListener("controllerchange", onCtrl);
+    navigator.serviceWorker.getRegistration().then(function(reg){
+      if(!reg) return;
+      const mark=function(w){ if(w && navigator.serviceWorker.controller){ swWaitingRef.current=w; setUpdateReady(true); } };
+      if(reg.waiting) mark(reg.waiting);
+      reg.addEventListener("updatefound", function(){ const w=reg.installing; if(!w) return; w.addEventListener("statechange", function(){ if(w.state==="installed") mark(w); }); });
+      const check=function(){ try{ reg.update(); }catch(e){} };
+      check();
+      onVis=function(){ if(document.visibilityState==="visible") check(); };
+      document.addEventListener("visibilitychange", onVis);
+    }).catch(function(){});
+    return function(){ navigator.serviceWorker.removeEventListener("controllerchange", onCtrl); if(onVis) document.removeEventListener("visibilitychange", onVis); };
+  },[]);
+  function applyUpdate(){
+    const w=swWaitingRef.current;
+    if(w){ try{ w.postMessage("skipWaiting"); }catch(e){ window.location.reload(); } }
+    else { window.location.reload(); }
+  }
+
+  let view;
+  if (!configured) view = (<div className="wrap"><div className="banner err" style={{marginTop:40}}>Inte konfigurerad. Fyll i <b>SUPABASE_URL</b> och <b>SUPABASE_KEY</b>.</div></div>);
+  else if (booting) view = (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
+  else if (!token) view = <Login onLogin={afterLogin} theme={theme} onToggleTheme={toggleTheme} />;
+  else if (profile===undefined) view = (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
+  else if (profile && !profile.approved && !profile._legacy) view = <Pending email={user} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />;
+  else view = <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&profile.is_admin)} onName={setName} theme={theme} onToggleTheme={toggleTheme} bigText={bigText} onToggleBig={toggleBig} contrast={contrast} onToggleContrast={toggleContrast} onLogout={logout} />;
+  return (<>{updateReady && <div className="update-bar"><span>{Ico.spark} Ny version finns</span><button onClick={applyUpdate}>Uppdatera</button></div>}{view}</>);
 }
 
 function Pending({email,onLogout,theme,onToggleTheme}){
@@ -1251,6 +1329,8 @@ function Login({onLogin,theme,onToggleTheme}){
 function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigText, onToggleBig, contrast, onToggleContrast, onLogout}){
   const display = (name && name.trim()) ? name.trim() : (user||"").split("@")[0];
   const [entries,setEntries]=useState([]);
+  const [trash,setTrash]=useState([]);
+  const [showTrash,setShowTrash]=useState(false);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(null);
   const [busy,setBusy]=useState(false);
@@ -1308,7 +1388,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   useEffect(()=>{
     if(deepRef.current && entries.length){
       const e=entries.find(x=>x.id===deepRef.current);
-      if(e){ setDetail(e); setActiveView("bibliotek"); }
+      if(e){ openDetail(e); setActiveView("bibliotek"); }
       deepRef.current=null;
       try{ history.replaceState(null,"",window.location.pathname); }catch(err){}
     }
@@ -1332,13 +1412,73 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       flash("Sparad offline – finns nu i fält även utan täckning");
     } else { flash("Borttagen från offline"); }
   }
+  const favKey="scada-fav-"+(uid||user||"x");
+  const [favSet,setFavSet]=useState(function(){ try{ return JSON.parse(localStorage.getItem(favKey)||"[]"); }catch(e){ return []; } });
+  function isFav(id){ return favSet.indexOf(id)>=0; }
+  function toggleFav(entry){
+    const has=favSet.indexOf(entry.id)>=0;
+    const next=has?favSet.filter(x=>x!==entry.id):[entry.id, ...favSet];
+    setFavSet(next);
+    try{ localStorage.setItem(favKey, JSON.stringify(next)); }catch(e){}
+  }
+  const recentKey="scada-recent-"+(uid||user||"x");
+  const [recentIds,setRecentIds]=useState(function(){ try{ return JSON.parse(localStorage.getItem(recentKey)||"[]"); }catch(e){ return []; } });
+  function pushRecent(entry){
+    if(!entry||!entry.id) return;
+    setRecentIds(prev=>{ const next=[entry.id, ...prev.filter(x=>x!==entry.id)].slice(0,12); try{ localStorage.setItem(recentKey, JSON.stringify(next)); }catch(e){} return next; });
+  }
+  function openDetail(entry){ pushRecent(entry); setDetail(entry); }
+  function takeStationOffline(station){
+    const inStation=entries.filter(e=>(e.station||"")===station);
+    const ids=inStation.map(e=>e.id);
+    const next=Array.from(new Set([].concat(offlineSet, ids)));
+    setOfflineSet(next); try{ localStorage.setItem(offlineKey, JSON.stringify(next)); }catch(e){}
+    const media=[]; inStation.forEach(e=>{ (e.images||[]).forEach(u=>u&&media.push(u)); (e.files||[]).forEach(f=>f&&f.url&&media.push(f.url)); });
+    cacheMedia(media);
+    flash("Hela "+station+" sparad offline ("+ids.length+" poster)");
+  }
+  const backupKey="scada-backups-"+(uid||user||"x");
+  const [backups,setBackups]=useState(function(){ try{ return JSON.parse(localStorage.getItem(backupKey)||"[]"); }catch(e){ return []; } });
+  function takeDailySnapshot(data){
+    try{
+      const today=new Date().toISOString().slice(0,10);
+      const cur=JSON.parse(localStorage.getItem(backupKey)||"[]");
+      if(cur.some(b=>b.date===today)) return;
+      const snap={date:today, ts:Date.now(), count:data.length, data:data};
+      const next=[snap, ...cur].slice(0,7);
+      localStorage.setItem(backupKey, JSON.stringify(next));
+      setBackups(next);
+    }catch(e){}
+  }
+  function downloadBackup(snap){
+    try{
+      const blob=new Blob([JSON.stringify(snap.data,null,2)],{type:"application/json"});
+      const url=URL.createObjectURL(blob); const a=document.createElement("a");
+      a.href=url; a.download="scada-kb-backup-"+snap.date+".json"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+    }catch(e){ alert("Kunde inte ladda ner."); }
+  }
+  async function restoreBackup(snap){
+    const have={}; entries.forEach(e=>have[e.id]=1); trash.forEach(e=>have[e.id]=1);
+    const missing=(snap.data||[]).filter(e=>e&&e.id&&!have[e.id]);
+    if(!missing.length){ alert("Inget att återställa – alla poster i kopian finns redan."); return; }
+    if(!window.confirm("Återställ "+missing.length+" saknad(e) post(er) från "+snap.date+"? De läggs tillbaka som nya poster.")) return;
+    const rows=missing.map(d=>({title:d.title,system:d.system||"Ignition",category:d.category||"Övrigt",tags:d.tags||[],content:d.content||"",notes:d.notes||"",is_code:!!d.is_code,shared:!!d.shared,author:d.author||name||user,images:d.images||[],lang:d.lang||"auto",blocks:d.blocks||[],checklist:d.checklist||[],files:d.files||[],station:d.station||"",pinned:!!d.pinned,updated_at:new Date().toISOString()}));
+    try{ const ins=await apiInsert(token,rows); setEntries(es=>[...ins,...es]); flash("Återställde "+ins.length+" post(er)"); }
+    catch(e){ alert("Kunde inte återställa: "+e.message); }
+  }
 
   async function load(){
     setLoading(true); setError(null);
     try{
       const data=await apiGet(token);
-      setEntries(data);
-      try{ localStorage.setItem(cacheKey, JSON.stringify(data)); }catch(e){}
+      const live=data.filter(e=>!e.deleted_at);
+      const trashed=data.filter(e=>!!e.deleted_at);
+      setEntries(live); setTrash(trashed);
+      try{ localStorage.setItem(cacheKey, JSON.stringify(live)); }catch(e){}
+      takeDailySnapshot(live);
+      const cutoff=Date.now()-30*864e5;
+      trashed.forEach(e=>{ const t=Date.parse(e.deleted_at); if(t && t<cutoff){ apiDelete(token,e.id).then(()=>setTrash(p=>p.filter(x=>x.id!==e.id))).catch(()=>{}); } });
     }catch(e){
       let cached=null;
       try{ const raw=localStorage.getItem(cacheKey); if(raw) cached=JSON.parse(raw); }catch(e2){}
@@ -1371,8 +1511,28 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     catch(e){ alert("Kunde inte ändra favorit: "+e.message); }
   }
   async function deleteEntry(id){
-    try{ await apiDelete(token,id); setEntries(entries.filter(e=>e.id!==id)); }
-    catch(e){ alert("Kunde inte ta bort: "+e.message); }
+    try{
+      const u=await apiUpdate(token,id,{deleted_at:new Date().toISOString()});
+      setEntries(es=>es.filter(e=>e.id!==id)); setTrash(t=>[u,...t]);
+      flash("Flyttad till papperskorgen – kan återställas");
+    }catch(e){
+      // kolumnen deleted_at finns ej än → fall tillbaka till hård radering
+      try{ await apiDelete(token,id); setEntries(es=>es.filter(e=>e.id!==id)); flash("Borttagen"); }
+      catch(e2){ alert("Kunde inte ta bort: "+e2.message); }
+    }
+  }
+  async function restoreEntry(id){
+    try{ const u=await apiUpdate(token,id,{deleted_at:null}); setTrash(t=>t.filter(e=>e.id!==id)); setEntries(es=>[u,...es]); flash("Återställd"); }
+    catch(e){ alert("Kunde inte återställa: "+e.message); }
+  }
+  async function purgeEntry(id){
+    try{ await apiDelete(token,id); setTrash(t=>t.filter(e=>e.id!==id)); }
+    catch(e){ alert("Kunde inte ta bort permanent: "+e.message); }
+  }
+  async function emptyTrash(){
+    const ids=trash.map(e=>e.id);
+    for(const id of ids){ try{ await apiDelete(token,id); }catch(e){} }
+    setTrash([]); flash("Papperskorgen tömd");
   }
   async function loadExamples(){
     setBusy(true);
@@ -1434,9 +1594,19 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   const sysCounts=useMemo(()=>{const c={}; entries.forEach(e=>{const s=e.system||"Ignition"; c[s]=(c[s]||0)+1;}); return c;},[entries]);
   const [customSys,setCustomSys]=useState(loadSysList);
   const [showSys,setShowSys]=useState(false);
+  useEffect(()=>{ if(!token) return; (async()=>{
+    try{
+      const r=await fetch(sysBase+"?select=name&order=name.asc", {headers:dataHeaders(token)});
+      if(!r.ok) return; // tabell ej uppsatt än → behåll lokal lista
+      const rows=await r.json(); let names=rows.map(x=>x.name).filter(Boolean);
+      const local=loadSysList(); const missing=local.filter(n=>n&&!names.includes(n));
+      if(missing.length){ try{ await fetch(sysBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify(missing.map(n=>({name:n})))}); names=names.concat(missing); }catch(e){} }
+      setCustomSys(names); saveSysList(names);
+    }catch(e){}
+  })(); },[token]);
   const systems=useMemo(()=>{ const out=[]; const add=n=>{ n=(n||"").trim(); if(n&&!out.includes(n)) out.push(n); }; SYSTEMS.forEach(add); customSys.forEach(add); entries.forEach(e=>add(e.system||"Ignition")); return out; },[customSys,entries]);
-  function addSystem(name){ name=(name||"").trim(); if(!name||systems.includes(name)) return; const next=[...customSys,name]; setCustomSys(next); saveSysList(next); }
-  function removeSystem(name){ if(SYSTEMS.includes(name)) return; if((sysCounts[name]||0)>0) return; const next=customSys.filter(s=>s!==name); setCustomSys(next); saveSysList(next); }
+  async function addSystem(name){ name=(name||"").trim(); if(!name||systems.includes(name)) return; const next=[...customSys,name]; setCustomSys(next); saveSysList(next); try{ await fetch(sysBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify([{name}])}); }catch(e){} }
+  async function removeSystem(name){ if(SYSTEMS.includes(name)) return; if((sysCounts[name]||0)>0) return; const next=customSys.filter(s=>s!==name); setCustomSys(next); saveSysList(next); try{ await fetch(sysBase+"?name=eq."+encodeURIComponent(name), {method:"DELETE", headers:dataHeaders(token)}); }catch(e){} }
   const pinnedCount=useMemo(()=>entries.filter(e=>e.pinned).length,[entries]);
   const codeCount=useMemo(()=>entries.filter(e=>e.is_code).length,[entries]);
   const noteCount=useMemo(()=>entries.filter(e=>!e.is_code).length,[entries]);
@@ -1447,8 +1617,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     if(scope==="mina" && !(e.user_id===uid || !e.user_id)) return false;
     if(scope==="delade" && !e.shared) return false;
     if(scope==="offline" && offlineSet.indexOf(e.id)<0) return false;
+    if(scope==="favoriter" && favSet.indexOf(e.id)<0) return false;
     return true;
-  }),[filtered,activeView,scope,uid,offlineSet]);
+  }),[filtered,activeView,scope,uid,offlineSet,favSet]);
 
   function exportPostPdf(entry){ setPrintData({mode:"post",items:[entry],label:entry.title}); }
   function exportListPdf(){ const lbl=(activeCat!=="Alla"?activeCat:(activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek")); setPrintData({mode:"list",items:viewList,label:lbl}); }
@@ -1479,6 +1650,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
             <button className={"hbtn"+(contrast?" on":"")} title="Hög kontrast (sol)" onClick={onToggleContrast}>{Ico.contrast}</button>
             <button className="hbtn" title="Exportera (backup)" onClick={exportData}>{Ico.down}</button>
             <button className="hbtn" title="Importera" onClick={()=>fileRef.current.click()}>{Ico.up}</button>
+            <button className="hbtn hbtn-trash" title="Papperskorg" onClick={()=>setShowTrash(true)}>{Ico.trash}{trash.length>0 && <span className="hbtn-badge">{trash.length}</span>}</button>
             <button className="hbtn" title="Logga ut" onClick={onLogout}>{Ico.out}</button>
           </div>
         </div>
@@ -1487,10 +1659,12 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
         {activeView==="oversikt" ? (
           <Dashboard entries={entries} sysCounts={sysCounts} systems={systems} topicCounts={topicCounts}
             codeCount={codeCount} noteCount={noteCount} pinnedCount={pinnedCount} loading={loading} user={display} uid={uid}
+            recent={recentIds.map(id=>entries.find(e=>e.id===id)).filter(Boolean).slice(0,6)}
+            favCount={favSet.length} onOpenFavorites={()=>{setScope("favoriter");setActiveView("bibliotek");}}
             onOpenLibrary={cat=>{setActiveCat(cat||"Alla");setActiveSystem("Alla");setSearch("");setActiveView("bibliotek");}}
             onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
             onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
-            onOpen={e=>setDetail(e)} loadExamples={loadExamples} />
+            onOpen={openDetail} loadExamples={loadExamples} />
         ) : activeView==="chatt" ? (
           <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} />
         ) : (
@@ -1527,6 +1701,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
               <button className={"scopebtn"+(scope==="mina"?" active":"")} onClick={()=>setScope("mina")}>{Ico.lock} Mina</button>
               <button className={"scopebtn"+(scope==="delade"?" active":"")} onClick={()=>setScope("delade")}>{Ico.users} Delade</button>
               <button className={"scopebtn"+(scope==="offline"?" active":"")} onClick={()=>setScope("offline")}>{Ico.down} Offline{offlineSet.length>0?" ("+offlineSet.length+")":""}</button>
+              <button className={"scopebtn"+(scope==="favoriter"?" active":"")} onClick={()=>setScope("favoriter")}>{Ico.star} Favoriter{favSet.length>0?" ("+favSet.length+")":""}</button>
             </div>
 
             {activeTags.length>0 && (
@@ -1566,17 +1741,34 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
               </div>
             </div>
 
+            {activeStation!=="Alla" && (()=>{ const inSt=entries.filter(e=>(e.station||"")===activeStation); return (
+              <div className="station-head">
+                <div className="station-head-main">
+                  <span className="station-head-icon">{Ico.pin}</span>
+                  <div style={{minWidth:0}}>
+                    <h2 className="station-head-name">{activeStation}</h2>
+                    <p className="station-head-sub">{inSt.length} {inSt.length===1?"post":"poster"} på den här stationen</p>
+                  </div>
+                </div>
+                <div className="station-head-actions">
+                  <button className="foot-mini" onClick={()=>takeStationOffline(activeStation)}>{Ico.down} Ta hela stationen offline</button>
+                  <button className="foot-mini" onClick={()=>exportEntriesPDF(inSt, activeStation)}>{Ico.report} PDF</button>
+                  <button className="foot-mini" onClick={()=>setActiveStation("Alla")}>{Ico.x} Stäng</button>
+                </div>
+              </div>
+            ); })()}
+
             {loading ? (
               <SkeletonCards />
             ) : viewList.length===0 ? (
               <EmptyState view={activeView} hasEntries={entries.length>0} onLoad={loadExamples} onAdd={()=>setEditing({})} />
             ) : density==="kompakt" ? (
               <div className="compactlist">
-                {viewList.map(e=><CompactRow key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} onOpen={()=>setDetail(e)} onPin={()=>togglePin(e)} />)}
+                {viewList.map(e=><CompactRow key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} onOpen={()=>openDetail(e)} onPin={()=>togglePin(e)} />)}
               </div>
             ) : (
               <div className="cards">
-                {viewList.map(e=><EntryCard key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} copied={copiedId===e.id} offlineSaved={isOfflineSaved(e.id)} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} onPin={()=>togglePin(e)} onTag={t=>toggleTag(t)} onOpen={()=>setDetail(e)} />)}
+                {viewList.map(e=><EntryCard key={e.id} entry={e} mine={e.user_id===uid||!e.user_id} copied={copiedId===e.id} offlineSaved={isOfflineSaved(e.id)} fav={isFav(e.id)} onFav={()=>toggleFav(e)} onStation={s=>{setActiveStation(s);setActiveSystem("Alla");setActiveCat("Alla");setSearch("");setActiveView("bibliotek");}} onCopy={()=>copyContent(e)} onEdit={()=>setEditing(e)} onDelete={()=>deleteEntry(e.id)} onPin={()=>togglePin(e)} onTag={t=>toggleTag(t)} onOpen={()=>openDetail(e)} />)}
               </div>
             )}
           </>
@@ -1586,8 +1778,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       {toast && <div className="toast">{toast}</div>}
       {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} systems={systems} onAddSystem={addSystem} onSave={saveEntry} onClose={()=>setEditing(null)} />}
       {showSys && <SystemModal systems={systems} counts={sysCounts} onAdd={addSystem} onRemove={removeSystem} onClose={()=>setShowSys(false)} />}
-      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} onExportPdf={()=>exportPostPdf(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={e=>setDetail(e)} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
-      {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} onClose={()=>setShowUsers(false)} />}
+      {showTrash && <TrashModal items={trash} onRestore={restoreEntry} onPurge={purgeEntry} onEmpty={emptyTrash} onClose={()=>setShowTrash(false)} />}
+      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} fav={isFav(detail.id)} onFav={()=>toggleFav(detail)} onExportPdf={()=>exportPostPdf(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={openDetail} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
+      {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} backups={backups} onDownloadBackup={downloadBackup} onRestoreBackup={restoreBackup} onClose={()=>setShowUsers(false)} />}
     </div>
     {printData && <PrintView data={printData} />}
     </>
@@ -1684,7 +1877,7 @@ function WhatsNew({entries, uid, onOpen}){
   );
 }
 
-function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
+function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,recent=[],favCount=0,onOpenFavorites,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
   if(loading) return <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>;
   if(entries.length===0) return (
     <div className="empty">
@@ -1720,6 +1913,20 @@ function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pi
         <Tile icon={Ico.pin} label="Favoriter" value={pinnedCount} color="#34d399" onClick={()=>onOpenLibrary()} />
       </div>
       <ActivityChart entries={entries} />
+      {recent.length>0 && (
+        <div className="panel recent-panel">
+          <div className="panel-h">{Ico.clock} Senast öppnade</div>
+          <div className="recent-list">
+            {recent.map(e=>(
+              <button key={e.id} className="recent-item" onClick={()=>onOpen&&onOpen(e)}>
+                <span className="recent-dot" style={{background:colorForSys(e.system||"Ignition")}}></span>
+                <span className="recent-title">{e.title}</span>
+                <span className="recent-sys">{e.system||"Ignition"}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <WhatsNew entries={entries} uid={uid} onOpen={onOpen} />
       <div className="dash-grid">
         <div className="panel">
@@ -1753,7 +1960,7 @@ function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pi
   );
 }
 
-function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,onExportPdf,onRestore,onClose,onOpen,onEdit,onTag}){
+function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,fav,onFav,onExportPdf,onRestore,onClose,onOpen,onEdit,onTag}){
   const color=CAT_COLOR[entry.category]||"#94a3b8";
   const sys=entry.system||"Ignition";
   const sysColor=colorForSys(sys);
@@ -1906,6 +2113,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlin
         </div>
         <div className="modal-foot">
           <div className="foot-tools">
+            <button className={"foot-mini"+(fav?" on":"")} onClick={onFav} title={fav?"Ta bort favorit":"Lägg till favorit"}>{Ico.star} {fav?"Favorit ✓":"Favorit"}</button>
             <button className="foot-mini" onClick={()=>setShowQR(true)} title="QR-kod">{Ico.qr} QR</button>
             <button className="foot-mini" onClick={()=>exportEntriesPDF([entry], entry.title)} title="Exportera PDF">{Ico.report} PDF</button>
             <button className={"foot-mini"+(offlineSaved?" on":"")} onClick={onToggleOffline} title={offlineSaved?"Sparad offline":"Ta med offline"}>{Ico.down} {offlineSaved?"Offline ✓":"Offline"}</button>
@@ -2153,7 +2361,7 @@ function CodeBlock({code,lang}){
   );
 }
 
-function EntryCard({entry,mine=true,copied,offlineSaved,onCopy,onEdit,onDelete,onPin,onTag,onOpen}){
+function EntryCard({entry,mine=true,copied,offlineSaved,fav,onFav,onStation,onCopy,onEdit,onDelete,onPin,onTag,onOpen}){
   const [confirm,setConfirm]=useState(false);
   const [exp,setExp]=useState(false);
   const color=CAT_COLOR[entry.category]||"#94a3b8";
@@ -2187,7 +2395,8 @@ function EntryCard({entry,mine=true,copied,offlineSaved,onCopy,onEdit,onDelete,o
           {tags.length>0&&<div className="tags">{tags.map(t=><button key={t} className="tag" onClick={()=>onTag&&onTag(t)}>#{t}</button>)}</div>}
         </div>
         <div className="card-actions">
-          {mine && <button className={"ibtn"+(entry.pinned?" on":"")} onClick={onPin} title={entry.pinned?"Ta bort favorit":"Favoritmarkera"}>{Ico.star}</button>}
+          <button className={"ibtn"+(fav?" on":"")} onClick={onFav} title={fav?"Ta bort favorit":"Lägg till favorit"}>{Ico.star}</button>
+          {mine && <button className={"ibtn"+(entry.pinned?" on":"")} onClick={onPin} title={entry.pinned?"Lossa":"Fäst överst"}>{Ico.pin}</button>}
           <button className="ibtn" onClick={onCopy} title="Kopiera">{copied?<span style={{color:"var(--ok)"}}>{Ico.check}</span>:Ico.copy}</button>
           {mine && <button className="ibtn" onClick={onEdit} title="Redigera">{Ico.edit}</button>}
           {mine && <button className="ibtn" onClick={()=>setConfirm(true)} title="Ta bort">{Ico.trash}</button>}
@@ -2234,7 +2443,7 @@ function EntryCard({entry,mine=true,copied,offlineSaved,onCopy,onEdit,onDelete,o
         </div>
       )}
       {long && <button className="more" onClick={()=>setExp(!exp)}>{exp?<>{Ico.chevU} Visa mindre</>:<>{Ico.chevD} Visa mer</>}</button>}
-      <div className="card-foot">{Ico.clock}<span>uppdaterad {fmtDate(entry.updated_at)}</span>{offlineSaved&&<span className="offline-pill">{Ico.down} offline</span>}{entry.station&&entry.station.trim()&&<span className="station-pill">{Ico.pin}{entry.station}</span>}</div>
+      <div className="card-foot">{Ico.clock}<span>uppdaterad {fmtDate(entry.updated_at)}</span>{offlineSaved&&<span className="offline-pill">{Ico.down} offline</span>}{entry.station&&entry.station.trim()&&<button className="station-pill clickable" onClick={()=>onStation&&onStation(entry.station)} title="Visa stationen">{Ico.pin}{entry.station}</button>}</div>
       {confirm && (<div className="confirm"><span className="msg">{Ico.alert} Ta bort permanent?</span>
         <div style={{display:"flex",gap:8}}><button className="btn-cancel" onClick={()=>setConfirm(false)}>Avbryt</button>
         <button className="btn-del" onClick={onDelete}>Ta bort</button></div></div>)}
@@ -2242,6 +2451,58 @@ function EntryCard({entry,mine=true,copied,offlineSaved,onCopy,onEdit,onDelete,o
   );
 }
 
+function TrashRow({entry,onRestore,onPurge}){
+  const [confirm,setConfirm]=useState(false);
+  return (
+    <div className="trash-item">
+      <span className="trash-dot" style={{background:colorForSys(entry.system||"Ignition")}}></span>
+      <div className="trash-info">
+        <span className="trash-title">{entry.title}</span>
+        <span className="trash-meta">raderad {fmtDate(entry.deleted_at)}</span>
+      </div>
+      {!confirm ? (<>
+        <button className="trash-btn restore" onClick={()=>onRestore(entry.id)} title="Återställ">{Ico.undo} Återställ</button>
+        <button className="trash-btn danger" onClick={()=>setConfirm(true)} title="Ta bort permanent">{Ico.trash}</button>
+      </>) : (<>
+        <span className="trash-confirm">Ta bort permanent?</span>
+        <button className="trash-btn danger" onClick={()=>onPurge(entry.id)}>Ja</button>
+        <button className="trash-btn" onClick={()=>setConfirm(false)}>Nej</button>
+      </>)}
+    </div>
+  );
+}
+function TrashModal({items,onRestore,onPurge,onEmpty,onClose}){
+  const [confirmEmpty,setConfirmEmpty]=useState(false);
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-head"><h2>Papperskorg</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
+        <div className="modal-body">
+          <p className="sys-hint">Raderade poster hamnar här och kan återställas. De tas bort permanent automatiskt efter 30 dagar.</p>
+          {items.length===0 ? (
+            <div className="trash-empty">{Ico.trash}<p>Papperskorgen är tom.</p></div>
+          ) : (
+            <div className="trash-list">
+              {items.map(e=><TrashRow key={e.id} entry={e} onRestore={onRestore} onPurge={onPurge} />)}
+            </div>
+          )}
+        </div>
+        <div className="modal-foot">
+          <div className="foot-tools">
+            {items.length>0 && (!confirmEmpty
+              ? <button className="foot-mini" onClick={()=>setConfirmEmpty(true)}>{Ico.trash} Töm papperskorgen</button>
+              : <span style={{display:"inline-flex",gap:8,alignItems:"center"}}>
+                  <span style={{fontSize:12.5,color:"var(--dim)"}}>Ta bort {items.length} permanent?</span>
+                  <button className="foot-mini" onClick={()=>{ onEmpty(); setConfirmEmpty(false); }}>Ja, töm</button>
+                  <button className="foot-mini" onClick={()=>setConfirmEmpty(false)}>Avbryt</button>
+                </span>)}
+          </div>
+          <div className="foot-main"><button className="foot-btn foot-cancel" onClick={onClose}>Stäng</button></div>
+        </div>
+      </div>
+    </div>
+  );
+}
 function SystemModal({systems,counts,onAdd,onRemove,onClose}){
   const [val,setVal]=useState("");
   function add(){ const v=val.trim(); if(!v) return; onAdd(v); setVal(""); }
@@ -2466,7 +2727,7 @@ function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onAddSyst
   );
 }
 
-function UserModal({token,user,name,isAdmin,onName,onClose}){
+function UserModal({token,user,name,isAdmin,onName,backups=[],onDownloadBackup,onRestoreBackup,onClose}){
   const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
   const [busy,setBusy]=useState(false); const [msg,setMsg]=useState(null); const [need,setNeed]=useState(false);
   const [profiles,setProfiles]=useState(null); const [pBusy,setPBusy]=useState(false);
@@ -2513,6 +2774,27 @@ function UserModal({token,user,name,isAdmin,onName,onClose}){
           ) : (
             <p style={{color:"var(--dim)",fontSize:12,margin:0,lineHeight:1.5}}>Dina poster är privata. Nya kollegor kan registrera sig själva på inloggningssidan — en administratör godkänner dem.</p>
           )}
+          <div className="bk-section">
+            <div className="bk-head">{Ico.db} Säkerhetskopior</div>
+            <p className="sys-hint" style={{margin:"0 0 10px"}}>Appen sparar automatiskt en kopia av all data per dag (de 7 senaste) på den här enheten. Ladda ner en kopia eller återställ saknade poster.</p>
+            {backups.length===0 ? (
+              <p style={{fontSize:12.5,color:"var(--dim)",margin:0}}>Ingen kopia ännu – skapas nästa gång data laddas.</p>
+            ) : (
+              <div className="bk-list">
+                {backups.map(b=>(
+                  <div className="bk-item" key={b.date}>
+                    <div className="bk-info"><span className="bk-date">{b.date}</span><span className="bk-count">{b.count} poster</span></div>
+                    <button className="trash-btn" onClick={()=>onDownloadBackup&&onDownloadBackup(b)} title="Ladda ner JSON">{Ico.down} Ladda ner</button>
+                    <button className="trash-btn restore" onClick={()=>onRestoreBackup&&onRestoreBackup(b)} title="Återställ saknade poster">{Ico.undo} Återställ</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="ver-row">
+            <span>SCADA-KB · version {APP_VERSION}</span>
+            <button className="ver-check" onClick={async()=>{ try{ const r=await navigator.serviceWorker.getRegistration(); if(r) await r.update(); alert("Sökte efter uppdatering. Finns en ny version visas en gul banner högst upp."); }catch(e){ alert("Kunde inte söka just nu."); } }}>Sök uppdatering</button>
+          </div>
         </div>
       </div>
     </div>

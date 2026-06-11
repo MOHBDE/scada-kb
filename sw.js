@@ -3,7 +3,7 @@
    - Statiska resurser (React, Babel, highlight.js, typsnitt): cache-first
    - Supabase (data + bilder): alltid nätverk, aldrig cache
 */
-const CACHE = 'scada-kb-v5';
+const CACHE = 'scada-kb-v10';
 const MEDIA = 'scada-media';
 const ASSETS = [
   './',
@@ -23,8 +23,13 @@ self.addEventListener('install', function (e) {
     await Promise.all(ASSETS.map(function (u) {
       return c.add(new Request(u, { mode: 'no-cors' })).catch(function () {});
     }));
-    self.skipWaiting();
   })());
+});
+
+self.addEventListener('message', function (e) {
+  if (e.data === 'skipWaiting' || (e.data && e.data.type === 'SKIP_WAITING')) {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', function (e) {
