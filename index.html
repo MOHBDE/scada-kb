@@ -73,8 +73,11 @@
   .chip{flex-shrink:0;padding:8px 13px;border-radius:10px;font-size:12px;font-family:var(--mono);font-weight:500;cursor:pointer;background:var(--panel);border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;gap:7px;white-space:nowrap;transition:all .15s;}
   .chip:hover{border-color:var(--line-strong);color:var(--txt2);}
   .chip .cdot{width:7px;height:7px;border-radius:50%;opacity:.55;}
-  .chip.active{background:var(--accent-soft);color:#fff;border-color:rgba(245,165,36,.5);}
+  .chip.active{background:var(--accent-soft);color:var(--accent);border-color:rgba(245,165,36,.5);}
   .chip.active .cdot{opacity:1;box-shadow:0 0 7px currentColor;}
+  .chip svg{width:13px;height:13px;}
+  .chip-manage{border-style:dashed;color:var(--dim);font-family:var(--sans);}
+  .chip-manage .cdot{display:none;}
   .chip .cnt{color:var(--dim);}
   .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-bottom:14px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;animation:fadeUp .45s ease both;}
   .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cat,#94a3b8);box-shadow:0 0 12px -2px var(--cat,#94a3b8);}
@@ -214,6 +217,7 @@
   label.field{display:block;}
   label.field .lbl{font-size:12px;color:var(--dim);margin-bottom:7px;display:block;letter-spacing:.01em;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:560px){.row2{grid-template-columns:1fr;}}
   .toggle-row{display:flex;gap:8px;flex-wrap:wrap;}
   .toggle{flex:1;padding:9px;border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;background:var(--code);border:1px solid var(--line);color:var(--dim);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;}
   .toggle.active{background:var(--accent-soft);border-color:rgba(245,165,36,.5);color:var(--accent);}
@@ -245,10 +249,10 @@
   .systabs::-webkit-scrollbar{display:none;}
   .systab{flex-shrink:0;display:flex;align-items:center;gap:7px;padding:9px 15px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-family:var(--mono);font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .15s;}
   .systab:hover{border-color:var(--line-strong);color:var(--txt2);}
-  .systab.active{color:#fff;border-color:var(--sys,var(--accent));background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);box-shadow:0 0 0 1px var(--sys,var(--accent)),0 8px 22px -12px var(--sys,var(--accent));}
+  .systab.active{color:var(--txt);border-color:var(--sys,var(--accent));background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);box-shadow:0 0 0 1px var(--sys,var(--accent)),0 8px 22px -12px var(--sys,var(--accent));}
   .sysdot{width:8px;height:8px;border-radius:50%;box-shadow:0 0 8px currentColor;}
   .syscnt{font-size:10px;padding:1px 7px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--muted);}
-  .systab.active .syscnt{background:rgba(255,255,255,.12);color:#fff;}
+  .systab.active .syscnt{background:var(--accent-soft);color:var(--txt);}
   /* Scope filter pills */
   .scoperow{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px;}
   .scopebtn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-family:var(--sans);font-size:12.5px;cursor:pointer;transition:background .15s,color .15s,border-color .15s;}
@@ -689,7 +693,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.11.0";
+const APP_VERSION = "1.12.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -701,8 +705,12 @@ function loadSysList(){ try{ return JSON.parse(localStorage.getItem("scada-syste
 function saveSysList(arr){ try{ localStorage.setItem("scada-systems", JSON.stringify(arr)); }catch(e){} }
 const sysBase = SUPABASE_URL + "/rest/v1/app_systems";
 const stationGeoBase = SUPABASE_URL + "/rest/v1/app_stations";
+const catBase = SUPABASE_URL + "/rest/v1/app_categories";
+function loadCatList(){ try{ return JSON.parse(localStorage.getItem("scada-categories")||"[]"); }catch(e){ return []; } }
+function saveCatList(arr){ try{ localStorage.setItem("scada-categories", JSON.stringify(arr)); }catch(e){} }
 const CATEGORIES=["Scripting","Larm","UDT/Tags","Trend","Rapport","OPC","SQL","Behörighet","Övrigt"];
 const CAT_COLOR={"Scripting":"#a78bfa","Larm":"#ef4444","UDT/Tags":"#22c55e","Trend":"#f59e0b","Rapport":"#60a5fa","OPC":"#fb923c","SQL":"#2dd4bf","Behörighet":"#f472b6","Övrigt":"#94a3b8"};
+function catColor(name){ if(CAT_COLOR[name]) return CAT_COLOR[name]; let h=0; const s=String(name||""); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return "hsl("+(h%360)+",60%,62%)"; }
 const STATION_EXAMPLES=["Pumpstation 1","Pumpstation 2","Pumpstation 3","Avloppspumpstation 1","Avloppspumpstation 2","Tryckstegringsstation","Bräddningsstation","Reservoar Norra","Reservoar Södra","Högreservoar","Lågreservoar","Vattenverk","Reningsverk"];
 
 /* ─── Exempelposter (laddas EN gång via knapp) ─── */
@@ -1041,7 +1049,7 @@ function exportEntriesPDF(list, heading){
   doc.save(fname+".pdf");
 }
 async function listMembers(token){
-  const r = await fetch(profBase + "?select=id,email,approved&approved=eq.true&order=email.asc", {headers: dataHeaders(token)});
+  const r = await fetch(profBase + "?select=id,email,approved,name&approved=eq.true&order=email.asc", {headers: dataHeaders(token)});
   if(!r.ok) return [];
   try{ return await r.json(); }catch(e){ return []; }
 }
@@ -1113,16 +1121,26 @@ async function signUp(email, password, fullName){
   if (!r.ok) throw new Error(d.error_description || d.msg || d.message || d.error || ("Fel "+r.status));
   return d;
 }
-async function getMyProfile(token, uid, email){
-  const r = await fetch(profBase + "?id=eq."+uid+"&select=id,email,approved,is_admin", {headers:dataHeaders(token)});
+async function getMyProfile(token, uid, email, dispName){
+  const r = await fetch(profBase + "?id=eq."+uid+"&select=*", {headers:dataHeaders(token)});
   if(!r.ok) throw new Error("PROFILES "+r.status);
   const arr = await r.json();
-  if(arr.length) return arr[0];
+  if(arr.length){
+    const p=arr[0];
+    if(dispName && p.name!==dispName){ try{ await fetch(profBase+"?id=eq."+uid, {method:"PATCH", headers:dataHeaders(token), body:JSON.stringify({name:dispName})}); p.name=dispName; }catch(e){} }
+    return p;
+  }
   try{
-    const r2 = await fetch(profBase, {method:"POST", headers:{...dataHeaders(token),Prefer:"return=representation"}, body:JSON.stringify([{id:uid,email:email||"",approved:false}])});
+    let r2 = await fetch(profBase, {method:"POST", headers:{...dataHeaders(token),Prefer:"return=representation"}, body:JSON.stringify([{id:uid,email:email||"",approved:false,name:dispName||""}])});
+    if(!r2.ok){ r2 = await fetch(profBase, {method:"POST", headers:{...dataHeaders(token),Prefer:"return=representation"}, body:JSON.stringify([{id:uid,email:email||"",approved:false}])}); }
     if(r2.ok){ const a=await r2.json(); return a[0]||{id:uid,approved:false,is_admin:false}; }
   }catch(e){}
   return {id:uid,approved:false,is_admin:false};
+}
+async function updateDisplayName(token, uid, newName){
+  newName=(newName||"").trim();
+  try{ await fetch(authBase+"/user", {method:"PUT", headers:dataHeaders(token), body:JSON.stringify({data:{full_name:newName}})}); }catch(e){}
+  try{ await fetch(profBase+"?id=eq."+uid, {method:"PATCH", headers:dataHeaders(token), body:JSON.stringify({name:newName})}); }catch(e){}
 }
 async function listProfiles(token){
   const r = await fetch(profBase + "?select=id,email,approved,is_admin&order=approved.asc,email.asc", {headers:dataHeaders(token)});
@@ -1228,7 +1246,7 @@ function App(){
     saveSession(d);
     const id=(d.user&&d.user.id)||""; const email=(d.user&&d.user.email)||"";
     setToken(d.access_token); setUser(email); setName(metaName(d)); setUid(id); setProfile(undefined);
-    try{ setProfile(await getMyProfile(d.access_token, id, email)); }
+    try{ setProfile(await getMyProfile(d.access_token, id, email, metaName(d))); }
     catch(e){ setProfile({approved:true,is_admin:false,_legacy:true}); } // profiles ej uppsatt → spärra inte
   }
   function logout(){ clearSession(); setToken(null); setUser(""); setName(""); setUid(""); setProfile(undefined); }
@@ -1247,7 +1265,7 @@ function App(){
           uidV=(d.user&&d.user.id)||uidV; emailV=(d.user&&d.user.email)||emailV; nameV=metaName(d)||nameV;
         }
         setToken(access); setUser(emailV); setName(nameV); setUid(uidV); setProfile(undefined);
-        try{ setProfile(await getMyProfile(access, uidV, emailV)); }
+        try{ setProfile(await getMyProfile(access, uidV, emailV, nameV)); }
         catch(e){ setProfile({approved:true,is_admin:false,_legacy:true}); }
       }catch(e){ clearSession(); }
       setBooting(false);
@@ -1532,6 +1550,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     if(typeof navigator!=="undefined" && navigator.onLine===false){ alert("Du är offline – ändringar kan inte sparas just nu. Försök igen när du har täckning."); return; }
     setBusy(true);
     if(data.system){ data.system=String(data.system).trim(); addSystem(data.system); }
+    if(data.category){ data.category=String(data.category).trim(); addCategory(data.category); }
     const row={title:data.title,system:data.system||"Ignition",category:data.category,tags:data.tags,content:data.content,notes:data.notes||"",is_code:data.isCode,shared:!!data.shared,author:name||user,images:data.images||[],lang:data.lang||"auto",blocks:data.blocks||[],checklist:data.checklist||[],files:data.files||[],station:data.station||"",updated_at:new Date().toISOString()};
     try{
       if(data.id){ const u=await apiUpdate(token,data.id,row); setEntries(entries.map(e=>e.id===data.id?u:e)); }
@@ -1668,6 +1687,22 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   const systems=useMemo(()=>{ const out=[]; const add=n=>{ n=(n||"").trim(); if(n&&!out.includes(n)) out.push(n); }; SYSTEMS.forEach(add); customSys.forEach(add); entries.forEach(e=>add(e.system||"Ignition")); return out; },[customSys,entries]);
   async function addSystem(name){ name=(name||"").trim(); if(!name||systems.includes(name)) return; const next=[...customSys,name]; setCustomSys(next); saveSysList(next); try{ await fetch(sysBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify([{name}])}); }catch(e){} }
   async function removeSystem(name){ if(SYSTEMS.includes(name)) return; if((sysCounts[name]||0)>0) return; const next=customSys.filter(s=>s!==name); setCustomSys(next); saveSysList(next); try{ await fetch(sysBase+"?name=eq."+encodeURIComponent(name), {method:"DELETE", headers:dataHeaders(token)}); }catch(e){} }
+  const catCounts=useMemo(()=>{const c={}; entries.forEach(e=>{const s=e.category||"Övrigt"; c[s]=(c[s]||0)+1;}); return c;},[entries]);
+  const [customCat,setCustomCat]=useState(loadCatList);
+  const [showCat,setShowCat]=useState(false);
+  useEffect(()=>{ if(!token) return; (async()=>{
+    try{
+      const r=await fetch(catBase+"?select=name&order=name.asc", {headers:dataHeaders(token)});
+      if(!r.ok) return;
+      const rows=await r.json(); let names=rows.map(x=>x.name).filter(Boolean);
+      const local=loadCatList(); const missing=local.filter(n=>n&&!names.includes(n));
+      if(missing.length){ try{ await fetch(catBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify(missing.map(n=>({name:n})))}); names=names.concat(missing); }catch(e){} }
+      setCustomCat(names); saveCatList(names);
+    }catch(e){}
+  })(); },[token]);
+  const categories=useMemo(()=>{ const out=[]; const add=n=>{ n=(n||"").trim(); if(n&&!out.includes(n)) out.push(n); }; CATEGORIES.forEach(add); customCat.forEach(add); entries.forEach(e=>add(e.category||"Övrigt")); return out; },[customCat,entries]);
+  async function addCategory(name){ name=(name||"").trim(); if(!name||categories.includes(name)) return; const next=[...customCat,name]; setCustomCat(next); saveCatList(next); try{ await fetch(catBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify([{name}])}); }catch(e){} }
+  async function removeCategory(name){ if(CATEGORIES.includes(name)) return; if((catCounts[name]||0)>0) return; const next=customCat.filter(s=>s!==name); setCustomCat(next); saveCatList(next); try{ await fetch(catBase+"?name=eq."+encodeURIComponent(name), {method:"DELETE", headers:dataHeaders(token)}); }catch(e){} }
   const pinnedCount=useMemo(()=>entries.filter(e=>e.pinned).length,[entries]);
   const codeCount=useMemo(()=>entries.filter(e=>e.is_code).length,[entries]);
   const noteCount=useMemo(()=>entries.filter(e=>!e.is_code).length,[entries]);
@@ -1729,7 +1764,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
           <>
             <div className="page-head">
               <div>
-                <div className="crumbs page-crumbs"><span>SCADA·KB</span>{Ico.chevR}<span style={{color:"var(--txt)"}}>{activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek"}</span>{activeSystem!=="Alla"&&<>{Ico.chevR}<span style={{color:colorForSys(activeSystem)}}>{activeSystem}</span></>}{activeCat!=="Alla"&&<>{Ico.chevR}<span style={{color:CAT_COLOR[activeCat]}}>{activeCat}</span></>}</div>
+                <div className="crumbs page-crumbs"><span>SCADA·KB</span>{Ico.chevR}<span style={{color:"var(--txt)"}}>{activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek"}</span>{activeSystem!=="Alla"&&<>{Ico.chevR}<span style={{color:colorForSys(activeSystem)}}>{activeSystem}</span></>}{activeCat!=="Alla"&&<>{Ico.chevR}<span style={{color:catColor(activeCat)}}>{activeCat}</span></>}</div>
                 <h2 className="page-title">{activeView==="kod"?"Kod":activeView==="anteckningar"?"Anteckningar":"Bibliotek"}</h2>
                 <p className="page-sub">{activeView==="kod"?"Kodsnuttar och script":activeView==="anteckningar"?"Anteckningar och rutiner":"Alla poster i kunskapsbasen"}</p>
               </div>
@@ -1751,7 +1786,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
 
             <div className="chips">
               <Chip label="Alla ämnen" active={activeCat==="Alla"} color="#f5a524" count={sysScope.length} onClick={()=>setActiveCat("Alla")} />
-              {CATEGORIES.map(c=><Chip key={c} label={c} active={activeCat===c} color={CAT_COLOR[c]} count={counts[c]||0} onClick={()=>setActiveCat(c)} />)}
+              {categories.map(c=><Chip key={c} label={c} active={activeCat===c} color={catColor(c)} count={counts[c]||0} onClick={()=>setActiveCat(c)} />)}
+              <button className="chip chip-manage" onClick={()=>setShowCat(true)} title="Hantera ämnen">{Ico.add} Ämne</button>
             </div>
 
             <div className="scoperow">
@@ -1837,11 +1873,12 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       </main>
 
       {toast && <div className="toast">{toast}</div>}
-      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} systems={systems} onAddSystem={addSystem} onSave={saveEntry} onClose={()=>setEditing(null)} />}
+      {editing!==null && <EntryForm initial={editing} busy={busy} token={token} uid={uid} stations={stationList} systems={systems} onAddSystem={addSystem} categories={categories} onAddCategory={addCategory} onSave={saveEntry} onClose={()=>setEditing(null)} />}
       {showSys && <SystemModal systems={systems} counts={sysCounts} onAdd={addSystem} onRemove={removeSystem} onClose={()=>setShowSys(false)} />}
+      {showCat && <CategoryModal categories={categories} counts={catCounts} builtins={CATEGORIES} onAdd={addCategory} onRemove={removeCategory} onClose={()=>setShowCat(false)} />}
       {showTrash && <TrashModal items={trash} onRestore={restoreEntry} onPurge={purgeEntry} onEmpty={emptyTrash} onClose={()=>setShowTrash(false)} />}
       {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} fav={isFav(detail.id)} onFav={()=>toggleFav(detail)} onExportPdf={()=>exportPostPdf(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={openDetail} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
-      {showUsers && <UserModal token={token} user={user} name={name} isAdmin={isAdmin} onName={onName} backups={backups} onDownloadBackup={downloadBackup} onRestoreBackup={restoreBackup} onClose={()=>setShowUsers(false)} />}
+      {showUsers && <UserModal token={token} user={user} name={name} uid={uid} isAdmin={isAdmin} onName={onName} backups={backups} onDownloadBackup={downloadBackup} onRestoreBackup={restoreBackup} onClose={()=>setShowUsers(false)} />}
     </div>
     {printData && <PrintView data={printData} />}
     </>
@@ -1899,7 +1936,7 @@ function Tile({icon,label,value,color,onClick}){
     <span className="tile-val">{value}</span><span className="tile-lbl">{label}</span></button>;
 }
 function MiniRow({entry,onClick}){
-  const color=CAT_COLOR[entry.category]||"#94a3b8";
+  const color=catColor(entry.category);
   return <button className="minirow" onClick={onClick}>
     <span className="mini-ic" style={{color}}>{entry.is_code?Ico.terminal:Ico.note}</span>
     <span className="mini-title">{entry.title}</span>
@@ -1993,7 +2030,7 @@ function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pi
         <Tile icon={Ico.book} label="Totalt" value={entries.length} color="#f5a524" onClick={()=>onOpenLibrary()} />
         <Tile icon={Ico.terminal} label="Kod" value={codeCount} color="#a78bfa" onClick={()=>onOpenLibrary()} />
         <Tile icon={Ico.note} label="Anteckningar" value={noteCount} color="#60a5fa" onClick={()=>onOpenLibrary()} />
-        <Tile icon={Ico.pin} label="Favoriter" value={pinnedCount} color="#34d399" onClick={()=>onOpenLibrary()} />
+        <Tile icon={Ico.star} label="Favoriter" value={favCount} color="#fbbf24" onClick={()=>onOpenFavorites&&onOpenFavorites()} />
       </div>
       <ActivityChart entries={entries} />
       {stationPoints.length>0 && (
@@ -2050,7 +2087,7 @@ function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pi
 }
 
 function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,fav,onFav,onExportPdf,onRestore,onClose,onOpen,onEdit,onTag}){
-  const color=CAT_COLOR[entry.category]||"#94a3b8";
+  const color=catColor(entry.category);
   const sys=entry.system||"Ignition";
   const sysColor=colorForSys(sys);
   const tags=entry.tags||[];
@@ -2253,7 +2290,7 @@ function EmptyState({view,hasEntries,onLoad,onAdd}){
   );
 }
 function CompactRow({entry,mine=true,onOpen,onPin}){
-  const color=CAT_COLOR[entry.category]||"#94a3b8";
+  const color=catColor(entry.category);
   const sys=entry.system||"Ignition";
   const sysColor=colorForSys(sys);
   return (
@@ -2275,6 +2312,11 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   const [text,setText]=useState("");
   const [loading,setLoading]=useState(true);
   const [sending,setSending]=useState(false);
+  const [search,setSearch]=useState("");
+  const convKey="scada-convs-"+(uid||"x");
+  const [convHist,setConvHist]=useState(function(){ try{ return JSON.parse(localStorage.getItem(convKey)||"[]"); }catch(e){ return []; } });
+  function rememberConv(id){ if(!id||id==="team") return; setConvHist(prev=>{ const n=[id,...prev.filter(x=>x!==id)]; try{ localStorage.setItem(convKey, JSON.stringify(n)); }catch(e){} return n; }); }
+  function openConv(id){ setConv(id); setSearch(""); rememberConv(id); }
   const endRef=useRef(null);
   useEffect(()=>{ listMembers(token).then(ms=>setMembers((ms||[]).filter(m=>m.id!==uid))); },[]);
   useEffect(()=>{
@@ -2285,13 +2327,24 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
     return ()=>{ stop=true; clearInterval(iv); };
   },[conv, token, uid]);
   useEffect(()=>{ if(endRef.current) endRef.current.scrollIntoView(); },[msgs.length]);
-  function memberLabel(m){ return ((m&&m.email)||"").split("@")[0] || "medlem"; }
-  const convLabel = conv==="team" ? "Teamet" : (function(){ const m=members.find(x=>x.id===conv); return m?memberLabel(m):"medlem"; })();
+  function memberLabel(m){ return ((m&&m.name&&m.name.trim()) || ((m&&m.email)||"").split("@")[0]) || "medlem"; }
+  function memberById(id){ return members.find(x=>x.id===id); }
+  function nameForSender(m){ const mem=memberById(m.sender_id); return (mem&&memberLabel(mem)) || m.sender_name || "medlem"; }
+  const convLabel = conv==="team" ? "Teamet" : (function(){ const m=memberById(conv); return m?memberLabel(m):"medlem"; })();
+  const recentPeople = (function(){
+    const ids=[]; convHist.forEach(id=>{ if(ids.indexOf(id)<0) ids.push(id); });
+    Object.keys(unreadMap||{}).forEach(k=>{ if(k!=="team" && ids.indexOf(k)<0) ids.push(k); });
+    return ids.map(id=>memberById(id)).filter(Boolean);
+  })();
+  const searchResults = (function(){
+    const q=search.trim().toLowerCase(); if(!q) return [];
+    return members.filter(m=>memberLabel(m).toLowerCase().indexOf(q)>=0 || ((m.email||"").toLowerCase().indexOf(q)>=0));
+  })();
   async function send(){
     const b=text.trim(); if(!b||sending) return;
     setSending(true);
     const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:b };
-    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); }catch(e){ alert(e.message); }
+    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); if(conv!=="team") rememberConv(conv); }catch(e){ alert(e.message); }
     setSending(false);
   }
   const [pushBusy,setPushBusy]=useState(false);
@@ -2310,15 +2363,30 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
         {pushSupported() && <button className={"notifbtn"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy} title={pushOn?"Tryck för att registrera om":""}>{Ico.bell} {pushOn?"Aviseringar på":(pushBusy?"…":"Aviseringar")}</button>}
       </div>
       {pushMsg && <div className="notifmsg">{pushMsg}</div>}
-      <div className="chat-people">
-        <button className={"person"+(conv==="team"?" active":"")} onClick={()=>setConv("team")}><span className="person-ic">{Ico.users}</span>Teamet{conv!=="team"&&unreadMap.team>0&&<span className="person-dot"></span>}</button>
-        {members.map(m=>(
-          <button key={m.id} className={"person"+(conv===m.id?" active":"")} onClick={()=>setConv(m.id)}>
-            <span className="person-av">{memberLabel(m).slice(0,2).toUpperCase()}</span>{memberLabel(m)}{conv!==m.id&&unreadMap[m.id]>0&&<span className="person-dot"></span>}
-          </button>
-        ))}
-        {members.length===0 && <span className="chat-hint">Inga andra medlemmar än</span>}
+      <div className="chat-search">{Ico.search}
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök kollega att chatta med…" />
+        {search && <button className="chat-search-x" onClick={()=>setSearch("")}>{Ico.x}</button>}
       </div>
+      {search ? (
+        <div className="chat-people">
+          {searchResults.length===0 ? <span className="chat-hint">Ingen matchande användare.</span>
+            : searchResults.map(m=>(
+              <button key={m.id} className={"person"+(conv===m.id?" active":"")} onClick={()=>openConv(m.id)}>
+                <span className="person-av">{memberLabel(m).slice(0,2).toUpperCase()}</span>{memberLabel(m)}
+              </button>
+            ))}
+        </div>
+      ) : (
+        <div className="chat-people">
+          <button className={"person"+(conv==="team"?" active":"")} onClick={()=>setConv("team")}><span className="person-ic">{Ico.users}</span>Teamet{conv!=="team"&&unreadMap.team>0&&<span className="person-dot"></span>}</button>
+          {recentPeople.map(m=>(
+            <button key={m.id} className={"person"+(conv===m.id?" active":"")} onClick={()=>openConv(m.id)}>
+              <span className="person-av">{memberLabel(m).slice(0,2).toUpperCase()}</span>{memberLabel(m)}{conv!==m.id&&unreadMap[m.id]>0&&<span className="person-dot"></span>}
+            </button>
+          ))}
+          {recentPeople.length===0 && <span className="chat-hint">Sök efter en kollega ovan för att börja chatta.</span>}
+        </div>
+      )}
       <div className="chat-msgs">
         {loading && msgs.length===0 ? <div className="chat-empty">Laddar…</div>
          : msgs.length===0 ? <div className="chat-empty">{conv==="team"?"Inga meddelanden i teamet än – skriv det första!":"Inga meddelanden än – säg hej!"}</div>
@@ -2326,7 +2394,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
             const mine=m.sender_id===uid;
             return <div key={m.id} className={"bubble-row"+(mine?" me":"")}>
               <div className={"bubble"+(mine?" me":"")}>
-                {!mine && <div className="bubble-name">{m.sender_name||"medlem"}</div>}
+                {!mine && <div className="bubble-name">{nameForSender(m)}</div>}
                 <div className="bubble-body">{m.body}</div>
                 <div className="bubble-time">{fmtTime(m.created_at)}</div>
               </div>
@@ -2453,7 +2521,7 @@ function CodeBlock({code,lang}){
 function EntryCard({entry,mine=true,copied,offlineSaved,fav,onFav,onStation,onCopy,onEdit,onDelete,onPin,onTag,onOpen}){
   const [confirm,setConfirm]=useState(false);
   const [exp,setExp]=useState(false);
-  const color=CAT_COLOR[entry.category]||"#94a3b8";
+  const color=catColor(entry.category);
   const sys=entry.system||"Ignition";
   const sysColor=colorForSys(sys);
   const tags=entry.tags||[];
@@ -2672,6 +2740,40 @@ function TrashModal({items,onRestore,onPurge,onEmpty,onClose}){
     </div>
   );
 }
+function CategoryModal({categories,counts,builtins,onAdd,onRemove,onClose}){
+  const [val,setVal]=useState("");
+  function add(){ const v=val.trim(); if(!v) return; onAdd(v); setVal(""); }
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-head"><h2>Hantera ämnen</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
+        <div className="modal-body">
+          <p className="sys-hint">Lägg till egna ämnen (kategorier) för era poster. Ett ämne som redan har poster kan inte tas bort förrän posterna flyttats.</p>
+          <div className="sys-list">
+            {categories.map(s=>{
+              const c=counts[s]||0; const builtin=builtins.includes(s); const removable=!builtin && c===0;
+              return (
+                <div className="sys-item" key={s}>
+                  <span className="sysdot" style={{background:catColor(s)}}></span>
+                  <span className="sys-name">{s}</span>
+                  <span className="sys-count">{c} {c===1?"post":"poster"}</span>
+                  {removable
+                    ? <button className="sys-rm" title="Ta bort ämne" onClick={()=>onRemove(s)}>{Ico.x}</button>
+                    : <span className="sys-lock">{builtin?"inbyggt":"används"}</span>}
+                </div>
+              );
+            })}
+          </div>
+          <div className="sys-add">
+            <input value={val} onChange={e=>setVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()} placeholder="Nytt ämne – t.ex. Backup, Nätverk, Drift…" />
+            <button className="foot-btn foot-save" onClick={add} disabled={!val.trim()}>{Ico.add} Lägg till</button>
+          </div>
+        </div>
+        <div className="modal-foot"><div className="foot-main"><button className="foot-btn foot-cancel" onClick={onClose}>Stäng</button></div></div>
+      </div>
+    </div>
+  );
+}
 function SystemModal({systems,counts,onAdd,onRemove,onClose}){
   const [val,setVal]=useState("");
   function add(){ const v=val.trim(); if(!v) return; onAdd(v); setVal(""); }
@@ -2706,13 +2808,16 @@ function SystemModal({systems,counts,onAdd,onRemove,onClose}){
     </div>
   );
 }
-function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onAddSystem,onSave,onClose}){
+function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onAddSystem,categories=CATEGORIES,onAddCategory,onSave,onClose}){
   const [title,setTitle]=useState(initial.title||"");
   const [system,setSystem]=useState(initial.system||"Ignition");
   const [addingSys,setAddingSys]=useState(false);
   const [newSys,setNewSys]=useState("");
   function confirmNewSys(){ const v=newSys.trim(); if(!v) return; if(onAddSystem) onAddSystem(v); setSystem(v); setAddingSys(false); setNewSys(""); }
   const [category,setCategory]=useState(initial.category||"Scripting");
+  const [addingCat,setAddingCat]=useState(false);
+  const [newCat,setNewCat]=useState("");
+  function confirmNewCat(){ const v=newCat.trim(); if(!v) return; if(onAddCategory) onAddCategory(v); setCategory(v); setAddingCat(false); setNewCat(""); }
   const [tags,setTags]=useState((initial.tags||[]).join(", "));
   const [station,setStation]=useState(initial.station||"");
   const startCode=initial.is_code!==undefined?initial.is_code:true;
@@ -2793,15 +2898,30 @@ function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onAddSyst
               )}
             </label>
             <label className="field"><span className="lbl">Ämne</span>
-              <select value={category} onChange={e=>setCategory(e.target.value)}>{CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
+              {!addingCat ? (
+                <select value={categories.includes(category)?category:"__new__"} onChange={e=>{ const v=e.target.value; if(v==="__new__"){ setNewCat(""); setAddingCat(true); } else setCategory(v); }}>
+                  {categories.map(c=><option key={c} value={c}>{c}</option>)}
+                  {category && !categories.includes(category) && <option value={category}>{category}</option>}
+                  <option value="__new__">➕ Nytt ämne…</option>
+                </select>
+              ) : (
+                <div className="newsys-row">
+                  <input autoFocus value={newCat} onChange={e=>setNewCat(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter"){ e.preventDefault(); confirmNewCat(); } }} placeholder="t.ex. Backup, Nätverk…" />
+                  <button type="button" className="newsys-btn ok" disabled={!newCat.trim()} onClick={confirmNewCat} title="Lägg till">{Ico.check}</button>
+                  <button type="button" className="newsys-btn" onClick={()=>{ setAddingCat(false); setNewCat(""); }} title="Avbryt">{Ico.x}</button>
+                </div>
+              )}
+            </label>
           </div>
-          <label className="field"><span className="lbl">Taggar (komma)</span>
-            <input value={tags} onChange={e=>setTags(e.target.value)} placeholder="udt, perspective" /></label>
-          <label className="field"><span className="lbl">{Ico.pin} Station / anläggning <span className="lbl-opt">valfritt</span></span>
-            <input value={station} onChange={e=>setStation(e.target.value)} placeholder="t.ex. Pumpstation 1" list="station-suggest" />
-            <datalist id="station-suggest">
-              {STATION_EXAMPLES.concat(stations.filter(s=>STATION_EXAMPLES.indexOf(s)<0)).map(s=><option key={s} value={s} />)}
-            </datalist></label>
+          <div className="row2">
+            <label className="field"><span className="lbl">Taggar (komma)</span>
+              <input value={tags} onChange={e=>setTags(e.target.value)} placeholder="udt, perspective" /></label>
+            <label className="field"><span className="lbl">{Ico.pin} Station / anläggning <span className="lbl-opt">valfritt</span></span>
+              <input value={station} onChange={e=>setStation(e.target.value)} placeholder="t.ex. Pumpstation 1" list="station-suggest" />
+              <datalist id="station-suggest">
+                {STATION_EXAMPLES.concat(stations.filter(s=>STATION_EXAMPLES.indexOf(s)<0)).map(s=><option key={s} value={s} />)}
+              </datalist></label>
+          </div>
           <div className="toggle-row share-toggle">
             <button className={"toggle"+(!shared?" active":"")} onClick={()=>setShared(false)}>{Ico.lock} Privat</button>
             <button className={"toggle"+(shared?" active":"")} onClick={()=>setShared(true)}>{Ico.users} Delad med teamet</button>
