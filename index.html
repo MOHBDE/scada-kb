@@ -31,6 +31,8 @@
 <style>
   :root{--bg:#080b10;--panel:#10151d;--panel2:#0c1118;--code:#0a0f16;--line:rgba(255,255,255,.07);--line-strong:rgba(255,255,255,.13);--line2:#161c26;--txt:#e6edf3;--txt2:#cbd5e1;--muted:#9aa7b5;--dim:#64717f;--accent:#f5a524;--accent-soft:rgba(245,165,36,.13);--ok:#34d399;--danger:#f87171;--mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;--surface:linear-gradient(180deg,#11161f,#0d121a);--surface2:linear-gradient(180deg,#0c1118,#080b10);--glass:rgba(16,21,29,.66);--glow:rgba(245,165,36,.07);}
   body.light{--bg:#eef1f6;--panel:#ffffff;--panel2:#ffffff;--line:rgba(15,23,42,.10);--line-strong:rgba(15,23,42,.17);--line2:#eef1f5;--txt:#0f172a;--txt2:#33415a;--muted:#52617a;--dim:#8492a6;--accent-soft:rgba(245,165,36,.16);--surface:linear-gradient(180deg,#ffffff,#f6f8fc);--surface2:linear-gradient(180deg,#ffffff,#f1f4f9);--glass:rgba(255,255,255,.72);--glow:rgba(245,165,36,.10);}
+  :root{--accent2:#2dd4bf;--accent2-soft:rgba(45,212,191,.13);}
+  body.light{--accent2:#0d9488;--accent2-soft:rgba(13,148,136,.14);}
   *{box-sizing:border-box;}
   body{margin:0;color:var(--txt);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;background:radial-gradient(1100px 480px at 50% -8%,rgba(245,165,36,.07),transparent 62%),radial-gradient(900px 600px at 100% 0%,rgba(34,211,238,.04),transparent 60%),var(--bg);background-attachment:fixed;}
   .grid-bg{position:fixed;inset:0;pointer-events:none;opacity:.035;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:34px 34px;-webkit-mask-image:radial-gradient(circle at 50% 0%,#000,transparent 75%);mask-image:radial-gradient(circle at 50% 0%,#000,transparent 75%);}
@@ -43,6 +45,21 @@
   .hbtns{margin-left:auto;display:flex;gap:7px;}
   .hbtn{width:38px;height:38px;border-radius:11px;background:var(--panel);border:1px solid var(--line);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
   .hbtn:hover{color:#fff;border-color:var(--line-strong);background:var(--line2);}
+  .hbtn.on{color:var(--accent);border-color:rgba(245,165,36,.4);background:var(--accent-soft);}
+  .hmenu-wrap{position:relative;}
+  .hmenu-backdrop{position:fixed;inset:0;z-index:60;}
+  .hmenu{position:absolute;top:46px;right:0;z-index:61;width:236px;background:var(--panel);border:1px solid var(--line-strong);border-radius:14px;padding:7px;box-shadow:0 20px 50px -12px rgba(0,0,0,.6);animation:hmenuin .14s ease;}
+  @keyframes hmenuin{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  .hmenu-sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);font-family:var(--mono);padding:8px 10px 4px;}
+  .hmenu-item{display:flex;align-items:center;gap:11px;width:100%;background:none;border:none;color:var(--txt2);font-family:var(--sans);font-size:13.5px;text-align:left;padding:10px 10px;border-radius:9px;cursor:pointer;}
+  .hmenu-item:hover{background:var(--line2);color:var(--txt);}
+  .hmenu-item.on{color:var(--accent);}
+  .hmenu-ic{display:flex;width:18px;justify-content:center;color:var(--dim);}
+  .hmenu-item:hover .hmenu-ic,.hmenu-item.on .hmenu-ic{color:inherit;}
+  .hmenu-aa{font-weight:700;font-size:14px;font-family:var(--sans);}
+  .hmenu-check{margin-left:auto;display:flex;color:var(--accent);}
+  .hmenu-check svg{width:15px;height:15px;}
+  .hmenu-div{height:1px;background:var(--line);margin:6px 4px;}
   .meta{margin-top:14px;font-size:12px;color:var(--dim);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .dot{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px currentColor;}
   .search-box{position:relative;margin-bottom:14px;}
@@ -232,6 +249,12 @@
   .sysdot{width:8px;height:8px;border-radius:50%;box-shadow:0 0 8px currentColor;}
   .syscnt{font-size:10px;padding:1px 7px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--muted);}
   .systab.active .syscnt{background:rgba(255,255,255,.12);color:#fff;}
+  /* Scope filter pills */
+  .scoperow{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px;}
+  .scopebtn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-family:var(--sans);font-size:12.5px;cursor:pointer;transition:background .15s,color .15s,border-color .15s;}
+  .scopebtn svg{width:13px;height:13px;}
+  .scopebtn:hover{color:var(--txt);border-color:var(--line-strong);}
+  .scopebtn.active{background:var(--accent-soft);color:var(--accent);border-color:rgba(245,165,36,.4);}
   /* Sub bar (count + sort) */
   .subbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 14px;}
   .resultcnt{font-size:12px;color:var(--dim);font-family:var(--mono);}
@@ -257,9 +280,10 @@
   .nav-brandtxt .nav-title{font-family:var(--mono);font-size:17px;font-weight:600;}
   .nav-brandtxt .nav-sub{font-size:11px;color:var(--dim);}
   .nav-items{display:flex;flex-direction:column;gap:4px;}
-  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:11px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer;font-size:13.5px;font-family:var(--sans);text-align:left;transition:all .15s;}
+  .nav-item{position:relative;display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:11px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer;font-size:13.5px;font-family:var(--sans);text-align:left;transition:background .15s,color .15s;}
   .nav-item:hover{background:var(--panel);color:var(--txt);}
-  .nav-item.active{background:var(--accent-soft);color:#fff;border-color:rgba(245,165,36,.3);}
+  .nav-item.active{background:var(--accent-soft);color:var(--txt);border-color:rgba(245,165,36,.28);}
+  .nav-item.active::before{content:"";position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--accent);}
   .nav-ic{display:flex;color:var(--dim);}
   .nav-item.active .nav-ic,.nav-item:hover .nav-ic{color:inherit;}
   .nav-item.active .nav-ic{color:var(--accent);}
@@ -275,8 +299,10 @@
     .nav{top:auto;width:100%;height:calc(64px + env(safe-area-inset-bottom));flex-direction:row;border-right:none;border-top:1px solid var(--line);padding:0 0 env(safe-area-inset-bottom);background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
     .nav-brand,.nav-foot{display:none;}
     .nav-items{flex-direction:row;flex:1;gap:0;}
-    .nav-item{flex:1;flex-direction:column;gap:3px;padding:8px 1px;border-radius:0;font-size:9.5px;justify-content:center;border:none;min-width:0;}
+    .nav-item{flex:1;flex-direction:column;gap:3px;padding:9px 1px 8px;border-radius:0;font-size:9.5px;justify-content:center;border:none;min-width:0;}
     .nav-item.active{background:none;color:var(--accent);}
+    .nav-item.active::before{left:50%;top:0;transform:translateX(-50%);width:26px;height:3px;border-radius:0 0 3px 3px;}
+    .nav-users{display:none;}
     .nav-lbl{display:none;}
     .nav-lbl-s{display:block;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
     .nav-cnt{display:none;}
@@ -643,7 +669,7 @@
   .station-lbl{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--dim);font-family:var(--mono);}
   .station-lbl svg{width:13px;height:13px;}
   .station-sel{min-width:160px;}
-  .station-pill{display:inline-flex;align-items:center;gap:4px;font-family:var(--sans);font-size:11px;color:#5eead4;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);border-radius:7px;padding:2px 8px;text-transform:none;}
+  .station-pill{display:inline-flex;align-items:center;gap:4px;font-family:var(--sans);font-size:11px;color:var(--accent2);background:var(--accent2-soft);border:1px solid var(--accent2-soft);border-radius:7px;padding:2px 8px;text-transform:none;}
   .station-pill svg{width:12px;height:12px;}
   .card-foot .station-pill{margin-left:auto;}
 </style>
@@ -663,7 +689,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.9.1";
+const APP_VERSION = "1.10.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1116,7 +1142,7 @@ async function updateMyName(token, fullName){
 }
 
 /* ─── Ikoner ─── */
-const I=({d,size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>);
+const I=({d,size=18})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">{d}</svg>);
 const Ico={
   db:<I d={<><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></>} />,
   search:<I size={16} d={<><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>} />,
@@ -1135,10 +1161,11 @@ const Ico={
   chevD:<I size={13} d={<path d="m6 9 6 6 6-6"/>} />,
   chevU:<I size={13} d={<path d="m18 15-6-6-6 6"/>} />,
   alert:<I size={14} d={<><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></>} />,
-  star:<I size={15} d={<path d="M12 2l3 6.3 6.9 1-5 4.8 1.2 6.9L12 17.8 5.9 21l1.2-6.9-5-4.8 6.9-1z"/>} />,
+  star:<I size={15} d={<path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.9 6.2 20.5l1.1-6.5L2.6 9.4l6.5-.9z"/>} />,
   users:<I size={16} d={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></>} />,
   sort:<I size={16} d={<><path d="M11 5h10M11 9h7M11 13h4M3 17l3 3 3-3M6 18V4"/></>} />,
   grid:<I d={<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>} />,
+  home:<I d={<><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.6V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.6"/><path d="M9.5 21v-6h5v6"/></>} />,
   book:<I d={<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></>} />,
   note:<I d={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></>} />,
   terminal:<I d={<><path d="m4 17 6-6-6-6"/><path d="M12 19h8"/></>} />,
@@ -1149,7 +1176,9 @@ const Ico={
   shield:<I size={15} d={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
   report:<I size={15} d={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13l2 2 4-4"/></>} />,
   dots:<I size={15} d={<><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></>} />,
-  pin:<I size={15} d={<path d="M12 2l3 6.3 6.9 1-5 4.8 1.2 6.9L12 17.8 5.9 21l1.2-6.9-5-4.8 6.9-1z"/>} />,
+  pin:<I size={15} d={<><path d="M12 21s7-5.4 7-11a7 7 0 0 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></>} />,
+  tack:<I size={15} d={<><path d="M9 3h6M10 3v6.5L7 13h10l-3-3.5V3M12 13v8"/></>} />,
+  sliders:<I size={18} d={<><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h7M15 18h5"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="13" cy="18" r="2"/></>} />,
   layers:<I size={15} d={<><path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/></>} />,
   add:<I size={16} d={<><path d="M5 12h14"/><path d="M12 5v14"/></>} />,
   clock:<I size={13} d={<><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>} />,
@@ -1677,11 +1706,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
           <div className="topbar-user">{Ico.users}<span className="topbar-email">{display}</span></div>
           <div className="topbar-actions">
             {!online&&<span className="offline-badge"><span className="offline-dot"></span>Offline</span>}
-            <button className="hbtn" title="Mörkt/ljust läge" onClick={onToggleTheme}>{theme==="light"?Ico.moon:Ico.sun}</button>
-            <button className={"hbtn"+(bigText?" on":"")} title="Större text" onClick={onToggleBig}><span style={{fontFamily:"var(--sans)",fontWeight:700,fontSize:bigText?15:13}}>A</span></button>
-            <button className={"hbtn"+(contrast?" on":"")} title="Hög kontrast (sol)" onClick={onToggleContrast}>{Ico.contrast}</button>
-            <button className="hbtn" title="Exportera (backup)" onClick={exportData}>{Ico.down}</button>
-            <button className="hbtn" title="Importera" onClick={()=>fileRef.current.click()}>{Ico.up}</button>
+            <HeaderMenu theme={theme} onToggleTheme={onToggleTheme} bigText={bigText} onToggleBig={onToggleBig} contrast={contrast} onToggleContrast={onToggleContrast} onExport={exportData} onImport={()=>fileRef.current.click()} onUsers={()=>setShowUsers(true)} />
             <button className="hbtn hbtn-trash" title="Papperskorg" onClick={()=>setShowTrash(true)}>{Ico.trash}{trash.length>0 && <span className="hbtn-badge">{trash.length}</span>}</button>
             <button className="hbtn" title="Logga ut" onClick={onLogout}>{Ico.out}</button>
           </div>
@@ -1823,8 +1848,30 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   );
 }
 
+function HeaderMenu({theme,onToggleTheme,bigText,onToggleBig,contrast,onToggleContrast,onExport,onImport,onUsers}){
+  const [open,setOpen]=useState(false);
+  return (
+    <div className="hmenu-wrap">
+      <button className={"hbtn"+(open?" on":"")} title="Inställningar" onClick={()=>setOpen(o=>!o)}>{Ico.sliders}</button>
+      {open && <>
+        <div className="hmenu-backdrop" onClick={()=>setOpen(false)}></div>
+        <div className="hmenu">
+          <div className="hmenu-sec">Visning</div>
+          <button className="hmenu-item" onClick={onToggleTheme}><span className="hmenu-ic">{theme==="light"?Ico.moon:Ico.sun}</span><span>{theme==="light"?"Mörkt läge":"Ljust läge"}</span></button>
+          <button className={"hmenu-item"+(bigText?" on":"")} onClick={onToggleBig}><span className="hmenu-ic hmenu-aa">A</span><span>Större text</span>{bigText&&<span className="hmenu-check">{Ico.check}</span>}</button>
+          <button className={"hmenu-item"+(contrast?" on":"")} onClick={onToggleContrast}><span className="hmenu-ic">{Ico.contrast}</span><span>Hög kontrast</span>{contrast&&<span className="hmenu-check">{Ico.check}</span>}</button>
+          <div className="hmenu-div"></div>
+          <div className="hmenu-sec">Data &amp; konto</div>
+          <button className="hmenu-item" onClick={()=>{onExport();setOpen(false);}}><span className="hmenu-ic">{Ico.down}</span><span>Exportera backup</span></button>
+          <button className="hmenu-item" onClick={()=>{onImport();setOpen(false);}}><span className="hmenu-ic">{Ico.up}</span><span>Importera</span></button>
+          <button className="hmenu-item" onClick={()=>{onUsers();setOpen(false);}}><span className="hmenu-ic">{Ico.users}</span><span>Konto &amp; användare</span></button>
+        </div>
+      </>}
+    </div>
+  );
+}
 function Nav({active,onNav,onUsers,counts,user,onLogout,onExport,onImport,busy,chatUnread}){
-  const items=[["oversikt","Översikt","Hem",Ico.grid,null],["bibliotek","Bibliotek","Bibliotek",Ico.book,counts.bibliotek],["kod","Kod","Kod",Ico.terminal,counts.kod],["anteckningar","Anteckningar","Anteck.",Ico.note,counts.anteckningar],["chatt","Chatt","Chatt",Ico.chat,null]];
+  const items=[["oversikt","Översikt","Hem",Ico.home,null],["bibliotek","Bibliotek","Bibliotek",Ico.book,counts.bibliotek],["kod","Kod","Kod",Ico.terminal,counts.kod],["anteckningar","Anteckningar","Anteck.",Ico.note,counts.anteckningar],["chatt","Chatt","Chatt",Ico.chat,null]];
   return (
     <nav className="nav">
       <div className="nav-brand">
@@ -1856,7 +1903,7 @@ function MiniRow({entry,onClick}){
   return <button className="minirow" onClick={onClick}>
     <span className="mini-ic" style={{color}}>{entry.is_code?Ico.terminal:Ico.note}</span>
     <span className="mini-title">{entry.title}</span>
-    {entry.pinned&&<span className="mini-pin" style={{color:"var(--accent)"}}>{Ico.pin}</span>}
+    {entry.pinned&&<span className="mini-pin" style={{color:"var(--accent)"}}>{Ico.tack}</span>}
     <span className="mini-badge" style={{color,background:color+"22"}}>{entry.category}</span></button>;
 }
 function ActivityChart({entries}){
@@ -2438,7 +2485,7 @@ function EntryCard({entry,mine=true,copied,offlineSaved,fav,onFav,onStation,onCo
         </div>
         <div className="card-actions">
           <button className={"ibtn"+(fav?" on":"")} onClick={onFav} title={fav?"Ta bort favorit":"Lägg till favorit"}>{Ico.star}</button>
-          {mine && <button className={"ibtn"+(entry.pinned?" on":"")} onClick={onPin} title={entry.pinned?"Lossa":"Fäst överst"}>{Ico.pin}</button>}
+          {mine && <button className={"ibtn"+(entry.pinned?" on":"")} onClick={onPin} title={entry.pinned?"Lossa":"Fäst överst"}>{Ico.tack}</button>}
           <button className="ibtn" onClick={onCopy} title="Kopiera">{copied?<span style={{color:"var(--ok)"}}>{Ico.check}</span>:Ico.copy}</button>
           {mine && <button className="ibtn" onClick={onEdit} title="Redigera">{Ico.edit}</button>}
           {mine && <button className="ibtn" onClick={()=>setConfirm(true)} title="Ta bort">{Ico.trash}</button>}
