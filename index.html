@@ -114,8 +114,8 @@
   .btn-amber:hover{transform:translateY(-1px);}
   .overlay{position:fixed;inset:0;z-index:50;background:rgba(4,7,11,.72);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);display:flex;align-items:flex-end;justify-content:center;animation:fadeUp .2s ease both;}
   @media(min-width:640px){.overlay{align-items:center;padding:16px;}}
-  .modal{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--line-strong);border-radius:22px 22px 0 0;box-shadow:0 -24px 60px rgba(0,0,0,.55);animation:popIn .3s ease both;}
-  @media(min-width:640px){.modal{border-radius:22px;}}
+  .modal{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:22px 22px 0 0;box-shadow:0 -24px 60px rgba(0,0,0,.55);animation:popIn .3s ease both;}
+  @media(min-width:640px){.modal{border-radius:22px;max-width:560px;}.modal-wide{max-width:840px;}}
   .modal-head,.modal-foot{position:sticky;background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:15px 20px;z-index:2;display:flex;align-items:center;}
   .modal-head{top:0;justify-content:space-between;border-bottom:1px solid var(--line);}
   .modal-head h2{font-family:var(--mono);font-size:14px;margin:0;}
@@ -275,7 +275,7 @@
   /* App shell */
   .app{display:flex;min-height:100vh;}
   .main{flex:1;min-width:0;max-width:1080px;margin:0 auto;padding:26px 26px 120px;width:100%;}
-  .nav{position:fixed;top:0;left:0;bottom:0;width:248px;background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;z-index:30;}
+  .nav{position:fixed;top:0;left:0;bottom:0;width:248px;background:var(--panel2);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;z-index:30;}
   .nav-brand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px;}
   .nav-brandtxt .nav-title{font-family:var(--mono);font-size:17px;font-weight:600;}
   .nav-brandtxt .nav-sub{font-size:11px;color:var(--dim);}
@@ -296,7 +296,7 @@
   .nav-footbtns{display:flex;gap:6px;margin-top:8px;}
   @media(min-width:861px){.main{margin-left:248px;}.fab{display:none;}}
   @media(max-width:860px){
-    .nav{top:auto;width:100%;height:calc(64px + env(safe-area-inset-bottom));flex-direction:row;border-right:none;border-top:1px solid var(--line);padding:0 0 env(safe-area-inset-bottom);background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
+    .nav{top:auto;width:100%;height:calc(64px + env(safe-area-inset-bottom));flex-direction:row;border-right:none;border-top:1px solid var(--line);padding:0 0 env(safe-area-inset-bottom);background:var(--panel2);}
     .nav-brand,.nav-foot{display:none;}
     .nav-items{flex-direction:row;flex:1;gap:0;}
     .nav-item{flex:1;flex-direction:column;gap:3px;padding:9px 1px 8px;border-radius:0;font-size:9.5px;justify-content:center;border:none;min-width:0;}
@@ -307,7 +307,7 @@
     .nav-lbl-s{display:block;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
     .nav-cnt{display:none;}
     .nav-ic svg{width:22px;height:22px;}
-    .main{padding:16px 15px calc(92px + env(safe-area-inset-bottom));}
+    .main{padding:calc(14px + env(safe-area-inset-top)) 15px calc(92px + env(safe-area-inset-bottom));}
     .page-title{font-size:20px;}
     .topbar-email{max-width:40vw;}
   }
@@ -689,7 +689,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.10.1";
+const APP_VERSION = "1.11.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -2771,7 +2771,7 @@ function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onAddSyst
   }
   return (
     <div className="overlay" onClick={onClose}>
-      <div className="modal" onClick={e=>e.stopPropagation()}>
+      <div className="modal modal-wide" onClick={e=>e.stopPropagation()}>
         <div className="modal-head"><h2>{initial.id?"Redigera post":"Ny post"}</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
         <div className="modal-body">
           <label className="field"><span className="lbl">Titel</span>
