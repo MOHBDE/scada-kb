@@ -517,26 +517,78 @@
   .modal{animation:modalpop .24s cubic-bezier(.2,.7,.3,1) both;}
   @media (prefers-reduced-motion: reduce){.cards .card,.compactrow,.overlay,.modal,.skel{animation:none;}}
   /* Chat */
-  .chat-people{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line);}
-  .person{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;padding:7px 12px 7px 7px;border-radius:11px;border:1px solid var(--line);background:var(--surface);color:var(--txt2);font-size:13px;cursor:pointer;font-family:var(--sans);white-space:nowrap;}
-  .person.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
-  .person-ic{display:flex;margin-left:5px;}
-  .person-av{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;}
-  .chat-hint{color:var(--dim);font-size:13px;padding:8px;}
-  .chat-msgs{display:flex;flex-direction:column;gap:8px;min-height:280px;max-height:56vh;overflow-y:auto;padding:6px 2px;}
-  .chat-empty{margin:auto;text-align:center;color:var(--dim);font-size:13px;padding:20px;}
+  .chat2{display:grid;grid-template-columns:328px 1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel);height:calc(100vh - 168px);min-height:460px;box-shadow:0 18px 50px -28px rgba(0,0,0,.5);}
+  .chat2-list{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--panel2);}
+  .chat2-listhead{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;}
+  .chat2-h{font-family:var(--mono);font-size:19px;font-weight:600;margin:0;letter-spacing:-.02em;color:var(--txt);}
+  .chat-notif{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;flex-shrink:0;border-radius:10px;border:1px solid var(--line-strong);background:var(--panel);color:var(--muted);cursor:pointer;transition:color .15s,border-color .15s,background .15s;}
+  .chat-notif svg{width:16px;height:16px;}
+  .chat-notif-lbl{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.01em;}
+  .chat-notif:hover{color:var(--accent);border-color:var(--accent);}
+  .chat-notif.on{background:rgba(52,211,153,.13);border-color:rgba(52,211,153,.42);color:#34d399;}
+  .chat-search{display:flex;align-items:center;gap:8px;margin:0 14px 10px;padding:9px 12px;background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--muted);}
+  .chat-search:focus-within{border-color:var(--accent);}
+  .chat-search svg{width:16px;height:16px;flex-shrink:0;}
+  .chat-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--txt);font-family:var(--sans);font-size:14px;}
+  .chat-search-x{border:none;background:none;color:var(--dim);cursor:pointer;display:flex;padding:0;}
+  .convs{flex:1;overflow-y:auto;padding:4px 8px 12px;display:flex;flex-direction:column;gap:1px;}
+  .convs::-webkit-scrollbar,.chat-msgs::-webkit-scrollbar{width:8px;}
+  .convs::-webkit-scrollbar-thumb,.chat-msgs::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:2px solid transparent;background-clip:padding-box;}
+  .conv{position:relative;display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 11px;border-radius:12px;border:none;background:none;cursor:pointer;color:var(--txt);font-family:var(--sans);transition:background .12s;}
+  .conv:hover{background:var(--surface);}
+  .conv.active{background:var(--accent-soft);}
+  .conv.active::before{content:"";position:absolute;left:3px;top:50%;transform:translateY(-50%);width:3px;height:22px;border-radius:3px;background:var(--accent);}
+  .conv-av{width:42px;height:42px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--accent-soft);color:var(--accent);}
+  .conv-av svg{width:20px;height:20px;}
+  .conv-av:has(svg){background:rgba(45,212,191,.16);color:var(--accent2,#2dd4bf);}
+  .conv-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+  .conv-name{font-size:14px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .conv-prev{font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .conv.unread .conv-name{font-weight:700;}
+  .conv.unread .conv-prev{color:var(--txt);font-weight:500;}
+  .conv-meta{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px;min-height:34px;}
+  .conv-time{font-size:10.5px;color:var(--dim);font-family:var(--mono);min-height:13px;}
+  .conv.unread .conv-time{color:var(--accent);}
+  .conv-badge{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#1a1206;font-family:var(--mono);font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .chat2-thread{display:flex;flex-direction:column;min-height:0;background:var(--panel);}
+  .chat2-thhead{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel2);}
+  .chat2-thhead .conv-av{width:38px;height:38px;}
+  .chat-back{display:none;border:none;background:none;color:var(--txt);cursor:pointer;padding:4px;margin:-4px -2px -4px -6px;}
+  .chat-back svg{width:22px;height:22px;}
+  .chat2-thtitle{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .chat-msgs{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:7px;padding:16px;}
+  .chat-empty{margin:auto;text-align:center;color:var(--dim);font-size:13px;padding:20px;max-width:260px;line-height:1.5;}
+  .chat-hint{color:var(--dim);font-size:13px;padding:16px 14px;text-align:center;line-height:1.5;}
+  .chat-day{align-self:center;margin:10px 0 5px;font-size:10.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:3px 12px;border-radius:20px;font-family:var(--mono);letter-spacing:.02em;}
   .bubble-row{display:flex;}
   .bubble-row.me{justify-content:flex-end;}
-  .bubble{max-width:80%;padding:9px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--line);}
-  .bubble.me{background:var(--accent-soft);border-color:rgba(245,165,36,.35);}
-  .bubble-name{font-size:11px;color:var(--accent);font-weight:600;margin-bottom:3px;}
+  .bubble-row.grp{margin-top:-5px;}
+  .bubble{max-width:74%;padding:7px 12px 5px;border-radius:15px 15px 15px 5px;background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.06);}
+  .bubble-row.me .bubble{border-radius:15px 15px 5px 15px;background:var(--accent-soft);border-color:rgba(245,165,36,.32);}
+  .bubble-row.grp .bubble{border-radius:15px;}
+  .bubble-name{font-size:11.5px;color:var(--accent2,#2dd4bf);font-weight:700;margin-bottom:2px;}
   .bubble-body{font-size:14px;color:var(--txt);white-space:pre-wrap;word-break:break-word;line-height:1.45;}
-  .bubble-time{font-size:10px;color:var(--dim);font-family:var(--mono);margin-top:4px;text-align:right;}
-  .chat-input{display:flex;gap:8px;align-items:flex-end;margin-top:12px;border-top:1px solid var(--line);padding-top:12px;}
-  .chat-input textarea{flex:1;resize:none;min-height:44px;max-height:120px;background:var(--code);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:11px 13px;font-family:var(--sans);font-size:14px;}
+  .bubble-time{font-size:9.5px;color:var(--dim);font-family:var(--mono);margin-top:2px;text-align:right;}
+  .chat-input{display:flex;gap:9px;align-items:flex-end;padding:12px 14px;border-top:1px solid var(--line);background:var(--panel2);}
+  .chat-input textarea{flex:1;resize:none;min-height:42px;max-height:120px;background:var(--panel);border:1px solid var(--line);border-radius:21px;color:var(--txt);padding:10px 16px;font-family:var(--sans);font-size:14px;line-height:1.4;}
   .chat-input textarea:focus{outline:none;border-color:var(--accent);}
-  .chat-send{flex-shrink:0;width:44px;height:44px;border-radius:12px;border:none;background:var(--accent);color:#1a1206;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .chat-send:disabled{opacity:.5;cursor:default;}
+  .chat-send{flex-shrink:0;width:42px;height:42px;border-radius:50%;border:none;background:var(--accent);color:#1a1206;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s,opacity .12s;}
+  .chat-send svg{width:19px;height:19px;}
+  .chat-send:not(:disabled):hover{transform:scale(1.06);}
+  .chat-send:disabled{opacity:.4;cursor:default;}
+  @media(max-width:860px){
+    .chat2{grid-template-columns:1fr;height:calc(100dvh - 150px);border:none;border-radius:0;background:none;box-shadow:none;}
+    .chat2-list{border-right:none;background:none;}
+    .chat2-listhead{padding:2px 2px 10px;}
+    .chat2-h{font-size:22px;}
+    .chat-search{margin:0 0 10px;}
+    .convs{padding:0;}
+    .chat2-thread{display:none;}
+    .chat2.show-thread .chat2-list{display:none;}
+    .chat2.show-thread .chat2-thread{display:flex;height:calc(100dvh - 150px);margin:calc(-1 * (14px + env(safe-area-inset-top))) -15px 0;border-radius:0;}
+    .chat2.show-thread .chat2-thhead{padding-top:calc(12px + env(safe-area-inset-top));}
+    .chat-back{display:flex;}
+  }
   .nav-ic{position:relative;}
   .nav-bubble{position:absolute;top:-7px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#f87171;color:#fff;font-size:9.5px;font-family:var(--mono);font-weight:600;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
   .person-dot{width:8px;height:8px;border-radius:50%;background:#f87171;margin-left:3px;}
@@ -693,7 +745,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.13.0";
+const APP_VERSION = "1.14.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1066,6 +1118,15 @@ async function sendMessageRow(token, row){
   if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte skicka ("+r.status+")")); }
   return (await r.json())[0];
 }
+async function fetchChatOverview(token, me){
+  const q="or=(sender_id.eq."+me+",recipient_id.eq."+me+",recipient_id.is.null)";
+  const r = await fetch(msgBase + "?" + q + "&select=sender_id,recipient_id,body,created_at&order=created_at.desc&limit=200", {headers: dataHeaders(token)});
+  if(!r.ok) return {};
+  let rows=[]; try{ rows=await r.json(); }catch(e){ return {}; }
+  const ov={};
+  rows.forEach(m=>{ const key=m.recipient_id==null?"team":(m.sender_id===me?m.recipient_id:m.sender_id); if(!ov[key]) ov[key]={body:m.body,at:m.created_at,fromMe:m.sender_id===me}; });
+  return ov;
+}
 async function listVersions(token, entryId){
   const r = await fetch(verBase + "?entry_id=eq." + entryId + "&select=*&order=created_at.desc", {headers: dataHeaders(token)});
   if(!r.ok) throw new Error("Kunde inte hämta historik ("+r.status+")");
@@ -1201,6 +1262,7 @@ const Ico={
   add:<I size={16} d={<><path d="M5 12h14"/><path d="M12 5v14"/></>} />,
   clock:<I size={13} d={<><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>} />,
   chevR:<I size={13} d={<path d="m9 18 6-6-6-6"/>} />,
+  chevL:<I size={13} d={<path d="m15 18-6-6 6-6"/>} />,
   link:<I size={15} d={<><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></>} />,
   sun:<I size={16} d={<><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></>} />,
   moon:<I size={16} d={<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>} />,
@@ -2313,40 +2375,61 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   const [loading,setLoading]=useState(true);
   const [sending,setSending]=useState(false);
   const [search,setSearch]=useState("");
+  const [mobileThread,setMobileThread]=useState(false);
+  const [overview,setOverview]=useState({});
   const convKey="scada-convs-"+(uid||"x");
   const [convHist,setConvHist]=useState(function(){ try{ return JSON.parse(localStorage.getItem(convKey)||"[]"); }catch(e){ return []; } });
   function rememberConv(id){ if(!id||id==="team") return; setConvHist(prev=>{ const n=[id,...prev.filter(x=>x!==id)]; try{ localStorage.setItem(convKey, JSON.stringify(n)); }catch(e){} return n; }); }
-  function openConv(id){ setConv(id); setSearch(""); rememberConv(id); }
   const endRef=useRef(null);
+
   useEffect(()=>{ listMembers(token).then(ms=>setMembers((ms||[]).filter(m=>m.id!==uid))); },[]);
+  useEffect(()=>{
+    let stop=false;
+    async function load(){ try{ const ov=await fetchChatOverview(token, uid); if(!stop) setOverview(ov); }catch(e){} }
+    load(); const iv=setInterval(load, 9000);
+    return ()=>{ stop=true; clearInterval(iv); };
+  },[token, uid]);
   useEffect(()=>{
     let stop=false; setLoading(true);
     async function tick(){ try{ const m=await fetchMessages(token, uid, conv); if(!stop){ setMsgs(m); if(onSeen) onSeen(conv); } }catch(e){} if(!stop) setLoading(false); }
-    tick();
-    const iv=setInterval(tick, 4000);
+    tick(); const iv=setInterval(tick, 4000);
     return ()=>{ stop=true; clearInterval(iv); };
   },[conv, token, uid]);
-  useEffect(()=>{ if(endRef.current) endRef.current.scrollIntoView(); },[msgs.length]);
+  useEffect(()=>{ if(endRef.current) endRef.current.scrollIntoView(); },[msgs.length, mobileThread, conv]);
+
   function memberLabel(m){ return ((m&&m.name&&m.name.trim()) || ((m&&m.email)||"").split("@")[0]) || "medlem"; }
   function memberById(id){ return members.find(x=>x.id===id); }
+  function labelFor(id){ if(id==="team") return "Teamet"; const m=memberById(id); return m?memberLabel(m):"medlem"; }
+  function initials(id){ const s=labelFor(id); return (s||"?").slice(0,2).toUpperCase(); }
+  function avStyle(id){ const s=labelFor(id); let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; const hh=h%360; return {background:"hsla("+hh+",60%,50%,.18)",color:"hsl("+hh+",60%,60%)"}; }
   function nameForSender(m){ const mem=memberById(m.sender_id); return (mem&&memberLabel(mem)) || m.sender_name || "medlem"; }
-  const convLabel = conv==="team" ? "Teamet" : (function(){ const m=memberById(conv); return m?memberLabel(m):"medlem"; })();
-  const recentPeople = (function(){
-    const ids=[]; convHist.forEach(id=>{ if(ids.indexOf(id)<0) ids.push(id); });
+  function fmtDay(iso){ if(!iso) return ""; const d=new Date(iso); const t=new Date(); const y=new Date(); y.setDate(t.getDate()-1); const ds=d.toDateString(); if(ds===t.toDateString()) return "Idag"; if(ds===y.toDateString()) return "Igår"; return d.toLocaleDateString("sv-SE",{day:"numeric",month:"long"}); }
+  function fmtConvTime(iso){ if(!iso) return ""; const d=new Date(iso); const t=new Date(); const y=new Date(); y.setDate(t.getDate()-1); const ds=d.toDateString(); if(ds===t.toDateString()) return fmtTime(iso); if(ds===y.toDateString()) return "Igår"; try{ return d.toLocaleDateString("sv-SE",{day:"numeric",month:"numeric"}); }catch(e){ return ""; } }
+
+  function openConv(id){ setConv(id); setSearch(""); setMobileThread(true); rememberConv(id); }
+
+  const convList=(function(){
+    const ids=[];
+    Object.keys(overview).forEach(k=>{ if(k!=="team" && ids.indexOf(k)<0) ids.push(k); });
+    convHist.forEach(id=>{ if(ids.indexOf(id)<0) ids.push(id); });
     Object.keys(unreadMap||{}).forEach(k=>{ if(k!=="team" && ids.indexOf(k)<0) ids.push(k); });
-    return ids.map(id=>memberById(id)).filter(Boolean);
+    ids.sort((a,b)=>{ const ta=overview[a]?overview[a].at:""; const tb=overview[b]?overview[b].at:""; return (tb||"").localeCompare(ta||""); });
+    return ids;
   })();
-  const searchResults = (function(){
+  const searchResults=(function(){
     const q=search.trim().toLowerCase(); if(!q) return [];
     return members.filter(m=>memberLabel(m).toLowerCase().indexOf(q)>=0 || ((m.email||"").toLowerCase().indexOf(q)>=0));
   })();
+
   async function send(){
     const b=text.trim(); if(!b||sending) return;
     setSending(true);
     const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:b };
-    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); if(conv!=="team") rememberConv(conv); }catch(e){ alert(e.message); }
+    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); rememberConv(conv); setOverview(o=>({...o,[conv]:{body:b,at:(m&&m.created_at)||new Date().toISOString(),fromMe:true}})); }
+    catch(e){ alert(e.message); }
     setSending(false);
   }
+
   const [pushBusy,setPushBusy]=useState(false);
   const [pushOn,setPushOn]=useState(typeof Notification!=="undefined" && Notification.permission==="granted");
   const [pushMsg,setPushMsg]=useState("");
@@ -2356,56 +2439,89 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
     catch(e){ setPushMsg(e.message||"Kunde inte aktivera"); }
     setPushBusy(false);
   }
+
+  function ConvRow({id, sub}){
+    const ov=overview[id]; const unread=conv!==id && (unreadMap[id]||0)>0; const n=unreadMap[id]||0;
+    const prev = ov ? ((ov.fromMe?"Du: ":"")+ov.body) : (sub||"");
+    return (
+      <button className={"conv"+(conv===id?" active":"")+(unread?" unread":"")} onClick={()=>openConv(id)}>
+        <span className="conv-av" style={id==="team"?{}:avStyle(id)}>{id==="team"?Ico.users:initials(id)}</span>
+        <span className="conv-main">
+          <span className="conv-name">{labelFor(id)}</span>
+          <span className="conv-prev">{prev}</span>
+        </span>
+        <span className="conv-meta">
+          {ov&&ov.at?<span className="conv-time">{fmtConvTime(ov.at)}</span>:<span className="conv-time"></span>}
+          {unread?<span className="conv-badge">{n>9?"9+":n}</span>:null}
+        </span>
+      </button>
+    );
+  }
+
   return (
-    <div className="chat">
-      <div className="page-head">
-        <div><h2 className="page-title">Chatt</h2><p className="page-sub">{conv==="team"?"Hela teamet":"Privat med "+convLabel}</p></div>
-        {pushSupported() && <button className={"notifbtn"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy} title={pushOn?"Tryck för att registrera om":""}>{Ico.bell} {pushOn?"Aviseringar på":(pushBusy?"…":"Aviseringar")}</button>}
-      </div>
-      {pushMsg && <div className="notifmsg">{pushMsg}</div>}
-      <div className="chat-search">{Ico.search}
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök kollega att chatta med…" />
-        {search && <button className="chat-search-x" onClick={()=>setSearch("")}>{Ico.x}</button>}
-      </div>
-      {search ? (
-        <div className="chat-people">
-          {searchResults.length===0 ? <span className="chat-hint">Ingen matchande användare.</span>
-            : searchResults.map(m=>(
-              <button key={m.id} className={"person"+(conv===m.id?" active":"")} onClick={()=>openConv(m.id)}>
-                <span className="person-av">{memberLabel(m).slice(0,2).toUpperCase()}</span>{memberLabel(m)}
-              </button>
-            ))}
+    <div className={"chat2"+(mobileThread?" show-thread":"")}>
+      <div className="chat2-list">
+        <div className="chat2-listhead">
+          <h2 className="chat2-h">Chatt</h2>
+          {pushSupported() && <button className={"chat-notif"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy} title={pushOn?"Aviseringar på – tryck för att registrera om":"Slå på aviseringar"}>{Ico.bell}<span className="chat-notif-lbl">{pushBusy?"…":(pushOn?"På":"Avi.")}</span></button>}
         </div>
-      ) : (
-        <div className="chat-people">
-          <button className={"person"+(conv==="team"?" active":"")} onClick={()=>setConv("team")}><span className="person-ic">{Ico.users}</span>Teamet{conv!=="team"&&unreadMap.team>0&&<span className="person-dot"></span>}</button>
-          {recentPeople.map(m=>(
-            <button key={m.id} className={"person"+(conv===m.id?" active":"")} onClick={()=>openConv(m.id)}>
-              <span className="person-av">{memberLabel(m).slice(0,2).toUpperCase()}</span>{memberLabel(m)}{conv!==m.id&&unreadMap[m.id]>0&&<span className="person-dot"></span>}
-            </button>
-          ))}
-          {recentPeople.length===0 && <span className="chat-hint">Sök efter en kollega ovan för att börja chatta.</span>}
+        <div className="chat-search">{Ico.search}
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök kollega…" />
+          {search && <button className="chat-search-x" onClick={()=>setSearch("")}>{Ico.x}</button>}
         </div>
-      )}
-      <div className="chat-msgs">
-        {loading && msgs.length===0 ? <div className="chat-empty">Laddar…</div>
-         : msgs.length===0 ? <div className="chat-empty">{conv==="team"?"Inga meddelanden i teamet än – skriv det första!":"Inga meddelanden än – säg hej!"}</div>
-         : msgs.map(m=>{
-            const mine=m.sender_id===uid;
-            return <div key={m.id} className={"bubble-row"+(mine?" me":"")}>
-              <div className={"bubble"+(mine?" me":"")}>
-                {!mine && <div className="bubble-name">{nameForSender(m)}</div>}
-                <div className="bubble-body">{m.body}</div>
-                <div className="bubble-time">{fmtTime(m.created_at)}</div>
-              </div>
-            </div>;
-           })}
-        <div ref={endRef}></div>
+        {pushMsg && <div className="notifmsg" style={{margin:"0 14px 8px"}}>{pushMsg}</div>}
+        <div className="convs">
+          {search ? (
+            searchResults.length===0 ? <div className="chat-hint">Hittar ingen som matchar "{search}".</div>
+            : searchResults.map(m=><ConvRow key={m.id} id={m.id} sub={m.email||""} />)
+          ) : (<>
+            <ConvRow id="team" sub="Gemensam kanal för alla" />
+            {convList.map(id=><ConvRow key={id} id={id} />)}
+            {convList.length===0 && <div className="chat-hint">Sök upp en kollega ovan för att börja chatta.</div>}
+          </>)}
+        </div>
       </div>
-      <div className="chat-input">
-        <textarea value={text} onChange={e=>setText(e.target.value)} rows={1} placeholder={"Skriv till "+convLabel+"…"}
-          onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); } }} />
-        <button className="chat-send" disabled={sending||!text.trim()} onClick={send} title="Skicka">{Ico.send}</button>
+      <div className="chat2-thread">
+        <div className="chat2-thhead">
+          <button className="chat-back" onClick={()=>setMobileThread(false)} title="Tillbaka">{Ico.chevL}</button>
+          <span className="conv-av" style={conv==="team"?{}:avStyle(conv)}>{conv==="team"?Ico.users:initials(conv)}</span>
+          <div className="chat2-thtitle">
+            <span className="conv-name">{labelFor(conv)}</span>
+            <span className="conv-prev">{conv==="team"?((members.length+1)+" medlemmar"):((memberById(conv)&&memberById(conv).email)||"Privat konversation")}</span>
+          </div>
+        </div>
+        <div className="chat-msgs">
+          {loading && msgs.length===0 ? <div className="chat-empty">Laddar meddelanden…</div>
+           : msgs.length===0 ? <div className="chat-empty">{conv==="team"?"Inga meddelanden i teamet än. Skriv det första.":"Inga meddelanden än. Säg hej till "+labelFor(conv)+"."}</div>
+           : (function(){
+               const out=[]; let lastDay=null, lastSender=null;
+               msgs.forEach(m=>{
+                 const day=(m.created_at||"").slice(0,10);
+                 let newDay=false;
+                 if(day!==lastDay){ out.push(<div key={"d"+m.id} className="chat-day"><span>{fmtDay(m.created_at)}</span></div>); lastDay=day; lastSender=null; newDay=true; }
+                 const mine=m.sender_id===uid;
+                 const grouped=!newDay && m.sender_id===lastSender;
+                 const showName=!mine && conv==="team" && !grouped;
+                 lastSender=m.sender_id;
+                 out.push(
+                   <div key={m.id} className={"bubble-row"+(mine?" me":"")+(grouped?" grp":"")}>
+                     <div className={"bubble"+(mine?" me":"")}>
+                       {showName && <div className="bubble-name">{nameForSender(m)}</div>}
+                       <div className="bubble-body">{m.body}</div>
+                       <div className="bubble-time">{fmtTime(m.created_at)}</div>
+                     </div>
+                   </div>
+                 );
+               });
+               return out;
+             })()}
+          <div ref={endRef}></div>
+        </div>
+        <div className="chat-input">
+          <textarea value={text} onChange={e=>setText(e.target.value)} rows={1} placeholder={"Skriv till "+labelFor(conv)+"…"}
+            onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); } }} />
+          <button className="chat-send" disabled={sending||!text.trim()} onClick={send} title="Skicka">{Ico.send}</button>
+        </div>
       </div>
     </div>
   );
@@ -3020,8 +3136,6 @@ function UserModal({token,user,name,uid,isAdmin,onName,backups=[],onDownloadBack
   const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
   const [busy,setBusy]=useState(false); const [msg,setMsg]=useState(null); const [need,setNeed]=useState(false);
   const [profiles,setProfiles]=useState(null); const [pBusy,setPBusy]=useState(false);
-  const [dispVal,setDispVal]=useState(name||""); const [savingName,setSavingName]=useState(false);
-  async function saveName(){ const v=dispVal.trim(); if(!v) return; setSavingName(true); try{ await updateDisplayName(token, uid, v); if(onName) onName(v); setMsg({ok:true,text:"Visningsnamn sparat"}); }catch(e){ setMsg({ok:false,text:"Kunde inte spara namnet"}); } setSavingName(false); }
   useEffect(()=>{ if(isAdmin) loadProfiles(); },[]);
   async function loadProfiles(){ setPBusy(true); try{ setProfiles(await listProfiles(token)); }catch(e){ setProfiles([]); } setPBusy(false); }
   async function approve(id,val){ try{ await setApproved(token,id,val); setProfiles(ps=>(ps||[]).map(p=>p.id===id?{...p,approved:val}:p)); }catch(e){} }
@@ -3044,13 +3158,6 @@ function UserModal({token,user,name,uid,isAdmin,onName,backups=[],onDownloadBack
         <div className="modal-head"><h2>Konto &amp; användare</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
         <div className="modal-body">
           <div className="useryou">{Ico.users}<div><div style={{color:"var(--txt)",fontSize:13}}>{(name&&name.trim())||user}</div><div style={{color:"var(--dim)",fontSize:11}}>{user}</div></div></div>
-          <label className="field" style={{marginTop:4}}><span className="lbl">Visningsnamn <span className="lbl-opt">syns för andra i chatten</span></span>
-            <div style={{display:"flex",gap:8}}>
-              <input style={{flex:1,minWidth:0}} value={dispVal} onChange={e=>setDispVal(e.target.value)} placeholder="t.ex. Mohamad Bder" />
-              <button className="foot-btn foot-save" style={{flex:"0 0 auto"}} disabled={!dispVal.trim()||savingName} onClick={saveName}>{savingName?"…":"Spara"}</button>
-            </div>
-          </label>
-          {msg && <div className={"banner "+(msg.ok?"ok":"err")} style={{marginTop:0}}>{msg.text}</div>}
           {isAdmin ? (
             <>
               <div className="udivider">Användare &amp; godkännande</div>
