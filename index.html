@@ -426,8 +426,8 @@
   body.light .login-card{box-shadow:0 30px 70px -30px rgba(15,23,42,.25);}
   body.light .grid-bg{opacity:.04;background-image:linear-gradient(rgba(15,23,42,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.6) 1px,transparent 1px);}
   /* Signup link + approval list */
-  .link-btn{display:block;width:100%;margin-top:14px;background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;font-family:var(--sans);}
-  .link-btn:hover{text-decoration:underline;}
+  .link-btn{display:block;width:100%;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--sans);transition:color .15s;}
+  .link-btn:hover{color:var(--accent);}
   .urow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
   .urow-mail{font-size:13px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:7px;}
   .urow-status{font-size:11px;font-family:var(--mono);margin-top:2px;}
@@ -597,19 +597,19 @@
   /* Comments */
   .comments{border-top:1px solid var(--line);padding-top:14px;margin-top:6px;}
   .cmt-empty{color:var(--dim);font-size:13px;line-height:1.5;margin-bottom:12px;}
-  .cmt{padding:10px 0;border-bottom:1px solid var(--line);}
+  .cmt{padding:12px 0;border-bottom:1px solid var(--line);}
   .cmt:first-of-type{padding-top:0;}
-  .cmt-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
-  .cmt-av{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;flex-shrink:0;}
+  .cmt-head{display:flex;align-items:center;gap:9px;margin-bottom:5px;}
+  .cmt-av{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0;}
   .cmt-name{font-size:13px;font-weight:600;color:var(--txt);}
   .cmt-time{font-family:var(--mono);font-size:10.5px;color:var(--dim);}
   .cmt-del{margin-left:auto;background:none;border:none;color:var(--dim);cursor:pointer;display:flex;padding:3px;border-radius:6px;}
   .cmt-del:hover{color:var(--danger);background:rgba(248,113,113,.1);}
   .cmt-del svg{width:14px;height:14px;}
-  .cmt-body{font-size:14px;color:var(--txt2);line-height:1.5;white-space:pre-wrap;word-break:break-word;padding-left:32px;}
-  .cmt-input{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
-  .cmt-input textarea{resize:vertical;min-height:46px;font-family:var(--sans);}
-  .cmt-input .foot-btn{align-self:flex-end;}
+  .cmt-body{font-size:14px;color:var(--txt2);line-height:1.55;white-space:pre-wrap;word-break:break-word;padding-left:39px;}
+  .cmt-input{display:flex;flex-direction:column;gap:9px;margin-top:16px;}
+  .cmt-input textarea{resize:vertical;min-height:48px;border-radius:13px;font-family:var(--sans);}
+  .cmt-input .foot-btn{align-self:flex-end;flex:0 0 auto;padding:9px 16px;}
   /* Multiple code blocks */
   .code-wrap + .code-wrap{margin-top:10px;}
   .readmore{margin-top:8px;background:none;border:none;color:var(--accent);font-size:12.5px;font-family:var(--sans);cursor:pointer;padding:4px 0;align-self:flex-start;}
@@ -747,7 +747,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.16.0";
+const APP_VERSION = "1.17.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -2191,6 +2191,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlin
     score+=(e.tags||[]).filter(t=>tags.indexOf(t)>=0).length*2;
     return {e,score};
   }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.e);
+  function cmtColor(s){ s=s||"?"; let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; const hh=h%360; return {background:"hsla("+hh+",60%,50%,.18)",color:"hsl("+hh+",60%,60%)"}; }
   return (
     <>
     <div className="overlay" onClick={onClose}>
@@ -2286,7 +2287,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlin
                 const canDel = c.user_id===uid || mine;
                 return <div key={c.id} className="cmt">
                   <div className="cmt-head">
-                    <span className="cmt-av">{(c.author_name||"?").slice(0,2).toUpperCase()}</span>
+                    <span className="cmt-av" style={cmtColor(c.author_name)}>{(c.author_name||"?").slice(0,2).toUpperCase()}</span>
                     <span className="cmt-name">{c.author_name||"medlem"}</span>
                     <span className="cmt-time">{fmtDateTime(c.created_at)}</span>
                     {canDel && <button className="cmt-del" title="Ta bort" onClick={()=>removeComment(c.id)}>{Ico.x}</button>}
