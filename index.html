@@ -192,7 +192,7 @@
   .trash-btn.danger:hover{background:rgba(248,113,113,.1);}
   .trash-btn svg{width:14px;height:14px;}
   .stationmap-panel{padding:0;overflow:hidden;}
-  .stationmap{height:240px;width:100%;background:var(--code);}
+  .stationmap{height:240px;width:100%;background:var(--code);position:relative;z-index:0;}
   .stationmap-foot{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-top:1px solid var(--line);}
   .stationmap-foot a.foot-mini{text-decoration:none;}
   .stationset .stationset-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
@@ -689,7 +689,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.10.0";
+const APP_VERSION = "1.10.1";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
