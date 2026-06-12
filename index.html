@@ -693,7 +693,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.12.0";
+const APP_VERSION = "1.13.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -3016,10 +3016,12 @@ function EntryForm({initial,busy,token,uid,stations=[],systems=SYSTEMS,onAddSyst
   );
 }
 
-function UserModal({token,user,name,isAdmin,onName,backups=[],onDownloadBackup,onRestoreBackup,onClose}){
+function UserModal({token,user,name,uid,isAdmin,onName,backups=[],onDownloadBackup,onRestoreBackup,onClose}){
   const [email,setEmail]=useState(""); const [pw,setPw]=useState("");
   const [busy,setBusy]=useState(false); const [msg,setMsg]=useState(null); const [need,setNeed]=useState(false);
   const [profiles,setProfiles]=useState(null); const [pBusy,setPBusy]=useState(false);
+  const [dispVal,setDispVal]=useState(name||""); const [savingName,setSavingName]=useState(false);
+  async function saveName(){ const v=dispVal.trim(); if(!v) return; setSavingName(true); try{ await updateDisplayName(token, uid, v); if(onName) onName(v); setMsg({ok:true,text:"Visningsnamn sparat"}); }catch(e){ setMsg({ok:false,text:"Kunde inte spara namnet"}); } setSavingName(false); }
   useEffect(()=>{ if(isAdmin) loadProfiles(); },[]);
   async function loadProfiles(){ setPBusy(true); try{ setProfiles(await listProfiles(token)); }catch(e){ setProfiles([]); } setPBusy(false); }
   async function approve(id,val){ try{ await setApproved(token,id,val); setProfiles(ps=>(ps||[]).map(p=>p.id===id?{...p,approved:val}:p)); }catch(e){} }
@@ -3042,6 +3044,13 @@ function UserModal({token,user,name,isAdmin,onName,backups=[],onDownloadBackup,o
         <div className="modal-head"><h2>Konto &amp; användare</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
         <div className="modal-body">
           <div className="useryou">{Ico.users}<div><div style={{color:"var(--txt)",fontSize:13}}>{(name&&name.trim())||user}</div><div style={{color:"var(--dim)",fontSize:11}}>{user}</div></div></div>
+          <label className="field" style={{marginTop:4}}><span className="lbl">Visningsnamn <span className="lbl-opt">syns för andra i chatten</span></span>
+            <div style={{display:"flex",gap:8}}>
+              <input style={{flex:1,minWidth:0}} value={dispVal} onChange={e=>setDispVal(e.target.value)} placeholder="t.ex. Mohamad Bder" />
+              <button className="foot-btn foot-save" style={{flex:"0 0 auto"}} disabled={!dispVal.trim()||savingName} onClick={saveName}>{savingName?"…":"Spara"}</button>
+            </div>
+          </label>
+          {msg && <div className={"banner "+(msg.ok?"ok":"err")} style={{marginTop:0}}>{msg.text}</div>}
           {isAdmin ? (
             <>
               <div className="udivider">Användare &amp; godkännande</div>
